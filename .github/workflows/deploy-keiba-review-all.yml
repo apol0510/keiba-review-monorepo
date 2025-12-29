@@ -1,0 +1,61 @@
+name: Deploy keiba-review-all
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/keiba-review-all/**'
+      - 'packages/shared/**'
+      - '.github/workflows/deploy-keiba-review-all.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build keiba-review-all
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          SITE_URL: https://keiba-review.jp
+          PUBLIC_GA_ID: ${{ secrets.PUBLIC_GA_ID }}
+        run: pnpm --filter=@keiba-review/keiba-review-all build
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: './packages/keiba-review-all/dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions - keiba-review-all"
+          enable-pull-request-comment: true
+          enable-commit-comment: false
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_KEIBA_REVIEW_ALL }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
+        timeout-minutes: 10
+
+      - name: Report deployment status
+        if: success()
+        run: |
+          echo "🚀 keiba-review-all のデプロイが完了しました"
+          echo "📍 URL: https://keiba-review.jp"

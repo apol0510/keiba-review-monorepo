@@ -1,0 +1,58 @@
+name: Daily Monitoring
+
+on:
+  # 毎日AM9:00（JST）に実行
+  schedule:
+    - cron: '0 0 * * *' # UTC 0:00 = JST 9:00
+
+  # 手動実行も可能
+  workflow_dispatch:
+
+jobs:
+  monitoring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run schema validator
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        working-directory: packages/keiba-review-all
+        run: node scripts/production/schema-validator.cjs
+
+      - name: Run daily monitoring
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        working-directory: packages/keiba-review-all
+        run: node scripts/production/daily-monitoring.cjs
+
+      - name: Report success
+        if: success()
+        run: |
+          echo "✅ 日次モニタリングが完了しました"
+          echo "📊 Airtableスキーマ検証 - OK"
+          echo "📊 統計情報確認 - OK"
+
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          echo "❌ 日次モニタリングでエラーが検出されました"
+          echo "GitHub Actionsのログを確認してください"

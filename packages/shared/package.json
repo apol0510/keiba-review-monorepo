@@ -1,0 +1,30 @@
+{
+  "name": "@keiba-review/shared",
+  "version": "1.0.0",
+  "description": "Shared components and utilities for keiba-review projects",
+  "type": "module",
+  "main": "./lib/index.ts",
+  "exports": {
+    "./ui": "./ui/index.ts",
+    "./lib": "./lib/index.ts",
+    "./types": "./types/index.ts",
+    "./review-engine": "./review-engine/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "airtable": "^0.12.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "astro": "^5.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

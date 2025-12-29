@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSitesByCategory, sortByRankingScore } from '@keiba-review/shared/lib';
+
+// 南関競馬サイトのみ取得
+const allSites = await getSitesByCategory('nankan');
+const sites = sortByRankingScore(allSites).slice(0, 10);
+---
+
+<BaseLayout title="トップページ">
+  <!-- ヒーローセクション -->
+  <section class="bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-xl p-12 mb-12">
+    <div class="max-w-3xl">
+      <h1 class="text-4xl font-bold mb-4">
+        南関競馬専門<br>
+        予想サイト口コミプラットフォーム
+      </h1>
+      <p class="text-xl mb-8 text-blue-100">
+        大井・川崎・船橋・浦和の南関4場に特化した予想サイトの口コミ・評価を集約。
+        ナイター競馬ファンのための信頼できる情報源。
+      </p>
+      <div class="flex gap-4">
+        <a href="/sites" class="btn-primary bg-white text-blue-900 hover:bg-blue-50">
+          サイト一覧を見る
+        </a>
+        <a href="/about" class="btn-primary bg-blue-800 hover:bg-blue-700">
+          このサイトについて
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 南関競馬の特徴 -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold mb-6">南関競馬とは</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold mb-3 text-blue-900">🌙 ナイター競馬</h3>
+        <p class="text-gray-600">
+          平日夜間に開催されるナイター競馬が特徴。仕事帰りに楽しめる競馬として人気です。
+        </p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold mb-3 text-blue-900">🏙️ 首都圏4場</h3>
+        <p class="text-gray-600">
+          大井（TCK）・川崎・船橋・浦和の首都圏4競馬場で構成される地方競馬の一大勢力。
+        </p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold mb-3 text-blue-900">💰 高配当</h3>
+        <p class="text-gray-600">
+          少頭数でもオッズが伸びやすく、的中時の配当が魅力。攻略法を知れば高配当を狙えます。
+        </p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold mb-3 text-blue-900">📊 データ重視</h3>
+        <p class="text-gray-600">
+          コース特性や馬場状態が重要。データ分析に基づいた予想サイトの活用が効果的です。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 人気サイトランキング -->
+  {sites.length > 0 && (
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-6">南関競馬 人気予想サイト TOP10</h2>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="divide-y">
+          {sites.slice(0, 10).map((site, index) => (
+            <a
+              href={`/sites/${site.slug}`}
+              class="block p-6 hover:bg-gray-50 transition"
+            >
+              <div class="flex items-center gap-4">
+                <div class="text-3xl font-bold text-blue-900 w-12">
+                  {index + 1}
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-lg font-bold mb-1">{site.name}</h3>
+                  <p class="text-sm text-gray-600 line-clamp-2">
+                    {site.description}
+                  </p>
+                  <div class="flex items-center gap-4 mt-2 text-sm">
+                    <span class="text-yellow-600">
+                      ⭐ {site.average_rating?.toFixed(1) || 'N/A'}
+                    </span>
+                    <span class="text-gray-500">
+                      {site.review_count}件の口コミ
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div class="text-center mt-6">
+        <a href="/sites" class="btn-primary inline-block">
+          すべてのサイトを見る
+        </a>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA -->
+  <section class="bg-blue-50 rounded-xl p-8 text-center">
+    <h2 class="text-2xl font-bold mb-4">南関競馬で勝つために</h2>
+    <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
+      南関競馬は独特のコース特性とレース傾向があります。
+      実際に利用した人の口コミを参考に、自分に合った予想サイトを見つけましょう。
+    </p>
+    <a href="/sites" class="btn-primary inline-block">
+      予想サイトを探す
+    </a>
+  </section>
+</BaseLayout>

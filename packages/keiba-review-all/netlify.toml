@@ -1,0 +1,28 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+
+# 静的ファイルのキャッシュ（1年間）
+[[headers]]
+  for = "/screenshots/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# HTMLのキャッシュ（1時間、CDNで1日）
+[[headers]]
+  for = "/keiba-yosou/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
+    
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"

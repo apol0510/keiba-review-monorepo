@@ -1,0 +1,69 @@
+---
+import StarRating from './StarRating.astro';
+import type { Review, ReviewWithSite } from '@keiba-review/shared/lib';
+
+interface Props {
+  review: Review | ReviewWithSite;
+  showSiteName?: boolean;
+}
+
+const { review, showSiteName = false } = Astro.props;
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+const hasSiteInfo = 'siteName' in review && 'siteSlug' in review;
+const displayDate = review.created_at || review.createdAt || '';
+const displayUsername = review.username || 'anonymous';
+const siteUrl = hasSiteInfo && review.siteSlug ? `/keiba-yosou/${review.siteSlug}/` : '#';
+---
+
+<a
+  href={siteUrl}
+  class="block bg-white rounded-xl shadow-lg hover:shadow-xl p-5 md:p-6 transition-all duration-300 border border-slate-100 hover:border-blue-300 cursor-pointer no-underline"
+>
+  <div class="flex items-start justify-between mb-3">
+    <div class="flex-1">
+      <StarRating rating={review.rating} size="sm" />
+      <h4 class="font-bold text-gray-900 mt-2 text-base md:text-lg">{review.title}</h4>
+    </div>
+    <span class="text-xs md:text-sm text-gray-500 whitespace-nowrap ml-2">{formatDate(displayDate)}</span>
+  </div>
+
+  {
+    hasSiteInfo && review.siteName && (
+      <div class="mb-3">
+        <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm font-semibold rounded-full border border-blue-200">
+          📍 {review.siteName}
+        </span>
+      </div>
+    )
+  }
+
+  <p class="text-gray-700 text-sm md:text-base leading-relaxed mb-4">
+    {review.content.length > 150 ? review.content.substring(0, 150) + '...' : review.content}
+  </p>
+
+  <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+    <div class="flex items-center gap-2 text-xs md:text-sm text-gray-600">
+      <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+        {displayUsername.charAt(0).toUpperCase()}
+      </div>
+      <span class="font-medium">{displayUsername}</span>
+    </div>
+
+    {
+      hasSiteInfo && review.siteName && (
+        <span class="text-xs md:text-sm text-blue-600 font-medium inline-flex items-center gap-1">
+          詳細を見る →
+        </span>
+      )
+    }
+  </div>
+</a>

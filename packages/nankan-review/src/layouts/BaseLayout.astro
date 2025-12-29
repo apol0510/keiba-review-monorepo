@@ -1,0 +1,118 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = '南関競馬（大井・川崎・船橋・浦和）の予想サイト口コミ・評価プラットフォーム。信頼できる口コミで優良サイトを見つけよう。'
+} = Astro.props;
+
+const siteTitle = `${title} | 南関競馬予想サイト口コミ`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// 環境変数からGA IDとサイトURLを取得
+const GA_ID = import.meta.env.PUBLIC_GA_ID || '';
+const SITE_URL = import.meta.env.SITE_URL || 'https://nankan-review.jp';
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{siteTitle}</title>
+  <meta name="description" content={description}>
+  <link rel="canonical" href={canonicalURL}>
+
+  <!-- OGP -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content={siteTitle}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={canonicalURL}>
+  <meta property="og:site_name" content="南関競馬予想サイト口コミ">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content={siteTitle}>
+  <meta name="twitter:description" content={description}>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- DNS Prefetch -->
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+  {GA_ID && <link rel="dns-prefetch" href="https://www.google-analytics.com">}
+
+  <!-- Google Analytics 4 -->
+  {GA_ID && (
+    <>
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+      <script define:vars={{ GA_ID }}>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', GA_ID);
+      </script>
+    </>
+  )}
+</head>
+<body class="min-h-screen bg-gray-50">
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <a href="/" class="text-xl font-bold text-blue-900">
+            南関競馬<span class="text-blue-600">予想サイト口コミ</span>
+          </a>
+        </div>
+        <div class="flex space-x-6">
+          <a href="/" class="text-gray-700 hover:text-blue-600">トップ</a>
+          <a href="/sites" class="text-gray-700 hover:text-blue-600">サイト一覧</a>
+          <a href="/about" class="text-gray-700 hover:text-blue-600">このサイトについて</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <slot />
+  </main>
+
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="text-lg font-bold mb-4">南関競馬予想サイト口コミ</h3>
+          <p class="text-gray-400 text-sm">
+            南関競馬（大井・川崎・船橋・浦和）専門の予想サイト口コミプラットフォーム
+          </p>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold mb-4">対応競馬場</h3>
+          <ul class="text-gray-400 text-sm space-y-2">
+            <li>大井競馬場（TCK）</li>
+            <li>川崎競馬場</li>
+            <li>船橋競馬場</li>
+            <li>浦和競馬場</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold mb-4">リンク</h3>
+          <ul class="text-gray-400 text-sm space-y-2">
+            <li><a href="/about" class="hover:text-white">このサイトについて</a></li>
+            <li><a href="/privacy" class="hover:text-white">プライバシーポリシー</a></li>
+            <li><a href="/terms" class="hover:text-white">利用規約</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 南関競馬予想サイト口コミ. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

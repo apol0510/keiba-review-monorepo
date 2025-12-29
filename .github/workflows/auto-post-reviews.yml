@@ -1,0 +1,58 @@
+name: Auto Post Reviews Daily
+
+on:
+  # 毎日AM4:00（JST）に自動実行
+  schedule:
+    - cron: '0 19 * * *' # UTC 19:00 = JST 4:00
+
+  # 手動実行も可能
+  workflow_dispatch:
+
+jobs:
+  post-reviews:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run daily reviews (keiba-review-all)
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        working-directory: packages/keiba-review-all
+        run: node scripts/production/run-daily-reviews-v4.cjs
+
+      - name: Verify execution (keiba-review-all)
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        working-directory: packages/keiba-review-all
+        run: node scripts/production/verify-daily-execution.cjs
+
+      - name: Report success
+        if: success()
+        run: |
+          echo "✅ 口コミ自動投稿が完了しました"
+          echo "📝 投稿先: keiba-review-all（全カテゴリ）"
+          echo "⏰ 実行時刻: $(date '+%Y-%m-%d %H:%M:%S JST')"
+
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          echo "❌ 口コミ自動投稿に失敗しました"
+          echo "GitHub Actionsのログを確認してください"

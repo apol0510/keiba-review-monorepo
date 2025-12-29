@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import EmptyState from '../../../components/EmptyState.astro';
+import PaginatedSiteList from '../../../components/PaginatedSiteList';
+import { getSitesWithStats, sortByRankingScore, categoryLabels } from '@keiba-review/shared/lib';
+
+const category = 'chuo';
+
+// データ取得（カテゴリでフィルタ - クライアントサイドでページング）
+const allSites = await getSitesWithStats();
+const categorySites = allSites.filter(site => site.category === category);
+
+// ランキングスコアを計算してソート（共通関数を使用）
+const sitesWithScore = sortByRankingScore(categorySites);
+
+const breadcrumbItems = [
+  { label: 'サイト一覧', href: '/keiba-yosou/' },
+  { label: categoryLabels[category] }
+];
+
+// 動的メタディスクリプション生成
+const topSiteNames = sitesWithScore.slice(0, 3).map(s => s.name).join('、');
+const description = sitesWithScore.length > 0
+  ? `${categoryLabels[category]}の競馬予想サイト${sitesWithScore.length}件を掲載。${topSiteNames}など、JRA・中央競馬の的中率・回収率が高いサイトを口コミで徹底比較。無料予想から有料情報まで。`
+  : `JRA・${categoryLabels[category]}の競馬予想サイト一覧。口コミ・評判を比較できます。`;
+---
+
+<BaseLayout
+  title={`${categoryLabels[category]}の予想サイト`}
+  description={description}
+>
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <Breadcrumb items={breadcrumbItems} />
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">
+          {categoryLabels[category]}の予想サイト
+        </h1>
+        <div class="text-sm text-gray-600">
+          {sitesWithScore.length}件のサイト
+        </div>
+      </div>
+      <div class="mt-4 md:mt-0">
+        <a
+          href="/submit"
+          class="inline-flex items-center gap-2 bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 px-6 py-3 rounded-lg font-semibold transition-colors shadow-sm"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          サイトを登録する
+        </a>
+      </div>
+    </div>
+
+    <!-- Category Links -->
+    <div class="flex flex-wrap gap-2 mb-8">
+      <a
+        href="/keiba-yosou/"
+        class="px-4 py-2 rounded-full border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium hover:border-blue-400 hover:text-blue-600 transition-colors"
+      >
+        すべて
+      </a>
+      {
+        Object.entries(categoryLabels).map(([key, label]) => (
+          <a
+            href={`/keiba-yosou/${key}/`}
+            class={`px-4 py-2 rounded-full border-2 text-sm transition-colors ${
+              key === category
+                ? 'border-blue-600 bg-white text-blue-600 font-bold shadow-sm'
+                : 'border-gray-300 bg-white text-gray-700 font-medium hover:border-blue-400 hover:text-blue-600'
+            }`}
+          >
+            {label}
+          </a>
+        ))
+      }
+    </div>
+
+    <!-- SEO Content Section -->
+    {sitesWithScore.length > 0 && (
+      <div class="bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-xl p-6 md:p-8 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          {categoryLabels[category]}予想サイトの選び方
+        </h2>
+        <div class="prose prose-slate max-w-none">
+          <p class="text-gray-700 leading-relaxed mb-4">
+            <strong>{categoryLabels[category]}</strong>は、JRA（日本中央競馬会）が主催する競馬で、東京・中山・阪神・京都・中京・新潟・福島・札幌・函館・小倉の10場で開催されます。G1レースをはじめとする重賞レースが多数開催され、多くの競馬ファンが注目しています。
+          </p>
+          <p class="text-gray-700 leading-relaxed mb-4">
+            当カテゴリでは、<strong>JRA・{categoryLabels[category]}に特化した予想サイト</strong>を{sitesWithScore.length}件掲載しています。各サイトの<a href="/ranking/chuo/" class="text-blue-600 hover:text-blue-700 underline font-semibold">ランキング</a>や口コミ評価を参考に、あなたにぴったりのサイトを見つけてください。
+          </p>
+          <h3 class="text-lg font-bold text-gray-900 mb-3 mt-6">中央競馬予想サイトの特徴</h3>
+          <ul class="list-disc list-inside space-y-2 text-gray-700">
+            <li><strong>G1・重賞レースの予想に強い：</strong>天皇賞、有馬記念、日本ダービーなどビッグレースの予想情報が充実</li>
+            <li><strong>血統分析が充実：</strong>サンデーサイレンス系、ノーザンダンサー系など、血統による適性判断</li>
+            <li><strong>調教・追い切り情報：</strong>美浦・栗東トレセンの調教タイムや状態確認</li>
+            <li><strong>騎手・厩舎データ：</strong>武豊、川田将雅など、一流騎手の成績分析</li>
+          </ul>
+        </div>
+      </div>
+    )}
+
+    <!-- Site Grid with Client-side Pagination -->
+    {
+      sitesWithScore.length > 0 ? (
+        <PaginatedSiteList sites={sitesWithScore} itemsPerPage={20} client:load />
+      ) : (
+        <EmptyState
+          icon="document"
+          title="まだサイトが登録されていません"
+          description={`現在、${categoryLabels[category]}のサイトは登録されていません。しばらくお待ちください。`}
+          actionText="すべてのサイトを見る"
+          actionHref="/keiba-yosou/"
+        />
+      )
+    }
+  </div>
+</BaseLayout>

@@ -1,0 +1,62 @@
+{
+  // VSCodeクラッシュ対策設定
+
+  // 1. 大量のファイルを除外してメモリ使用量を削減
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.astro": true,
+    "**/.netlify": true,
+    "**/.cache": true,
+    "**/package-lock.json": true,
+    "**/.DS_Store": true
+  },
+
+  // 2. ファイル監視の除外（パフォーマンス改善）
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/.astro/**": true,
+    "**/.netlify/**": true,
+    "**/.cache/**": true
+  },
+
+  // 3. 検索除外（検索パフォーマンス改善）
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.astro": true,
+    "**/.netlify": true,
+    "**/package-lock.json": true,
+    "**/pnpm-lock.yaml": true
+  },
+
+  // 4. TypeScript/JavaScriptのメモリ制限を増やす
+  "typescript.tsserver.maxTsServerMemory": 4096,
+
+  // 5. 自動保存を無効化（大量のファイルがある場合のクラッシュ防止）
+  "files.autoSave": "onFocusChange",
+
+  // 6. Git操作の最適化
+  "git.ignoreLimitWarning": true,
+  "git.enabled": true,
+  "git.autorefresh": false,
+
+  // 7. エディタ設定（安定性向上）
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {},
+
+  // 8. Astro設定
+  "astro.content-intellisense": false,
+
+  // 9. 推奨拡張機能
+  "extensions.ignoreRecommendations": false,
+
+  // 10. ワークスペース設定
+  "explorer.compactFolders": false,
+  "explorer.confirmDelete": true,
+
+  // Monorepo固有の設定
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "javascript.preferences.importModuleSpecifier": "non-relative"
+}

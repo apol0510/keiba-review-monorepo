@@ -1,0 +1,629 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import StarRating from '../../../components/StarRating.astro';
+import CategoryBadge from '../../../components/CategoryBadge.astro';
+import ReviewCard from '../../../components/ReviewCard.astro';
+import ReviewItem from '../../../components/ReviewItem.astro';
+import SiteCard from '../../../components/SiteCard.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import ReviewForm from '../../../components/ReviewForm';
+import PricingInfo from '../../../components/PricingInfo.astro';
+import OptimizedImage from '../../../components/OptimizedImage.astro';
+import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats, categoryLabels, getApprovedSites } from '@keiba-review/shared/lib';
+import { getScreenshotUrl, getFallbackImage } from '../../../lib/screenshot-helper';
+
+// 静的パス生成（ビルド時に全ページを事前生成）
+export async function getStaticPaths() {
+  console.log('🔨 ビルド時: 全ページを事前生成します...');
+
+  const categories = ['nankan', 'chuo', 'chihou'];
+  const sites = await getApprovedSites();
+
+  console.log(`📄 生成ページ数: ${categories.length}カテゴリ + ${sites.length}サイト = ${categories.length + sites.length}ページ`);
+
+  const paths = [
+    // カテゴリページ
+    ...categories.map(category => ({
+      params: { slug: category }
+    })),
+    // サイト詳細ページ（全サイトを事前生成）
+    ...sites.map(site => ({
+      params: { slug: site.slug }
+    }))
+  ];
+
+  return paths;
+}
+
+const { slug } = Astro.params;
+
+// カテゴリ一覧
+const categories = ['nankan', 'chuo', 'chihou'];
+const isCategory = categories.includes(slug as string);
+
+// Constants
+const MAX_REVIEWS_TO_DISPLAY = 50;
+
+// カテゴリページ用のデータ
+let categoryData: {
+  category: string;
+  categoryLabel: string;
+  sites: any[];
+  sortBy: string;
+  breadcrumbItems: { label: string; href?: string }[];
+  description: string;
+} | null = null;
+
+// サイト詳細ページ用のデータ
+let siteData: {
+  site: any;
+  reviews: any[];
+  totalReviews: number;
+  ratingDistribution: { rating: number; count: number; percentage: number }[];
+  sortBy: string;
+  filterRating: string | null;
+  breadcrumbItems: { label: string; href?: string }[];
+  structuredData: any;
+  breadcrumbStructuredData?: any;
+  metaDescription?: string;
+  relatedSites?: any[];
+} | null = null;
+
+if (isCategory) {
+  // カテゴリページ
+  const category = slug as string;
+  const categoryLabel = categoryLabels[category] || category;
+
+  const url = new URL(Astro.request.url);
+  const sortBy = url.searchParams.get('sort') || 'popular';
+
+  const allSites = await getSitesWithStats();
+  let sites = allSites.filter(s => s.category === category);
+
+  switch (sortBy) {
+    case 'newest':
+      sites.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      break;
+    case 'rating':
+      sites.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
+      break;
+    case 'reviews':
+      sites.sort((a, b) => b.review_count - a.review_count);
+      break;
+    default:
+      sites.sort((a, b) => b.review_count - a.review_count);
+  }
+
+  const categoryDescriptions: Record<string, string> = {
+    nankan: '南関競馬（大井・川崎・船橋・浦和）の予想サイト',
+    chuo: 'JRA中央競馬の予想サイト',
+    chihou: '全国の地方競馬の予想サイト'
+  };
+
+  categoryData = {
+    category,
+    categoryLabel,
+    sites,
+    sortBy,
+    breadcrumbItems: [
+      { label: 'サイト一覧', href: '/keiba-yosou/' },
+      { label: categoryLabel },
+    ],
+    description: categoryDescriptions[category],
+  };
+} else {
+  // サイト詳細ページ
+  const site = await getSiteBySlug(slug as string);
+
+  if (!site) {
+    return Astro.redirect('/404');
+  }
+
+  const url = new URL(Astro.request.url);
+  const sortBy = (url.searchParams.get('sort') as 'newest' | 'rating' | 'helpful') || 'newest';
+  const filterRating = url.searchParams.get('filter_rating');
+
+  let reviews = await getReviewsBySiteId(site.id);
+  const allReviews = reviews; // 評価分布用に全口コミを保持
+
+  // ソート処理
+  switch (sortBy) {
+    case 'rating':
+      reviews.sort((a, b) => b.rating - a.rating);
+      break;
+    case 'helpful':
+      // 仮実装: 評価が高い順
+      reviews.sort((a, b) => b.rating - a.rating);
+      break;
+    default: // newest
+      reviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  // ページサイズ最適化: 最新50件のみ表示（古いレビューは非表示）
+  const MAX_REVIEWS_TO_DISPLAY = 50;
+  const totalReviews = reviews.length;
+  reviews = reviews.slice(0, MAX_REVIEWS_TO_DISPLAY);
+
+  // 統計情報を計算してsiteオブジェクトに追加
+  const reviewCount = allReviews.length;
+  const averageRating = reviewCount > 0
+    ? allReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+    : undefined;
+
+  site.reviewCount = reviewCount;
+  site.averageRating = averageRating;
+
+  // 星評価でフィルタリング
+  if (filterRating) {
+    const rating = parseInt(filterRating);
+    if (rating >= 1 && rating <= 5) {
+      reviews = reviews.filter(r => r.rating === rating);
+    }
+  }
+
+  // 評価分布は全口コミから計算
+  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
+    const count = allReviews.filter((r) => r.rating === rating).length;
+    const percentage = allReviews.length > 0 ? (count / allReviews.length) * 100 : 0;
+    return { rating, count, percentage };
+  });
+
+  const siteUrl = import.meta.env.SITE_URL || 'https://frabjous-taiyaki-460401.netlify.app';
+
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: site.name,
+    description: site.description,
+    image: site.screenshotUrl,
+    url: `${siteUrl}/keiba-yosou/${site.slug}/`,
+    aggregateRating:
+      reviews.length > 0 && site.averageRating
+        ? {
+            '@type': 'AggregateRating',
+            ratingValue: site.averageRating.toFixed(1),
+            reviewCount: site.reviewCount.toString(),
+            bestRating: '5',
+            worstRating: '1',
+          }
+        : undefined,
+    review: reviews.slice(0, 5).map((review) => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: review.username,
+      },
+      datePublished: review.createdAt.split('T')[0],
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: review.rating.toString(),
+      },
+      reviewBody: review.content,
+    })),
+  };
+
+  // BreadcrumbList構造化データ
+  const breadcrumbStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'ホーム',
+        item: `${siteUrl}/`
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'サイト一覧',
+        item: `${siteUrl}/keiba-yosou/`
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: categoryLabels[site.category],
+        item: `${siteUrl}/keiba-yosou/${site.category}/`
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: site.name,
+        item: `${siteUrl}/keiba-yosou/${site.slug}/`
+      }
+    ]
+  };
+
+  // SEO最適化されたメタディスクリプション生成
+  const generateMetaDescription = () => {
+    const categoryText = {
+      'nankan': '南関競馬',
+      'chuo': '中央競馬',
+      'chihou': '地方競馬'
+    }[site.category] || '競馬';
+
+    const ratingText = site.averageRating
+      ? `平均評価${site.averageRating.toFixed(1)}★`
+      : '';
+
+    const reviewCountText = site.reviewCount > 0
+      ? `${site.reviewCount}件の口コミ`
+      : '口コミ募集中';
+
+    // 最新口コミから特徴を抽出
+    const recentReview = reviews.length > 0 ? reviews[0] : null;
+    const featureText = recentReview
+      ? `「${recentReview.title}」など実際の利用者の声を掲載。`
+      : '実際の利用者による評価を確認できます。';
+
+    return `【${categoryText}予想サイト】${site.name}の${reviewCountText}を掲載。${ratingText}${ratingText && '。'}${featureText}無料予想・的中率・料金プランなど詳しい情報をチェック。`;
+  };
+
+  // 関連サイト取得（同じカテゴリで評価が高い上位6件、現在のサイトは除外）
+  const allSites = await getSitesWithStats();
+  const relatedSites = allSites
+    .filter(s => s.category === site.category && s.slug !== site.slug)
+    .sort((a, b) => {
+      // 評価×口コミ数でランキング
+      const scoreA = (a.average_rating || 0) * Math.log(a.review_count + 1);
+      const scoreB = (b.average_rating || 0) * Math.log(b.review_count + 1);
+      return scoreB - scoreA;
+    })
+    .slice(0, 6);
+
+  siteData = {
+    site,
+    reviews,
+    totalReviews,
+    ratingDistribution,
+    sortBy,
+    filterRating,
+    breadcrumbItems: [
+      { label: 'サイト一覧', href: '/keiba-yosou/' },
+      { label: categoryLabels[site.category], href: `/keiba-yosou/${site.category}/` },
+      { label: site.name },
+    ],
+    structuredData,
+    breadcrumbStructuredData,
+    metaDescription: generateMetaDescription(),
+    relatedSites,
+  };
+}
+---
+
+{isCategory && categoryData ? (
+  <BaseLayout
+    title={`${categoryData.categoryLabel}の予想サイト一覧`}
+    description={`${categoryData.description}の口コミ・評判を確認。実際のユーザーの声で信頼できるサイトを見つけよう。`}
+  >
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <Breadcrumb items={categoryData.breadcrumbItems} />
+
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 mb-2">
+            {categoryData.categoryLabel}の予想サイト
+          </h1>
+          <p class="text-gray-600">{categoryData.description}</p>
+        </div>
+        <div class="text-sm text-gray-600 mt-4 md:mt-0">{categoryData.sites.length}件のサイト</div>
+      </div>
+
+      <!-- Sort -->
+      <div class="bg-white rounded-lg shadow-md p-4 mb-8">
+        <form method="get" class="flex items-center gap-4">
+          <label class="text-sm text-gray-600">並び替え:</label>
+          <select name="sort" class="form-input w-auto" onchange="this.form.submit()">
+            <option value="popular" selected={categoryData.sortBy === 'popular'}>人気順</option>
+            <option value="rating" selected={categoryData.sortBy === 'rating'}>評価順</option>
+            <option value="reviews" selected={categoryData.sortBy === 'reviews'}>口コミ数順</option>
+            <option value="newest" selected={categoryData.sortBy === 'newest'}>新着順</option>
+          </select>
+        </form>
+      </div>
+
+      <!-- Category Links -->
+      <div class="flex flex-wrap gap-2 mb-8">
+        <a
+          href="/keiba-yosou/"
+          class="px-4 py-2 rounded-full bg-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-300 transition-colors"
+        >
+          すべて
+        </a>
+        {
+          Object.entries(categoryLabels).map(([key, label]) => (
+            <a
+              href={`/keiba-yosou/${key}/`}
+              class={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                key === categoryData!.category
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {label}
+            </a>
+          ))
+        }
+      </div>
+
+      <!-- Site Grid -->
+      {
+        categoryData.sites.length > 0 ? (
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {categoryData.sites.map((site) => (
+              <SiteCard site={site} />
+            ))}
+          </div>
+        ) : (
+          <div class="text-center py-16">
+            <svg
+              class="w-16 h-16 mx-auto text-gray-300 mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p class="text-gray-600 mb-4">
+              このカテゴリにはまだサイトが登録されていません
+            </p>
+            <a href="/keiba-yosou/" class="btn-secondary">
+              すべてのサイトを見る
+            </a>
+          </div>
+        )
+      }
+    </div>
+  </BaseLayout>
+) : siteData ? (
+  <BaseLayout
+    title={`${siteData.site.name}の口コミ・評判`}
+    description={siteData.metaDescription}
+    ogImage="/og/default.png"
+  >
+    <script type="application/ld+json" set:html={JSON.stringify(siteData.structuredData)} />
+    {siteData.breadcrumbStructuredData && (
+      <script type="application/ld+json" set:html={JSON.stringify(siteData.breadcrumbStructuredData)} />
+    )}
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <Breadcrumb items={siteData.breadcrumbItems} />
+
+      <!-- Site Info Card -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div class="md:flex">
+          <!-- Screenshot -->
+          <div class="md:w-1/3">
+            <div class="aspect-video bg-gray-100 relative overflow-hidden">
+              <OptimizedImage
+                src={getScreenshotUrl(siteData.site.slug, siteData.site.screenshot_url)}
+                alt={`${siteData.site.name}のスクリーンショット`}
+                width={600}
+                height={400}
+                loading="eager"
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="md:w-2/3 p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <CategoryBadge category={siteData.site.category} />
+                <h1 class="text-2xl font-bold text-gray-900 mt-2">{siteData.site.name}</h1>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 mb-4">
+              <StarRating rating={siteData.site.averageRating || 0} size="lg" />
+              <div>
+                <span class="text-2xl font-bold text-gray-900">
+                  {siteData.site.averageRating ? siteData.site.averageRating.toFixed(1) : '0.0'}
+                </span>
+                <span class="text-gray-600">/ 5.0</span>
+                <span class="text-sm text-gray-500 ml-2">({siteData.site.reviewCount}件の口コミ)</span>
+              </div>
+            </div>
+
+            {siteData.site.description && <p class="text-gray-700 mb-4">{siteData.site.description}</p>}
+
+            {
+              siteData.site.features && siteData.site.features.length > 0 && (
+                <div class="flex flex-wrap gap-2 mb-4">
+                  {siteData.site.features.map((feature: string) => (
+                    <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              )
+            }
+
+            <a
+              href={siteData.site.url}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              class="btn-primary inline-flex items-center gap-2"
+            >
+              サイトを見る
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+          <!-- Rating Distribution -->
+          <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">評価分布</h2>
+            <div class="space-y-2">
+              {
+                siteData.ratingDistribution.map(({ rating, count, percentage }) => (
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600 w-8">{rating}★</span>
+                    <div class="flex-1 bg-gray-200 rounded-full h-4 overflow-hidden">
+                      <div
+                        class="bg-amber-400 h-full rounded-full transition-all"
+                        style={`width: ${percentage}%`}
+                      />
+                    </div>
+                    <span class="text-sm text-gray-600 w-12 text-right">{count}件</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Reviews -->
+          <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <h2 class="text-lg font-bold text-gray-900">口コミ一覧</h2>
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-600">
+                  {siteData.reviews.length}件
+                  {siteData.totalReviews > MAX_REVIEWS_TO_DISPLAY && (
+                    <span class="text-gray-500">（最新{MAX_REVIEWS_TO_DISPLAY}件を表示）</span>
+                  )}
+                </span>
+                <form method="get" class="flex items-center gap-2">
+                  <label class="text-sm text-gray-600">並び替え:</label>
+                  <select name="sort" class="form-input text-sm py-1 px-2 rounded border-gray-300" onchange="this.form.submit()">
+                    <option value="newest" selected={siteData.sortBy === 'newest'}>新着順</option>
+                    <option value="rating" selected={siteData.sortBy === 'rating'}>評価順</option>
+                    <option value="helpful" selected={siteData.sortBy === 'helpful'}>参考になった順</option>
+                  </select>
+                  {siteData.filterRating && <input type="hidden" name="filter_rating" value={siteData.filterRating} />}
+                </form>
+              </div>
+            </div>
+
+            <!-- Star Rating Filter -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-sm font-medium text-gray-700 mr-2">評価で絞り込み:</span>
+                <a
+                  href={`?${siteData.sortBy !== 'newest' ? `sort=${siteData.sortBy}` : ''}`}
+                  class={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    !siteData.filterRating
+                      ? 'bg-white border-2 border-blue-600 text-blue-600 shadow-sm'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  すべて
+                </a>
+                {
+                  [5, 4, 3, 2, 1].map((rating) => (
+                    <a
+                      href={`?filter_rating=${rating}${siteData.sortBy !== 'newest' ? `&sort=${siteData.sortBy}` : ''}`}
+                      class={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1 ${
+                        siteData.filterRating === rating.toString()
+                          ? 'bg-white border-2 border-blue-600 text-blue-600 shadow-sm'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <span>{rating}</span>
+                      <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                      </svg>
+                    </a>
+                  ))
+                }
+              </div>
+            </div>
+
+            {
+              siteData.reviews.length > 0 ? (
+                <div class="space-y-4">
+                  {siteData.reviews.map((review) => (
+                    <ReviewItem review={review} />
+                  ))}
+                </div>
+              ) : (
+                <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                  <svg
+                    class="w-12 h-12 mx-auto text-gray-300 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    />
+                  </svg>
+                  <p class="text-gray-600 mb-2">まだ口コミがありません</p>
+                  <p class="text-sm text-gray-500">最初の口コミを投稿してみませんか？</p>
+                </div>
+              )
+            }
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:col-span-1 space-y-6">
+          <!-- Pricing & Service Info -->
+          <PricingInfo
+            pricingType={siteData.site.pricing_type}
+            hasFreeTrial={siteData.site.has_free_trial}
+            registrationRequired={siteData.site.registration_required}
+            lastVerifiedAt={siteData.site.last_verified_at}
+            isClosed={siteData.site.is_closed}
+          />
+
+          <!-- Review Form -->
+          <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">口コミを投稿する</h2>
+            <ReviewForm siteId={siteData.site.id} siteName={siteData.site.name} client:load />
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Sites Section -->
+      {siteData.relatedSites && siteData.relatedSites.length > 0 && (
+        <div class="mt-12">
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6 border border-blue-100">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">
+              同じカテゴリの人気サイト
+            </h2>
+            <p class="text-gray-600">
+              {categoryLabels[siteData.site.category]}の他の予想サイトもチェックしてみましょう
+            </p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {siteData.relatedSites.map((site) => (
+              <SiteCard site={site} />
+            ))}
+          </div>
+          <div class="text-center mt-8">
+            <a
+              href={`/keiba-yosou/${siteData.site.category}/`}
+              class="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 font-bold rounded-lg transition-colors shadow-sm"
+            >
+              {categoryLabels[siteData.site.category]}の全サイトを見る
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  </BaseLayout>
+) : null}

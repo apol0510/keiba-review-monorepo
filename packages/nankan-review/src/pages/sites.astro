@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSitesByCategory, sortByRankingScore } from '@keiba-review/shared/lib';
+
+// 南関競馬サイトのみ取得
+const allSites = await getSitesByCategory('nankan');
+const sites = sortByRankingScore(allSites);
+---
+
+<BaseLayout
+  title="南関競馬予想サイト一覧"
+  description="南関競馬（大井・川崎・船橋・浦和）の予想サイト一覧。実際の利用者による口コミ・評価を掲載。"
+>
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold mb-4">南関競馬 予想サイト一覧</h1>
+    <p class="text-gray-600">
+      大井・川崎・船橋・浦和の南関4場に対応した予想サイトを掲載しています。
+      実際の利用者による口コミを参考に、自分に合ったサイトを見つけましょう。
+    </p>
+  </div>
+
+  {sites.length === 0 ? (
+    <div class="bg-white rounded-lg shadow p-12 text-center">
+      <p class="text-gray-500 text-lg">
+        現在、南関競馬対応の予想サイトはまだ登録されていません。
+      </p>
+      <p class="text-gray-400 mt-2">
+        近日中に追加予定です。お楽しみに！
+      </p>
+    </div>
+  ) : (
+    <div class="grid gap-6">
+      {sites.map((site, index) => (
+        <a
+          href={`/sites/${site.slug}`}
+          class="bg-white rounded-lg shadow hover:shadow-lg transition p-6"
+        >
+          <div class="flex items-start gap-4">
+            <div class="text-2xl font-bold text-blue-900 min-w-[3rem]">
+              #{index + 1}
+            </div>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold mb-2">{site.name}</h2>
+              <p class="text-gray-600 mb-3 line-clamp-2">
+                {site.description}
+              </p>
+              <div class="flex items-center gap-6 text-sm">
+                <span class="flex items-center gap-1">
+                  <span class="text-yellow-600 text-lg">⭐</span>
+                  <span class="font-bold">
+                    {site.average_rating?.toFixed(1) || 'N/A'}
+                  </span>
+                </span>
+                <span class="text-gray-500">
+                  📝 {site.review_count}件の口コミ
+                </span>
+                {site.screenshotUrl && (
+                  <span class="text-green-600">
+                    ✓ スクリーンショットあり
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  )}
+
+  <!-- nankan-analyticsへの導線 -->
+  <section class="mt-12 bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-xl p-8">
+    <h2 class="text-2xl font-bold mb-4">もっと詳しいデータ分析なら</h2>
+    <p class="text-blue-100 mb-6">
+      南関競馬の詳細なデータ分析、コース傾向、馬場状態の影響など、
+      より深い情報をお求めの方には「南関アナリティクス」がおすすめです。
+    </p>
+    <a
+      href="https://nankan-analytics.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex items-center gap-2 bg-white text-blue-900 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition"
+    >
+      南関アナリティクスを見る
+      <span>→</span>
+    </a>
+  </section>
+</BaseLayout>

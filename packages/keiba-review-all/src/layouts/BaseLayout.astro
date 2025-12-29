@@ -1,0 +1,250 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title,
+  description = '競馬予想サイトの口コミ・評判を集約。ユーザーの生の声で信頼できるサイトを見つけよう。',
+  ogImage = '/og/default.png',
+} = Astro.props;
+
+const siteTitle = '競馬予想サイト口コミ';
+const fullTitle = title === 'トップ' ? siteTitle : `${title} | ${siteTitle}`;
+const siteUrl = import.meta.env.SITE_URL || 'https://frabjous-taiyaki-460401.netlify.app';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const GA_ID = import.meta.env.PUBLIC_GA_ID;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="LJ1qNn3SZFuo5zHjLtI58OZSKKXXeVugmiXG2SPGMe8" />
+
+    <!-- OGP -->
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:locale" content="ja_JP" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Canonical -->
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Google Analytics 4 -->
+    {GA_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+        <script is:inline define:vars={{ GA_ID }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', GA_ID, {
+            page_path: window.location.pathname,
+          });
+        </script>
+      </>
+    )}
+
+    <title>{fullTitle}</title>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-slate-200">
+      <div class="max-w-6xl mx-auto px-4 py-3 md:py-4">
+        <div class="flex items-center justify-between">
+          <a href="/" class="flex items-center gap-2 group">
+            <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+              <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+              </svg>
+            </div>
+            <span class="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transition-all">
+              競馬予想サイト口コミ
+            </span>
+          </a>
+          <nav class="hidden md:flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+            <a href="/ranking/" class="px-4 py-2 text-sm font-bold text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-md transition-all flex items-center gap-1">
+              🏆 ランキング
+            </a>
+            <div class="w-px h-5 bg-slate-300"></div>
+            <a href="/keiba-yosou/" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-white rounded-md transition-all">
+              サイト一覧
+            </a>
+            <div class="w-px h-5 bg-slate-300"></div>
+            <a href="/keiba-yosou/nankan/" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-white rounded-md transition-all">
+              南関競馬
+            </a>
+            <div class="w-px h-5 bg-slate-300"></div>
+            <a href="/keiba-yosou/chuo/" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-white rounded-md transition-all">
+              中央競馬
+            </a>
+            <div class="w-px h-5 bg-slate-300"></div>
+            <a href="/keiba-yosou/chihou/" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-white rounded-md transition-all">
+              地方競馬
+            </a>
+            <div class="w-px h-5 bg-slate-300"></div>
+            <a href="/faq/" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-white rounded-md transition-all">
+              よくある質問
+            </a>
+            <div class="w-px h-5 bg-slate-300"></div>
+            <a href="/resources/" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-white rounded-md transition-all">
+              公式リンク
+            </a>
+          </nav>
+          <!-- Mobile menu button -->
+          <button
+            type="button"
+            class="md:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+            id="mobile-menu-button"
+            aria-label="メニュー"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+        <!-- Mobile menu -->
+        <nav class="hidden md:hidden mt-3 pt-3 border-t border-slate-200" id="mobile-menu">
+          <div class="flex flex-col gap-1">
+            <a href="/keiba-yosou/" class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+              サイト一覧
+            </a>
+            <a href="/keiba-yosou/nankan/" class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+              南関競馬
+            </a>
+            <a href="/keiba-yosou/chuo/" class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+              中央競馬
+            </a>
+            <a href="/keiba-yosou/chihou/" class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+              地方競馬
+            </a>
+            <a href="/faq/" class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+              よくある質問
+            </a>
+            <a href="/resources/" class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+              公式リンク
+            </a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 mt-auto">
+      <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-white font-bold mb-4">競馬予想サイト口コミ</h3>
+            <p class="text-sm">
+              ユーザーの生の声を集めた競馬予想サイトの口コミプラットフォーム。
+              信頼できるサイト選びをサポートします。
+            </p>
+          </div>
+          <div>
+            <h3 class="text-white font-bold mb-4">カテゴリ</h3>
+            <ul class="space-y-2 text-sm">
+              <li><a href="/keiba-yosou/nankan/" class="hover:text-white">南関競馬</a></li>
+              <li><a href="/keiba-yosou/chuo/" class="hover:text-white">中央競馬</a></li>
+              <li><a href="/keiba-yosou/chihou/" class="hover:text-white">地方競馬</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-white font-bold mb-4">リンク</h3>
+            <ul class="space-y-2 text-sm">
+              <li><a href="/ranking/" class="hover:text-white text-amber-400 font-bold">🏆 ランキング</a></li>
+              <li><a href="/faq/" class="hover:text-white">よくある質問</a></li>
+              <li><a href="/about/" class="hover:text-white">当サイトについて</a></li>
+              <li><a href="/terms/" class="hover:text-white">利用規約</a></li>
+              <li><a href="/privacy/" class="hover:text-white">プライバシーポリシー</a></li>
+              <li><a href="/contact/" class="hover:text-white">お問い合わせ</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm">
+          <p>&copy; {new Date().getFullYear()} 競馬予想サイト口コミ. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Mobile menu toggle
+      const menuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      menuButton?.addEventListener('click', () => {
+        mobileMenu?.classList.toggle('hidden');
+      });
+    </script>
+
+    <script is:inline>
+      // External link tracking for GA4
+      document.addEventListener('DOMContentLoaded', () => {
+        // Track all external links (target="_blank")
+        document.querySelectorAll('a[target="_blank"]').forEach((link) => {
+          link.addEventListener('click', (e) => {
+            const href = link.href;
+            const text = link.textContent?.trim() || '';
+
+            // Send event to GA4 if available
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'click', {
+                event_category: 'outbound',
+                event_label: href,
+                link_text: text,
+                value: 1
+              });
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

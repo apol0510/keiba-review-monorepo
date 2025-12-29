@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import PaginatedSiteList from '../../components/PaginatedSiteList';
+import SiteSearch from '../../components/SiteSearch';
+import { getSitesWithStats, sortByRankingScore, categoryLabels } from '@keiba-review/shared/lib';
+
+// データ取得（全件取得 - クライアントサイドでフィルタ・ソート・ページング）
+const allSites = await getSitesWithStats();
+
+// ランキングスコアを計算してソート（共通関数を使用）
+const sitesWithScore = sortByRankingScore(allSites);
+
+const breadcrumbItems = [{ label: 'サイト一覧' }];
+---
+
+<BaseLayout
+  title="競馬予想サイト一覧"
+  description="競馬予想サイトの口コミ・評判を一覧で確認。南関競馬、中央競馬、地方競馬など各カテゴリのサイトを比較できます。"
+>
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <Breadcrumb items={breadcrumbItems} />
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">
+          競馬予想サイト一覧
+        </h1>
+        <div class="text-sm text-gray-600">
+          {sitesWithScore.length}件のサイト
+        </div>
+      </div>
+      <div class="mt-4 md:mt-0">
+        <a
+          href="/submit"
+          class="inline-flex items-center gap-2 bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 px-6 py-3 rounded-lg font-semibold transition-colors shadow-sm"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          サイトを登録する
+        </a>
+      </div>
+    </div>
+
+    <!-- 検索機能 -->
+    <SiteSearch sites={sitesWithScore} categoryLabels={categoryLabels} client:load />
+
+    <!-- Category Links -->
+    <div class="flex flex-wrap gap-2 mb-8">
+      <a
+        href="/keiba-yosou/"
+        class="px-4 py-2 rounded-full border-2 border-blue-600 bg-white text-blue-600 text-sm font-bold shadow-sm"
+      >
+        すべて
+      </a>
+      {
+        Object.entries(categoryLabels).map(([key, label]) => (
+          <a
+            href={`/keiba-yosou/${key}/`}
+            class="px-4 py-2 rounded-full border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium hover:border-blue-400 hover:text-blue-600 transition-colors"
+          >
+            {label}
+          </a>
+        ))
+      }
+    </div>
+
+    <!-- Site Grid with Client-side Pagination -->
+    {
+      sitesWithScore.length > 0 ? (
+        <PaginatedSiteList sites={sitesWithScore} itemsPerPage={20} client:load />
+      ) : (
+        <EmptyState
+          icon="document"
+          title="まだサイトが登録されていません"
+          description="現在、サイトが登録されていません。しばらくお待ちください。"
+        />
+      )
+    }
+  </div>
+</BaseLayout>
