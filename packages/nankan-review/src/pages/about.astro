@@ -6,74 +6,168 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   title="このサイトについて"
   description="南関競馬予想サイト口コミプラットフォームについて。運営方針、口コミポリシーをご紹介。"
 >
-  <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold mb-8">このサイトについて</h1>
-
-    <section class="bg-white rounded-lg shadow p-8 mb-8">
-      <h2 class="text-2xl font-bold mb-4 text-blue-900">南関競馬専門の口コミプラットフォーム</h2>
-      <p class="text-gray-700 mb-4">
-        「南関競馬予想サイト口コミ」は、南関競馬（大井・川崎・船橋・浦和）に特化した
-        予想サイトの口コミ・評価プラットフォームです。
+  <div class="max-w-5xl mx-auto">
+    <!-- ヘッダーセクション -->
+    <div class="text-center mb-12 sm:mb-16">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+        このサイト<span class="text-gradient">について</span>
+      </h1>
+      <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+        南関競馬ファンのための、信頼できる口コミプラットフォーム
       </p>
-      <p class="text-gray-700">
-        ナイター競馬ファンの皆様が、信頼できる予想サイトを見つけるお手伝いをします。
-      </p>
-    </section>
+    </div>
 
-    <section class="bg-white rounded-lg shadow p-8 mb-8">
-      <h2 class="text-2xl font-bold mb-4 text-blue-900">南関競馬の特徴</h2>
-      <div class="space-y-4">
-        <div>
-          <h3 class="font-bold mb-2">🌙 ナイター開催</h3>
-          <p class="text-gray-700">
-            平日夜間のナイター開催が中心。仕事帰りに楽しめる競馬として人気です。
-          </p>
-        </div>
-        <div>
-          <h3 class="font-bold mb-2">🏙️ 首都圏4場</h3>
-          <p class="text-gray-700">
-            大井（TCK）・川崎・船橋・浦和の首都圏4競馬場で構成。
-            アクセスの良さも魅力の一つです。
-          </p>
-        </div>
-        <div>
-          <h3 class="font-bold mb-2">💰 高配当の魅力</h3>
-          <p class="text-gray-700">
-            少頭数でもオッズが伸びやすく、的中時の配当が魅力的。
-            データ分析と経験を活かせば高配当を狙えます。
-          </p>
+    <!-- メインコンテンツカード -->
+    <section class="card mb-8 sm:mb-12">
+      <div class="card-body p-8 sm:p-10 lg:p-12">
+        <div class="flex items-start gap-4 mb-6">
+          <div class="text-4xl sm:text-5xl">🏇</div>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">
+              南関競馬専門の口コミプラットフォーム
+            </h2>
+            <p class="text-base sm:text-lg text-gray-700 mb-4 leading-relaxed">
+              「南関競馬予想サイト口コミ」は、南関競馬（大井・川崎・船橋・浦和）に特化した
+              予想サイトの口コミ・評価プラットフォームです。
+            </p>
+            <p class="text-base sm:text-lg text-gray-700 leading-relaxed">
+              ナイター競馬ファンの皆様が、信頼できる予想サイトを見つけるお手伝いをします。
+            </p>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="bg-white rounded-lg shadow p-8 mb-8">
-      <h2 class="text-2xl font-bold mb-4 text-blue-900">口コミポリシー</h2>
-      <div class="space-y-4 text-gray-700">
-        <p>
-          当サイトでは、実際の利用者による率直な口コミを重視しています。
-        </p>
-        <ul class="list-disc list-inside space-y-2 ml-4">
-          <li>すべての口コミは承認制です</li>
-          <li>誹謗中傷や不適切な内容は掲載されません</li>
-          <li>ステマ・やらせと思われる口コミは削除します</li>
-          <li>利用者の実体験に基づく口コミを歓迎します</li>
-        </ul>
+    <!-- 南関競馬の特徴 - カードグリッド -->
+    <section class="mb-8 sm:mb-12">
+      <h2 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center">南関競馬の特徴</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        <div class="card group">
+          <div class="card-body text-center">
+            <div class="text-5xl sm:text-6xl mb-4 transform group-hover:scale-110 transition-transform">🌙</div>
+            <h3 class="text-lg sm:text-xl font-bold mb-3 text-gray-900">ナイター開催</h3>
+            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
+              平日夜間のナイター開催が中心。仕事帰りに楽しめる競馬として人気です。
+            </p>
+          </div>
+        </div>
+
+        <div class="card group">
+          <div class="card-body text-center">
+            <div class="text-5xl sm:text-6xl mb-4 transform group-hover:scale-110 transition-transform">🏙️</div>
+            <h3 class="text-lg sm:text-xl font-bold mb-3 text-gray-900">首都圏4場</h3>
+            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
+              大井（TCK）・川崎・船橋・浦和の首都圏4競馬場で構成。アクセスの良さも魅力の一つです。
+            </p>
+          </div>
+        </div>
+
+        <div class="card group">
+          <div class="card-body text-center">
+            <div class="text-5xl sm:text-6xl mb-4 transform group-hover:scale-110 transition-transform">💰</div>
+            <h3 class="text-lg sm:text-xl font-bold mb-3 text-gray-900">高配当の魅力</h3>
+            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
+              少頭数でもオッズが伸びやすく、的中時の配当が魅力的。データ分析と経験を活かせば高配当を狙えます。
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="bg-white rounded-lg shadow p-8">
-      <h2 class="text-2xl font-bold mb-4 text-blue-900">関連サイト</h2>
-      <div class="space-y-4">
-        <div class="border-l-4 border-blue-600 pl-4">
-          <h3 class="font-bold mb-2">
-            <a href="https://nankan-analytics.com" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800">
-              南関アナリティクス →
-            </a>
-          </h3>
-          <p class="text-gray-700 text-sm">
-            南関競馬の詳細なデータ分析サイト。コース傾向、馬場状態の影響、
-            騎手・調教師データなど、勝つための情報が満載です。
-          </p>
+    <!-- 口コミポリシー -->
+    <section class="card mb-8 sm:mb-12">
+      <div class="card-body p-8 sm:p-10 lg:p-12">
+        <div class="flex items-start gap-4 mb-6">
+          <div class="text-4xl sm:text-5xl">📋</div>
+          <div class="flex-1">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">口コミポリシー</h2>
+            <p class="text-base sm:text-lg text-gray-700 mb-6 leading-relaxed">
+              当サイトでは、実際の利用者による率直な口コミを重視しています。
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
+                <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <div>
+                  <div class="font-medium text-gray-900 mb-1">承認制</div>
+                  <div class="text-sm text-gray-600">すべての口コミは承認制です</div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
+                <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <div>
+                  <div class="font-medium text-gray-900 mb-1">健全性</div>
+                  <div class="text-sm text-gray-600">誹謗中傷や不適切な内容は掲載されません</div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
+                <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <div>
+                  <div class="font-medium text-gray-900 mb-1">信頼性</div>
+                  <div class="text-sm text-gray-600">ステマ・やらせと思われる口コミは削除します</div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
+                <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <div>
+                  <div class="font-medium text-gray-900 mb-1">実体験</div>
+                  <div class="text-sm text-gray-600">利用者の実体験に基づく口コミを歓迎します</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 関連サイト - モダンCTA -->
+    <section class="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 rounded-2xl sm:rounded-3xl p-8 sm:p-10 lg:p-12 text-white relative overflow-hidden">
+      <!-- 背景装飾 -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 right-0 w-48 h-48 bg-blue-400/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-cyan-400/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <div class="relative">
+        <div class="flex items-start gap-4 mb-6">
+          <div class="text-4xl sm:text-5xl">🔗</div>
+          <div class="flex-1">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-4">関連サイト</h2>
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 sm:p-8 border border-white/20">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex-1">
+                  <h3 class="text-xl sm:text-2xl font-bold mb-2">
+                    南関アナリティクス
+                  </h3>
+                  <p class="text-sm sm:text-base text-blue-100 leading-relaxed">
+                    南関競馬の詳細なデータ分析サイト。コース傾向、馬場状態の影響、
+                    騎手・調教師データなど、勝つための情報が満載です。
+                  </p>
+                </div>
+                <a
+                  href="https://nankan-analytics.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-primary bg-white text-blue-900 hover:bg-blue-50 whitespace-nowrap"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                  サイトを見る
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

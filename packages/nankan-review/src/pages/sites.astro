@@ -11,55 +11,118 @@ const sites = sortByRankingScore(allSites);
   title="南関競馬予想サイト一覧"
   description="南関競馬（大井・川崎・船橋・浦和）の予想サイト一覧。実際の利用者による口コミ・評価を掲載。"
 >
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold mb-4">南関競馬 予想サイト一覧</h1>
-    <p class="text-gray-600">
-      大井・川崎・船橋・浦和の南関4場に対応した予想サイトを掲載しています。
-      実際の利用者による口コミを参考に、自分に合ったサイトを見つけましょう。
-    </p>
-  </div>
+  <!-- ヘッダーセクション - モダンデザイン -->
+  <section class="mb-12 sm:mb-16">
+    <div class="text-center max-w-3xl mx-auto">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+        南関競馬 <span class="text-gradient">予想サイト一覧</span>
+      </h1>
+      <p class="text-base sm:text-lg text-gray-600 leading-relaxed">
+        大井・川崎・船橋・浦和の南関4場に対応した予想サイトを掲載。<br class="hidden sm:block">
+        実際の利用者による口コミを参考に、自分に合ったサイトを見つけましょう。
+      </p>
+
+      <!-- 統計バッジ -->
+      <div class="flex flex-wrap justify-center gap-4 mt-6 sm:mt-8">
+        <div class="px-4 sm:px-6 py-2 sm:py-3 bg-blue-50 rounded-full">
+          <span class="text-xl sm:text-2xl font-bold text-blue-900">{sites.length}</span>
+          <span class="text-xs sm:text-sm text-gray-600 ml-2">登録サイト</span>
+        </div>
+        <div class="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-full">
+          <span class="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-primary">4</span>
+          <span class="text-xs sm:text-sm text-gray-600 ml-2">対応競馬場</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
   {sites.length === 0 ? (
-    <div class="bg-white rounded-lg shadow p-12 text-center">
-      <p class="text-gray-500 text-lg">
-        現在、南関競馬対応の予想サイトはまだ登録されていません。
-      </p>
-      <p class="text-gray-400 mt-2">
-        近日中に追加予定です。お楽しみに！
-      </p>
+    <!-- 空状態 - モダンデザイン -->
+    <div class="card p-12 sm:p-16 text-center">
+      <div class="max-w-md mx-auto">
+        <div class="text-6xl sm:text-7xl mb-6">🏇</div>
+        <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900">
+          まだサイトが登録されていません
+        </h2>
+        <p class="text-sm sm:text-base text-gray-600 mb-8">
+          南関競馬対応の予想サイトを順次追加していきます。<br>
+          近日公開予定です。お楽しみに！
+        </p>
+        <a href="/" class="btn btn-primary inline-flex">
+          トップページに戻る
+        </a>
+      </div>
     </div>
   ) : (
-    <div class="grid gap-6">
+    <!-- サイトグリッド - レスポンシブ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
       {sites.map((site, index) => (
         <a
           href={`/sites/${site.slug}`}
-          class="bg-white rounded-lg shadow hover:shadow-lg transition p-6"
+          class="card group relative overflow-hidden"
         >
-          <div class="flex items-start gap-4">
-            <div class="text-2xl font-bold text-blue-900 min-w-[3rem]">
-              #{index + 1}
-            </div>
-            <div class="flex-1">
-              <h2 class="text-xl font-bold mb-2">{site.name}</h2>
-              <p class="text-gray-600 mb-3 line-clamp-2">
-                {site.description}
-              </p>
-              <div class="flex items-center gap-6 text-sm">
-                <span class="flex items-center gap-1">
-                  <span class="text-yellow-600 text-lg">⭐</span>
-                  <span class="font-bold">
-                    {site.average_rating?.toFixed(1) || 'N/A'}
-                  </span>
-                </span>
-                <span class="text-gray-500">
-                  📝 {site.review_count}件の口コミ
-                </span>
-                {site.screenshotUrl && (
-                  <span class="text-green-600">
-                    ✓ スクリーンショットあり
-                  </span>
-                )}
+          <div class="card-body">
+            <!-- ランクバッジ - トップ3は特別デザイン -->
+            <div class="absolute top-4 right-4">
+              <div class={`
+                w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-xl font-bold
+                ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white shadow-lg' :
+                  index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-white shadow-lg' :
+                  index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-lg' :
+                  'bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors'}
+              `}>
+                {index + 1}
               </div>
+            </div>
+
+            <!-- サイト名 -->
+            <h2 class="text-lg sm:text-xl font-bold mb-3 pr-14 text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+              {site.name}
+            </h2>
+
+            <!-- 説明文 -->
+            <p class="text-sm sm:text-base text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+              {site.description}
+            </p>
+
+            <!-- メタ情報 -->
+            <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm mb-4">
+              <span class="flex items-center gap-1.5 text-yellow-600 font-medium">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>
+                <span class="font-bold">{site.average_rating?.toFixed(1) || 'N/A'}</span>
+              </span>
+
+              <span class="text-gray-500 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                </svg>
+                {site.review_count}件
+              </span>
+
+              {site.is_premium && (
+                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                  おすすめ
+                </span>
+              )}
+            </div>
+
+            <!-- スクリーンショット表示 -->
+            {site.screenshotUrl && (
+              <div class="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>スクリーンショット確認済み</span>
+              </div>
+            )}
+
+            <!-- ホバー時の矢印 -->
+            <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+              </svg>
             </div>
           </div>
         </a>
@@ -67,21 +130,80 @@ const sites = sortByRankingScore(allSites);
     </div>
   )}
 
-  <!-- nankan-analyticsへの導線 -->
-  <section class="mt-12 bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-xl p-8">
-    <h2 class="text-2xl font-bold mb-4">もっと詳しいデータ分析なら</h2>
-    <p class="text-blue-100 mb-6">
-      南関競馬の詳細なデータ分析、コース傾向、馬場状態の影響など、
-      より深い情報をお求めの方には「南関アナリティクス」がおすすめです。
-    </p>
-    <a
-      href="https://nankan-analytics.com"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="inline-flex items-center gap-2 bg-white text-blue-900 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition"
-    >
-      南関アナリティクスを見る
-      <span>→</span>
-    </a>
+  <!-- nankan-analyticsへの導線 - モダンCTA -->
+  <section class="mt-16 sm:mt-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+    <div class="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 rounded-2xl sm:rounded-3xl p-8 sm:p-12 lg:p-16 text-white relative overflow-hidden">
+      <!-- 背景装飾 -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-cyan-400/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <!-- コンテンツ -->
+      <div class="relative text-center max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-sm font-medium mb-6">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+          </svg>
+          データ分析プラットフォーム
+        </div>
+
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">
+          もっと詳しいデータ分析なら
+        </h2>
+
+        <p class="text-base sm:text-lg text-blue-100 mb-8 sm:mb-10 leading-relaxed">
+          南関競馬の詳細なデータ分析、コース傾向、馬場状態の影響など、<br class="hidden sm:block">
+          より深い情報をお求めの方には<strong class="text-white">「南関アナリティクス」</strong>がおすすめです。
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <a
+            href="https://nankan-analytics.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary bg-white text-blue-900 hover:bg-blue-50 w-full sm:w-auto"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            南関アナリティクスを見る
+          </a>
+
+          <a
+            href="/about"
+            class="btn btn-secondary border-white/30 text-white hover:bg-white/10 w-full sm:w-auto"
+          >
+            このサイトについて
+          </a>
+        </div>
+
+        <!-- 特徴リスト -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-10 sm:mt-12 pt-8 sm:pt-10 border-t border-white/20">
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center mb-2">
+              📊
+            </div>
+            <div class="text-sm font-medium">詳細データ分析</div>
+            <div class="text-xs text-blue-200">過去レース統計</div>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center mb-2">
+              🏁
+            </div>
+            <div class="text-sm font-medium">コース傾向</div>
+            <div class="text-xs text-blue-200">場別の特性分析</div>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center mb-2">
+              🌙
+            </div>
+            <div class="text-sm font-medium">馬場状態</div>
+            <div class="text-xs text-blue-200">ナイター特化情報</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </BaseLayout>

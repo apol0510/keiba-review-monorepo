@@ -16,7 +16,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 // 環境変数からGA IDとサイトURLを取得
 const GA_ID = import.meta.env.PUBLIC_GA_ID || '';
-const SITE_URL = import.meta.env.SITE_URL || 'https://nankan-review.jp';
+const SITE_URL = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
+
+// ナビゲーションリンク
+const navLinks = [
+  { href: '/', label: 'トップ' },
+  { href: '/sites', label: 'サイト一覧' },
+  { href: '/about', label: 'このサイトについて' },
+];
 ---
 
 <!DOCTYPE html>
@@ -60,59 +67,197 @@ const SITE_URL = import.meta.env.SITE_URL || 'https://nankan-review.jp';
     </>
   )}
 </head>
-<body class="min-h-screen bg-gray-50">
-  <header class="bg-white shadow-sm sticky top-0 z-50">
+<body class="min-h-screen bg-gray-50 antialiased">
+  <!-- ヘッダー - モバイルファースト -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm no-print">
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        <div class="flex items-center">
-          <a href="/" class="text-xl font-bold text-blue-900">
-            南関競馬<span class="text-blue-600">予想サイト口コミ</span>
-          </a>
+      <div class="flex justify-between items-center h-16 sm:h-20">
+        <!-- ロゴ -->
+        <a href="/" class="flex items-center gap-2 group">
+          <span class="text-lg sm:text-xl font-bold">
+            <span class="text-gray-900">南関競馬</span>
+            <span class="text-gradient">予想サイト口コミ</span>
+          </span>
+        </a>
+
+        <!-- デスクトップナビゲーション -->
+        <div class="hidden md:flex items-center gap-8">
+          {navLinks.map(link => (
+            <a
+              href={link.href}
+              class="text-gray-700 hover:text-blue-600 font-medium transition-colors relative group"
+            >
+              {link.label}
+              <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary group-hover:w-full transition-all duration-300"></span>
+            </a>
+          ))}
         </div>
-        <div class="flex space-x-6">
-          <a href="/" class="text-gray-700 hover:text-blue-600">トップ</a>
-          <a href="/sites" class="text-gray-700 hover:text-blue-600">サイト一覧</a>
-          <a href="/about" class="text-gray-700 hover:text-blue-600">このサイトについて</a>
-        </div>
+
+        <!-- モバイルメニューボタン -->
+        <button
+          id="mobile-menu-button"
+          class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label="メニューを開く"
+          aria-expanded="false"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
       </div>
     </nav>
+
+    <!-- モバイルメニュー -->
+    <div
+      id="mobile-menu"
+      class="fixed inset-0 z-50 md:hidden transform translate-x-full transition-transform duration-300 ease-in-out"
+      aria-hidden="true"
+    >
+      <!-- オーバーレイ -->
+      <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" id="mobile-menu-overlay"></div>
+
+      <!-- メニューパネル -->
+      <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-2xl">
+        <!-- ヘッダー -->
+        <div class="flex justify-between items-center p-4 border-b">
+          <span class="font-bold text-gray-900">メニュー</span>
+          <button
+            id="mobile-menu-close"
+            class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="メニューを閉じる"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- ナビゲーションリンク -->
+        <nav class="p-4">
+          <ul class="space-y-2">
+            {navLinks.map(link => (
+              <li>
+                <a
+                  href={link.href}
+                  class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium transition-colors"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- メインコンテンツ -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
     <slot />
   </main>
 
-  <footer class="bg-gray-900 text-white mt-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div>
-          <h3 class="text-lg font-bold mb-4">南関競馬予想サイト口コミ</h3>
-          <p class="text-gray-400 text-sm">
-            南関競馬（大井・川崎・船橋・浦和）専門の予想サイト口コミプラットフォーム
+  <!-- フッター -->
+  <footer class="bg-gray-900 text-white mt-16 sm:mt-24 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <!-- フッターコンテンツ -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
+        <!-- サイト情報 -->
+        <div class="space-y-4">
+          <h3 class="text-lg sm:text-xl font-bold">南関競馬予想サイト口コミ</h3>
+          <p class="text-gray-400 text-sm sm:text-base leading-relaxed">
+            南関競馬（大井・川崎・船橋・浦和）専門の予想サイト口コミプラットフォーム。
+            ナイター競馬ファンのための信頼できる情報源。
           </p>
         </div>
-        <div>
-          <h3 class="text-lg font-bold mb-4">対応競馬場</h3>
-          <ul class="text-gray-400 text-sm space-y-2">
-            <li>大井競馬場（TCK）</li>
-            <li>川崎競馬場</li>
-            <li>船橋競馬場</li>
-            <li>浦和競馬場</li>
+
+        <!-- 対応競馬場 -->
+        <div class="space-y-4">
+          <h3 class="text-lg sm:text-xl font-bold">対応競馬場</h3>
+          <ul class="text-gray-400 text-sm sm:text-base space-y-2">
+            <li class="flex items-center gap-2">
+              <span class="text-blue-400">▸</span> 大井競馬場（TCK）
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-blue-400">▸</span> 川崎競馬場
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-blue-400">▸</span> 船橋競馬場
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-blue-400">▸</span> 浦和競馬場
+            </li>
           </ul>
         </div>
-        <div>
-          <h3 class="text-lg font-bold mb-4">リンク</h3>
-          <ul class="text-gray-400 text-sm space-y-2">
-            <li><a href="/about" class="hover:text-white">このサイトについて</a></li>
-            <li><a href="/privacy" class="hover:text-white">プライバシーポリシー</a></li>
-            <li><a href="/terms" class="hover:text-white">利用規約</a></li>
+
+        <!-- リンク -->
+        <div class="space-y-4">
+          <h3 class="text-lg sm:text-xl font-bold">リンク</h3>
+          <ul class="text-gray-400 text-sm sm:text-base space-y-2">
+            <li>
+              <a href="/about" class="hover:text-white transition-colors inline-flex items-center gap-2">
+                <span class="text-blue-400">▸</span> このサイトについて
+              </a>
+            </li>
+            <li>
+              <a href="/privacy" class="hover:text-white transition-colors inline-flex items-center gap-2">
+                <span class="text-blue-400">▸</span> プライバシーポリシー
+              </a>
+            </li>
+            <li>
+              <a href="/terms" class="hover:text-white transition-colors inline-flex items-center gap-2">
+                <span class="text-blue-400">▸</span> 利用規約
+              </a>
+            </li>
           </ul>
         </div>
       </div>
-      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+
+      <!-- コピーライト -->
+      <div class="border-t border-gray-800 mt-8 sm:mt-12 pt-8 text-center text-gray-400 text-sm">
         <p>&copy; 2025 南関競馬予想サイト口コミ. All rights reserved.</p>
       </div>
     </div>
   </footer>
+
+  <!-- モバイルメニュースクリプト -->
+  <script>
+    // モバイルメニューの制御
+    const menuButton = document.getElementById('mobile-menu-button');
+    const menu = document.getElementById('mobile-menu');
+    const menuClose = document.getElementById('mobile-menu-close');
+    const menuOverlay = document.getElementById('mobile-menu-overlay');
+
+    function openMenu() {
+      if (menu && menuButton) {
+        menu.classList.remove('translate-x-full');
+        menu.setAttribute('aria-hidden', 'false');
+        menuButton.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeMenu() {
+      if (menu && menuButton) {
+        menu.classList.add('translate-x-full');
+        menu.setAttribute('aria-hidden', 'true');
+        menuButton.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      }
+    }
+
+    menuButton?.addEventListener('click', openMenu);
+    menuClose?.addEventListener('click', closeMenu);
+    menuOverlay?.addEventListener('click', closeMenu);
+
+    // Escキーでメニューを閉じる
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu && !menu.classList.contains('translate-x-full')) {
+        closeMenu();
+      }
+    });
+
+    // ページ遷移時にメニューを閉じる
+    document.addEventListener('astro:page-load', closeMenu);
+  </script>
 </body>
 </html>
