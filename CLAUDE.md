@@ -153,12 +153,28 @@ pnpm lint
   - .github/workflows/README.md作成
   - VSCode-CRASH-FIX.md作成
 
-**Phase 3（予定）:**
-- ⏳ 2サイト体制での運用開始
+**Phase 3（完了✅）:**
+- ✅ Netlifyデプロイ環境整備（2025-12-30完了）
+  - keiba-review-all サイトの環境変数設定（AIRTABLE_API_KEY、AIRTABLE_BASE_ID、SITE_URL）
+  - netlify.toml ビルドコマンド修正（pnpm filter使用）
+  - netlify.toml publish パス修正（packages/keiba-review-all/dist）
+  - keiba-review-all サイトのデプロイ成功
+- ✅ カスタムドメイン移行
+  - 古いkeiba-reviewサイトから keiba-review.jp ドメインを削除
+  - keiba-review-all サイトに keiba-review.jp ドメインを追加
+  - Monorepoからのデプロイが keiba-review.jp で公開開始
+- ✅ nankan-review サイトのデプロイ成功
+  - Netlifyデプロイ成功（nankan-review.netlify.app）
+  - カスタムドメイン設定は検討中（nankan-review.jp vs nankan.keiba-review.jp）
+- ✅ 2サイト体制での運用開始
+
+**Phase 4（予定）:**
 - ⏳ SEO最適化とトラフィック分析
 - ⏳ GA4データ活用
+- ⏳ nankan-review カスタムドメイン設定
+- ⏳ GitHub Actions自動デプロイの確認と最適化
 
-**Phase 4（将来）:**
+**Phase 5（将来）:**
 - ⏳ chuo-keiba-review（中央競馬特化）
 - ⏳ chihou-keiba-review（地方競馬特化）
 - ⏳ keiba-ai-review（AI予想特化）
@@ -384,6 +400,6 @@ pnpm --version  # 9.15.0以上であることを確認
 
 ---
 
-**最終更新:** 2025-12-29
-**バージョン:** Monorepo v1.0.0
+**最終更新:** 2025-12-30
+**バージョン:** Monorepo v1.1.0（Phase 3完了 - 2サイト体制運用開始）
 **メンテナ:** @apol0510
