@@ -1,351 +1,81 @@
 @import "tailwindcss";
 
-/* ========================================
-   南関競馬テーマカラー - モダンデザイン
-   ======================================== */
-:root {
-  /* Primary Colors - 夜間レースイメージ */
-  --nankan-primary: #1e40af;
-  --nankan-primary-light: #3b82f6;
-  --nankan-primary-dark: #1e3a8a;
-
-  /* Secondary Colors */
-  --nankan-secondary: #0284c7;
-  --nankan-secondary-light: #38bdf8;
-
-  /* Accent Colors */
-  --nankan-accent: #f59e0b;
-  --nankan-accent-light: #fbbf24;
-
-  /* Gradient */
-  --gradient-primary: linear-gradient(135deg, #1e40af 0%, #0284c7 100%);
-  --gradient-night: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-  --gradient-hero: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #0284c7 100%);
-
-  /* Spacing */
-  --section-spacing: clamp(3rem, 8vw, 6rem);
-  --card-spacing: clamp(1rem, 3vw, 1.5rem);
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-  --shadow-glow: 0 0 20px rgba(30, 64, 175, 0.3);
-
-  /* Border Radius */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+@theme {
+  --color-primary: #1e40af;
+  --color-primary-dark: #1e3a8a;
+  --color-secondary: #0284c7;
+  --color-accent: #f59e0b;
+  --color-nankan: #1e40af;
+  --color-nankan-light: #3b82f6;
+  --color-nankan-dark: #1e3a8a;
 }
 
-/* ========================================
-   ベーススタイル - モバイルファースト
-   ======================================== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Base styles */
 html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans',
-    'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-  line-height: 1.7;
-  color: #1f2937;
-  background-color: #f9fafb;
-  font-size: 16px;
+  @apply bg-gray-50 text-gray-900 antialiased;
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* タブレット以上 */
-@media (min-width: 768px) {
-  body {
-    font-size: 17px;
-  }
+/* Star rating colors */
+.star-filled {
+  @apply text-amber-400;
 }
 
-/* デスクトップ */
-@media (min-width: 1024px) {
-  body {
-    font-size: 18px;
-  }
+.star-empty {
+  @apply text-gray-300;
 }
 
-/* ========================================
-   タイポグラフィ - レスポンシブ
-   ======================================== */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: #111827;
+/* Category badge - nankan only */
+.badge-nankan {
+  @apply bg-blue-100 text-blue-800;
 }
 
-h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  margin-bottom: 1rem;
+/* Card hover effect */
+.card-hover {
+  @apply transition-shadow duration-200 hover:shadow-lg;
 }
 
-h2 {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  margin-bottom: 0.875rem;
-}
-
-h3 {
-  font-size: clamp(1.25rem, 3vw, 1.875rem);
-  margin-bottom: 0.75rem;
-}
-
-p {
-  margin-bottom: 1rem;
-  max-width: 70ch;
-}
-
-/* ========================================
-   リンク - モダンホバーエフェクト
-   ======================================== */
-a {
-  color: var(--nankan-primary);
-  text-decoration: none;
-  transition: color var(--transition-base);
-  position: relative;
-}
-
-a:hover {
-  color: var(--nankan-primary-light);
-}
-
-a:focus-visible {
-  outline: 2px solid var(--nankan-primary);
-  outline-offset: 4px;
-  border-radius: 2px;
-}
-
-/* ========================================
-   コンポーネント - カスタムクラス
-   ======================================== */
-@layer components {
-
-/* ========================================
-   ボタン - モダンデザイン
-   ======================================== */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.75rem;
-  font-weight: 600;
-  font-size: 1rem;
-  line-height: 1;
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-base);
-  cursor: pointer;
-  border: none;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
+/* Button styles */
 .btn-primary {
-  background: var(--gradient-primary);
-  color: white;
-  box-shadow: var(--shadow-md);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
+  @apply bg-white border-2 border-blue-600 text-blue-600 px-4 py-2 rounded-lg font-medium transition-colors hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm;
 }
 
 .btn-secondary {
-  background: white;
-  color: var(--nankan-primary);
-  border: 2px solid var(--nankan-primary);
-  box-shadow: var(--shadow-sm);
+  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-300;
 }
 
-.btn-secondary:hover {
-  background: var(--nankan-primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+.btn-danger {
+  @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors hover:bg-red-700;
 }
 
-/* モバイル: フルワイドボタン */
-@media (max-width: 640px) {
-  .btn-mobile-full {
-    width: 100%;
-  }
+/* Form styles */
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
 }
 
-/* ========================================
-   カード - モダンカードデザイン
-   ======================================== */
-.card {
-  background: white;
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
-  overflow: hidden;
+.form-textarea {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none;
 }
 
-.card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-4px);
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
 }
 
-.card-body {
-  padding: var(--card-spacing);
+.form-error {
+  @apply text-sm text-red-600 mt-1;
 }
 
-/* ========================================
-   グラデーション背景
-   ======================================== */
-.gradient-bg {
-  background: var(--gradient-primary);
+/* Link styles */
+a:not(.no-underline) {
+  @apply text-blue-600 hover:text-blue-800 transition-colors;
 }
 
-.gradient-night {
-  background: var(--gradient-night);
-}
-
-.gradient-hero {
-  background: var(--gradient-hero);
-}
-
-/* ========================================
-   ユーティリティ - モバイルファースト
-   ======================================== */
-.container-responsive {
-  width: 100%;
-  max-width: 1280px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-@media (min-width: 640px) {
-  .container-responsive {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container-responsive {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-}
-
-.section-spacing {
-  padding-top: var(--section-spacing);
-  padding-bottom: var(--section-spacing);
-}
-
-/* テキストグラデーション */
-.text-gradient {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* スケルトンローディング */
-.skeleton {
-  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s ease-in-out infinite;
-}
-
-@keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* スムーズスクロールインジケーター */
-.scroll-indicator {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--gradient-primary);
-  transform-origin: left;
-  z-index: 9999;
-}
-
-/* ========================================
-   アクセシビリティ
-   ======================================== */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-/* フォーカス表示の改善 */
-:focus-visible {
-  outline: 2px solid var(--nankan-primary);
-  outline-offset: 2px;
-}
-
-} /* @layer components の終了 */
-
-/* リデュースモーション対応 */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ========================================
-   プリントスタイル
-   ======================================== */
-@media print {
-  body {
-    background: white;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  a[href^="http"]::after {
-    content: " (" attr(href) ")";
-    font-size: 0.875em;
-    color: #666;
-  }
+a.no-underline {
+  @apply text-inherit;
 }

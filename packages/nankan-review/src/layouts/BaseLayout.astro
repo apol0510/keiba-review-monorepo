@@ -4,260 +4,227 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  ogImage?: string;
 }
 
 const {
   title,
-  description = '南関競馬（大井・川崎・船橋・浦和）の予想サイト口コミ・評価プラットフォーム。信頼できる口コミで優良サイトを見つけよう。'
+  description = '南関競馬（大井・川崎・船橋・浦和）の予想サイト口コミ・評判を集約。ナイター競馬ファンに最適なサイト選びをサポート。',
+  ogImage = '/og/default.png',
 } = Astro.props;
 
-const siteTitle = `${title} | 南関競馬予想サイト口コミ`;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-
-// 環境変数からGA IDとサイトURLを取得
-const GA_ID = import.meta.env.PUBLIC_GA_ID || '';
-const SITE_URL = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
-
-// ナビゲーションリンク
-const navLinks = [
-  { href: '/', label: 'トップ' },
-  { href: '/sites', label: 'サイト一覧' },
-  { href: '/about', label: 'このサイトについて' },
-];
+const siteTitle = '南関競馬予想サイト口コミ';
+const fullTitle = title === 'トップ' ? siteTitle : `${title} | ${siteTitle}`;
+const siteUrl = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const GA_ID = import.meta.env.PUBLIC_GA_ID;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{siteTitle}</title>
-  <meta name="description" content={description}>
-  <link rel="canonical" href={canonicalURL}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
 
-  <!-- OGP -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content={siteTitle}>
-  <meta property="og:description" content={description}>
-  <meta property="og:url" content={canonicalURL}>
-  <meta property="og:site_name" content="南関競馬予想サイト口コミ">
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="LJ1qNn3SZFuo5zHjLtI58OZSKKXXeVugmiXG2SPGMe8" />
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content={siteTitle}>
-  <meta name="twitter:description" content={description}>
+    <!-- OGP -->
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:locale" content="ja_JP" />
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
 
-  <!-- DNS Prefetch -->
-  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
-  {GA_ID && <link rel="dns-prefetch" href="https://www.google-analytics.com">}
+    <!-- Canonical -->
+    <link rel="canonical" href={canonicalUrl} />
 
-  <!-- Google Analytics 4 -->
-  {GA_ID && (
-    <>
-      <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
-      <script define:vars={{ GA_ID }}>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', GA_ID);
-      </script>
-    </>
-  )}
-</head>
-<body class="min-h-screen flex flex-col bg-gray-50 antialiased">
-  <!-- ヘッダー - モバイルファースト -->
-  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm no-print">
-    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-14 sm:h-16 lg:h-20">
-        <!-- ロゴ -->
-        <a href="/" class="flex items-center gap-2 group">
-          <span class="text-base sm:text-lg lg:text-xl font-bold">
-            <span class="text-gray-900">南関競馬</span>
-            <span class="text-gradient">予想サイト口コミ</span>
-          </span>
-        </a>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-        <!-- デスクトップナビゲーション -->
-        <div class="hidden md:flex items-center gap-8 lg:gap-10">
-          {navLinks.map(link => (
-            <a
-              href={link.href}
-              class="text-gray-700 hover:text-blue-600 font-medium lg:text-lg transition-colors relative group"
-            >
-              {link.label}
-              <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary group-hover:w-full transition-all duration-300"></span>
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Google Analytics 4 -->
+    {GA_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+        <script is:inline define:vars={{ GA_ID }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', GA_ID, {
+            page_path: window.location.pathname,
+          });
+        </script>
+      </>
+    )}
+
+    <title>{fullTitle}</title>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-slate-200">
+      <div class="max-w-6xl mx-auto px-4 py-3 md:py-4">
+        <div class="flex items-center justify-between">
+          <a href="/" class="flex items-center gap-2 group">
+            <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-700 to-sky-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+              <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+              </svg>
+            </div>
+            <span class="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent transition-all">
+              南関競馬予想サイト口コミ
+            </span>
+          </a>
+          <nav class="hidden md:flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+            <a href="/sites/" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-white rounded-md transition-all">
+              サイト一覧
             </a>
-          ))}
-        </div>
-
-        <!-- モバイルメニューボタン -->
-        <button
-          id="mobile-menu-button"
-          class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          aria-label="メニューを開く"
-          aria-expanded="false"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
-      </div>
-    </nav>
-
-    <!-- モバイルメニュー -->
-    <div
-      id="mobile-menu"
-      class="fixed inset-0 z-50 md:hidden transform translate-x-full transition-transform duration-300 ease-in-out"
-      aria-hidden="true"
-    >
-      <!-- オーバーレイ -->
-      <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" id="mobile-menu-overlay"></div>
-
-      <!-- メニューパネル -->
-      <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-2xl">
-        <!-- ヘッダー -->
-        <div class="flex justify-between items-center p-4 border-b">
-          <span class="font-bold text-gray-900">メニュー</span>
+            <div class="w-px h-5 bg-slate-300"></div>
+            <a href="/about/" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-white rounded-md transition-all">
+              このサイトについて
+            </a>
+          </nav>
+          <!-- Mobile menu button -->
           <button
-            id="mobile-menu-close"
-            class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="メニューを閉じる"
+            type="button"
+            class="md:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+            id="mobile-menu-button"
+            aria-label="メニュー"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
           </button>
         </div>
-
-        <!-- ナビゲーションリンク -->
-        <nav class="p-4">
-          <ul class="space-y-2">
-            {navLinks.map(link => (
-              <li>
-                <a
-                  href={link.href}
-                  class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium transition-colors"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+        <!-- Mobile menu -->
+        <nav class="hidden md:hidden mt-3 pt-3 border-t border-slate-200" id="mobile-menu">
+          <div class="flex flex-col gap-1">
+            <a href="/sites/" class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+              サイト一覧
+            </a>
+            <a href="/about/" class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+              このサイトについて
+            </a>
+          </div>
         </nav>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- メインコンテンツ -->
-  <main class="flex-1">
-    <slot />
-  </main>
+    <!-- Main Content -->
+    <main class="flex-1">
+      <slot />
+    </main>
 
-  <!-- フッター -->
-  <footer class="bg-gray-900 text-white mt-16 sm:mt-24 no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-      <!-- フッターコンテンツ -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
-        <!-- サイト情報 -->
-        <div class="space-y-4">
-          <h3 class="text-lg sm:text-xl font-bold">南関競馬予想サイト口コミ</h3>
-          <p class="text-gray-400 text-sm sm:text-base leading-relaxed">
-            南関競馬（大井・川崎・船橋・浦和）専門の予想サイト口コミプラットフォーム。
-            ナイター競馬ファンのための信頼できる情報源。
-          </p>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 mt-auto">
+      <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-white font-bold mb-4">南関競馬予想サイト口コミ</h3>
+            <p class="text-sm">
+              南関4場（大井・川崎・船橋・浦和）の予想サイト口コミプラットフォーム。
+              ナイター競馬ファンに最適なサイト選びをサポートします。
+            </p>
+          </div>
+          <div>
+            <h3 class="text-white font-bold mb-4">南関4場</h3>
+            <ul class="space-y-2 text-sm">
+              <li class="flex items-center gap-2">
+                <span class="text-blue-400">🌙</span>
+                <span>大井競馬場（TCK）</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-blue-400">🌙</span>
+                <span>川崎競馬場</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-blue-400">🌙</span>
+                <span>船橋競馬場</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-blue-400">🌙</span>
+                <span>浦和競馬場</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-white font-bold mb-4">リンク</h3>
+            <ul class="space-y-2 text-sm">
+              <li><a href="/sites/" class="hover:text-white">サイト一覧</a></li>
+              <li><a href="/about/" class="hover:text-white">当サイトについて</a></li>
+              <li><a href="/terms/" class="hover:text-white">利用規約</a></li>
+              <li><a href="/privacy/" class="hover:text-white">プライバシーポリシー</a></li>
+              <li><a href="/contact/" class="hover:text-white">お問い合わせ</a></li>
+            </ul>
+          </div>
         </div>
-
-        <!-- 対応競馬場 -->
-        <div class="space-y-4">
-          <h3 class="text-lg sm:text-xl font-bold">対応競馬場</h3>
-          <ul class="text-gray-400 text-sm sm:text-base space-y-2">
-            <li class="flex items-center gap-2">
-              <span class="text-blue-400">▸</span> 大井競馬場（TCK）
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="text-blue-400">▸</span> 川崎競馬場
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="text-blue-400">▸</span> 船橋競馬場
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="text-blue-400">▸</span> 浦和競馬場
-            </li>
-          </ul>
-        </div>
-
-        <!-- リンク -->
-        <div class="space-y-4">
-          <h3 class="text-lg sm:text-xl font-bold">リンク</h3>
-          <ul class="text-gray-400 text-sm sm:text-base space-y-2">
-            <li>
-              <a href="/about" class="hover:text-white transition-colors inline-flex items-center gap-2">
-                <span class="text-blue-400">▸</span> このサイトについて
-              </a>
-            </li>
-            <li>
-              <a href="/privacy" class="hover:text-white transition-colors inline-flex items-center gap-2">
-                <span class="text-blue-400">▸</span> プライバシーポリシー
-              </a>
-            </li>
-            <li>
-              <a href="/terms" class="hover:text-white transition-colors inline-flex items-center gap-2">
-                <span class="text-blue-400">▸</span> 利用規約
-              </a>
-            </li>
-          </ul>
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm">
+          <p>&copy; {new Date().getFullYear()} 南関競馬予想サイト口コミ. All rights reserved.</p>
         </div>
       </div>
+    </footer>
 
-      <!-- コピーライト -->
-      <div class="border-t border-gray-800 mt-8 sm:mt-12 pt-8 text-center text-gray-400 text-sm">
-        <p>&copy; 2025 南関競馬予想サイト口コミ. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
+    <script>
+      // Mobile menu toggle
+      const menuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
 
-  <!-- モバイルメニュースクリプト -->
-  <script>
-    // モバイルメニューの制御
-    const menuButton = document.getElementById('mobile-menu-button');
-    const menu = document.getElementById('mobile-menu');
-    const menuClose = document.getElementById('mobile-menu-close');
-    const menuOverlay = document.getElementById('mobile-menu-overlay');
+      menuButton?.addEventListener('click', () => {
+        mobileMenu?.classList.toggle('hidden');
+      });
+    </script>
 
-    function openMenu() {
-      if (menu && menuButton) {
-        menu.classList.remove('translate-x-full');
-        menu.setAttribute('aria-hidden', 'false');
-        menuButton.setAttribute('aria-expanded', 'true');
-        document.body.style.overflow = 'hidden';
-      }
-    }
+    <script is:inline>
+      // External link tracking for GA4
+      document.addEventListener('DOMContentLoaded', () => {
+        // Track all external links (target="_blank")
+        document.querySelectorAll('a[target="_blank"]').forEach((link) => {
+          link.addEventListener('click', (e) => {
+            const href = link.href;
+            const text = link.textContent?.trim() || '';
 
-    function closeMenu() {
-      if (menu && menuButton) {
-        menu.classList.add('translate-x-full');
-        menu.setAttribute('aria-hidden', 'true');
-        menuButton.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-      }
-    }
-
-    menuButton?.addEventListener('click', openMenu);
-    menuClose?.addEventListener('click', closeMenu);
-    menuOverlay?.addEventListener('click', closeMenu);
-
-    // Escキーでメニューを閉じる
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && menu && !menu.classList.contains('translate-x-full')) {
-        closeMenu();
-      }
-    });
-
-    // ページ遷移時にメニューを閉じる
-    document.addEventListener('astro:page-load', closeMenu);
-  </script>
-</body>
+            // Send event to GA4 if available
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'click', {
+                event_category: 'outbound',
+                event_label: href,
+                link_text: text,
+                value: 1
+              });
+            }
+          });
+        });
+      });
+    </script>
+  </body>
 </html>
