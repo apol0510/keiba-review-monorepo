@@ -134,6 +134,11 @@ a:focus-visible {
 }
 
 /* ========================================
+   コンポーネント - カスタムクラス
+   ======================================== */
+@layer components {
+
+/* ========================================
    ボタン - モダンデザイン
    ======================================== */
 .btn {
@@ -311,6 +316,8 @@ a:focus-visible {
   outline: 2px solid var(--nankan-primary);
   outline-offset: 2px;
 }
+
+} /* @layer components の終了 */
 
 /* リデュースモーション対応 */
 @media (prefers-reduced-motion: reduce) {
