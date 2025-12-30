@@ -71,21 +71,21 @@ const navLinks = [
   <!-- ヘッダー - モバイルファースト -->
   <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm no-print">
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-14 sm:h-16">
+      <div class="flex justify-between items-center h-14 sm:h-16 lg:h-20">
         <!-- ロゴ -->
         <a href="/" class="flex items-center gap-2 group">
-          <span class="text-base sm:text-lg font-bold">
+          <span class="text-base sm:text-lg lg:text-xl font-bold">
             <span class="text-gray-900">南関競馬</span>
             <span class="text-gradient">予想サイト口コミ</span>
           </span>
         </a>
 
         <!-- デスクトップナビゲーション -->
-        <div class="hidden md:flex items-center gap-8">
+        <div class="hidden md:flex items-center gap-8 lg:gap-10">
           {navLinks.map(link => (
             <a
               href={link.href}
-              class="text-gray-700 hover:text-blue-600 font-medium transition-colors relative group"
+              class="text-gray-700 hover:text-blue-600 font-medium lg:text-lg transition-colors relative group"
             >
               {link.label}
               <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary group-hover:w-full transition-all duration-300"></span>
