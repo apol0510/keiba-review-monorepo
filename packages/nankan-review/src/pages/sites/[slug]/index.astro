@@ -1,0 +1,440 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import StarRating from '../../../../../keiba-review-all/src/components/StarRating.astro';
+import CategoryBadge from '../../../../../keiba-review-all/src/components/CategoryBadge.astro';
+import ReviewItem from '../../../../../keiba-review-all/src/components/ReviewItem.astro';
+import OptimizedImage from '../../../../../keiba-review-all/src/components/OptimizedImage.astro';
+import PricingInfo from '../../../../../keiba-review-all/src/components/PricingInfo.astro';
+import ReviewForm from '../../../../../keiba-review-all/src/components/ReviewForm.tsx';
+import SiteCard from '../../../../../keiba-review-all/src/components/SiteCard.astro';
+import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats } from '@keiba-review/shared/lib';
+import { getScreenshotUrl } from '../../../../../keiba-review-all/src/lib/screenshot-helper';
+
+export async function getStaticPaths() {
+  // nankanカテゴリのサイトのみ取得
+  const allSites = await getSitesWithStats();
+  const nankanSites = allSites.filter(site => site.category === 'nankan' && site.status === 'approved');
+
+  return nankanSites.map(site => ({
+    params: { slug: site.slug }
+  }));
+}
+
+const { slug } = Astro.params;
+const site = await getSiteBySlug(slug as string);
+
+if (!site || site.category !== 'nankan') {
+  return Astro.redirect('/404');
+}
+
+// URLパラメータからソート順とフィルターを取得
+const url = new URL(Astro.request.url);
+const sortBy = (url.searchParams.get('sort') as 'newest' | 'rating' | 'helpful') || 'newest';
+const filterRating = url.searchParams.get('filter_rating');
+
+// 口コミ取得
+let reviews = await getReviewsBySiteId(site.id);
+const allReviews = reviews; // 評価分布用
+
+// ソート処理
+switch (sortBy) {
+  case 'rating':
+    reviews.sort((a, b) => b.rating - a.rating);
+    break;
+  case 'helpful':
+    reviews.sort((a, b) => b.rating - a.rating);
+    break;
+  default: // newest
+    reviews.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+// 最新50件のみ表示
+const MAX_REVIEWS_TO_DISPLAY = 50;
+const totalReviews = reviews.length;
+reviews = reviews.slice(0, MAX_REVIEWS_TO_DISPLAY);
+
+// 統計情報を計算
+const reviewCount = allReviews.length;
+const averageRating = reviewCount > 0
+  ? allReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+  : undefined;
+
+site.review_count = reviewCount;
+site.average_rating = averageRating;
+
+// 星評価でフィルタリング
+if (filterRating) {
+  const rating = parseInt(filterRating);
+  if (rating >= 1 && rating <= 5) {
+    reviews = reviews.filter(r => r.rating === rating);
+  }
+}
+
+// 評価分布は全口コミから計算
+const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
+  const count = allReviews.filter((r) => r.rating === rating).length;
+  const percentage = allReviews.length > 0 ? (count / allReviews.length) * 100 : 0;
+  return { rating, count, percentage };
+});
+
+const siteUrl = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
+
+// 構造化データ
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: site.name,
+  description: site.description,
+  image: site.screenshot_url,
+  url: `${siteUrl}/sites/${site.slug}/`,
+  aggregateRating:
+    reviews.length > 0 && site.average_rating
+      ? {
+          '@type': 'AggregateRating',
+          ratingValue: site.average_rating.toFixed(1),
+          reviewCount: site.review_count.toString(),
+          bestRating: '5',
+          worstRating: '1',
+        }
+      : undefined,
+  review: reviews.slice(0, 5).map((review) => ({
+    '@type': 'Review',
+    author: {
+      '@type': 'Person',
+      name: review.username,
+    },
+    datePublished: review.created_at.split('T')[0],
+    reviewRating: {
+      '@type': 'Rating',
+      ratingValue: review.rating.toString(),
+    },
+    reviewBody: review.content,
+  })),
+};
+
+// BreadcrumbList構造化データ
+const breadcrumbStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'ホーム',
+      item: `${siteUrl}/`
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'サイト一覧',
+      item: `${siteUrl}/sites/`
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: site.name,
+      item: `${siteUrl}/sites/${site.slug}/`
+    }
+  ]
+};
+
+// SEO最適化されたメタディスクリプション生成
+const generateMetaDescription = () => {
+  const ratingText = site.average_rating
+    ? `平均評価${site.average_rating.toFixed(1)}★`
+    : '';
+
+  const reviewCountText = site.review_count > 0
+    ? `${site.review_count}件の口コミ`
+    : '口コミ募集中';
+
+  const recentReview = reviews.length > 0 ? reviews[0] : null;
+  const featureText = recentReview
+    ? `「${recentReview.title}」など実際の利用者の声を掲載。`
+    : '実際の利用者による評価を確認できます。';
+
+  return `【南関競馬予想サイト】${site.name}の${reviewCountText}を掲載。${ratingText}${ratingText && '。'}${featureText}無料予想・的中率・料金プランなど詳しい情報をチェック。`;
+};
+
+// 関連サイト取得（南関カテゴリで評価が高い上位6件、現在のサイトは除外）
+const allSites = await getSitesWithStats();
+const relatedSites = allSites
+  .filter(s => s.category === 'nankan' && s.slug !== site.slug && s.status === 'approved')
+  .sort((a, b) => {
+    const scoreA = (a.average_rating || 0) * Math.log(a.review_count + 1);
+    const scoreB = (b.average_rating || 0) * Math.log(b.review_count + 1);
+    return scoreB - scoreA;
+  })
+  .slice(0, 6);
+
+const breadcrumbItems = [
+  { label: 'サイト一覧', href: '/sites/' },
+  { label: site.name },
+];
+---
+
+<BaseLayout
+  title={`${site.name}の口コミ・評判`}
+  description={generateMetaDescription()}
+  ogImage="/og/default.png"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbStructuredData)} />
+
+  <div class="max-w-6xl mx-auto px-4 py-8 md:py-12">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 md:mb-8">
+      <ol class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+        {breadcrumbItems.map((item, index) => (
+          <li class="flex items-center gap-2">
+            {index > 0 && (
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            )}
+            {item.href ? (
+              <a href={item.href} class="hover:text-blue-600 transition-colors">
+                {item.label}
+              </a>
+            ) : (
+              <span class="text-slate-900 font-medium">{item.label}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+
+    <!-- Site Info Card -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-slate-200">
+      <div class="md:flex">
+        <!-- Screenshot -->
+        <div class="md:w-1/3">
+          <div class="aspect-video bg-gradient-to-br from-slate-100 to-blue-50 relative overflow-hidden">
+            {site.screenshot_url ? (
+              <OptimizedImage
+                src={getScreenshotUrl(site.slug, site.screenshot_url)}
+                alt={`${site.name}のスクリーンショット`}
+                width={600}
+                height={400}
+                loading="eager"
+                class="w-full h-full object-cover"
+              />
+            ) : (
+              <div class="w-full h-full flex items-center justify-center">
+                <svg class="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="md:w-2/3 p-6 md:p-8">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+              <CategoryBadge category={site.category} />
+              <h1 class="text-2xl md:text-3xl font-bold text-slate-900 mt-2 mb-2">{site.name}</h1>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4 mb-6">
+            <StarRating rating={site.average_rating || 0} size="lg" />
+            <div>
+              <span class="text-2xl md:text-3xl font-bold text-slate-900">
+                {site.average_rating ? site.average_rating.toFixed(1) : '0.0'}
+              </span>
+              <span class="text-slate-600">/ 5.0</span>
+              <span class="text-sm text-slate-500 ml-2">({site.review_count}件の口コミ)</span>
+            </div>
+          </div>
+
+          {site.description && (
+            <p class="text-base md:text-lg text-slate-700 mb-6 leading-relaxed">{site.description}</p>
+          )}
+
+          {site.features && site.features.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-6">
+              {site.features.map((feature: string) => (
+                <span class="px-3 py-1.5 bg-blue-50 text-blue-700 text-sm font-medium rounded-full border border-blue-200">
+                  {feature}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <a
+            href={site.url}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            サイトを見る
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Content -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Rating Distribution -->
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 border border-slate-200">
+          <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-6">評価分布</h2>
+          <div class="space-y-3">
+            {ratingDistribution.map(({ rating, count, percentage }) => (
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-medium text-slate-600 w-8">{rating}★</span>
+                <div class="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden">
+                  <div
+                    class="bg-gradient-to-r from-amber-400 to-yellow-500 h-full rounded-full transition-all duration-500"
+                    style={`width: ${percentage}%`}
+                  />
+                </div>
+                <span class="text-sm font-medium text-slate-600 w-16 text-right">{count}件</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Reviews -->
+        <div>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <h2 class="text-xl md:text-2xl font-bold text-slate-900">
+              口コミ一覧
+              <span class="text-base font-normal text-slate-500 ml-2">
+                {reviews.length}件
+                {totalReviews > MAX_REVIEWS_TO_DISPLAY && (
+                  <span class="text-sm">（最新{MAX_REVIEWS_TO_DISPLAY}件を表示）</span>
+                )}
+              </span>
+            </h2>
+            <form method="get" class="flex items-center gap-2">
+              <label class="text-sm text-slate-600">並び替え:</label>
+              <select name="sort" class="form-input text-sm py-2 px-3 rounded-lg border-slate-300" onchange="this.form.submit()">
+                <option value="newest" selected={sortBy === 'newest'}>新着順</option>
+                <option value="rating" selected={sortBy === 'rating'}>評価順</option>
+                <option value="helpful" selected={sortBy === 'helpful'}>参考になった順</option>
+              </select>
+              {filterRating && <input type="hidden" name="filter_rating" value={filterRating} />}
+            </form>
+          </div>
+
+          <!-- Star Rating Filter -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 mb-6">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-sm font-bold text-slate-700 mr-2">評価で絞り込み:</span>
+              <a
+                href={`?${sortBy !== 'newest' ? `sort=${sortBy}` : ''}`}
+                class={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  !filterRating
+                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                すべて
+              </a>
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <a
+                  href={`?filter_rating=${rating}${sortBy !== 'newest' ? `&sort=${sortBy}` : ''}`}
+                  class={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 ${
+                    filterRating === rating.toString()
+                      ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-md'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <span>{rating}</span>
+                  <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {reviews.length > 0 ? (
+            <div class="space-y-4">
+              {reviews.map((review) => (
+                <ReviewItem review={review} />
+              ))}
+            </div>
+          ) : (
+            <div class="bg-white rounded-xl shadow-md p-12 text-center border border-slate-200">
+              <svg
+                class="w-16 h-16 mx-auto text-slate-300 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+              <p class="text-lg text-slate-600 mb-2">まだ口コミがありません</p>
+              <p class="text-sm text-slate-500">最初の口コミを投稿してみませんか？</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="lg:col-span-1 space-y-6">
+        <!-- Pricing & Service Info -->
+        <PricingInfo
+          pricingType={site.pricing_type}
+          hasFreeTrial={site.has_free_trial}
+          registrationRequired={site.registration_required}
+          lastVerifiedAt={site.last_verified_at}
+          isClosed={site.is_closed}
+        />
+
+        <!-- Review Form -->
+        <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24 border border-slate-200">
+          <h2 class="text-lg font-bold text-slate-900 mb-4">口コミを投稿する</h2>
+          <ReviewForm siteId={site.id} siteName={site.name} client:load />
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Sites Section -->
+    {relatedSites && relatedSites.length > 0 && (
+      <div class="mt-12 md:mt-16">
+        <div class="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-6 md:p-8 mb-8 border border-blue-100">
+          <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-3">
+            他の南関競馬予想サイト
+          </h2>
+          <p class="text-base md:text-lg text-slate-600">
+            南関競馬の他の予想サイトもチェックしてみましょう
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {relatedSites.map((relatedSite) => (
+            <SiteCard site={relatedSite} />
+          ))}
+        </div>
+        <div class="text-center mt-8">
+          <a
+            href="/sites/"
+            class="inline-flex items-center gap-2 px-8 py-4 bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 font-bold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            南関競馬の全サイトを見る
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>
