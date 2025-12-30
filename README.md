@@ -9,12 +9,24 @@
 
 複数の競馬予想サイト口コミプラットフォームを効率的に運営するためのMonorepo。nankan-analytics（南関アナリティクス）へのトラフィック誘導を目的とした戦略的サイト群。
 
+### 📌 プロジェクト移行について
+
+このリポジトリは、旧[keiba-review](https://github.com/apol0510/keiba-review)リポジトリをMonorepo化したものです。
+
+**移行の経緯:**
+- 2025-12-29: Monorepo構築開始
+- 2025-12-30: 旧リポジトリからコード移行完了
+- 2025-12-30: 旧リポジトリをアーカイブ（履歴参照用）
+- 2025-12-30: 2サイト体制での本番運用開始
+
+**旧リポジトリ:** [apol0510/keiba-review](https://github.com/apol0510/keiba-review) 🗄️ アーカイブ済み
+
 ### 稼働中のサイト
 
 | サイト | URL | カテゴリ | ステータス |
 |--------|-----|---------|----------|
 | **keiba-review-all** | https://keiba-review.jp | 総合（全カテゴリ） | ✅ 稼働中 |
-| **nankan-review** | https://nankan-review.jp | 南関特化 | ✅ 稼働中 |
+| **nankan-review** | https://nankan.keiba-review.jp | 南関特化 | 🚀 設定中 |
 
 ## ✨ 主要機能
 
@@ -178,5 +190,5 @@ MIT License - 詳細は[LICENSE](./LICENSE)を参照
 
 ---
 
-**最終更新:** 2025-12-29 | **バージョン:** Monorepo v1.0.0
+**最終更新:** 2025-12-30 | **バージョン:** Monorepo v1.1.0 (Phase 3完了)
 
