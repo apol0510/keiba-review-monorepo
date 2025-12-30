@@ -26,7 +26,7 @@
 | サイト | URL | カテゴリ | ステータス |
 |--------|-----|---------|----------|
 | **keiba-review-all** | https://keiba-review.jp | 総合（全カテゴリ） | ✅ 稼働中 |
-| **nankan-review** | https://nankan.keiba-review.jp | 南関特化 | 🚀 設定中 |
+| **nankan-review** | https://nankan.keiba-review.jp | 南関特化 | ✅ 稼働中 |
 
 ## ✨ 主要機能
 
