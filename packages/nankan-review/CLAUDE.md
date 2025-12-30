@@ -283,6 +283,37 @@ pnpm build
 
 **修正履歴:** 2025-12-30に発見・修正（commit: e9eb8ae）
 
+### Netlifyデプロイエラー: "ERR_PNPM_OUTDATED_LOCKFILE"
+
+**症状:**
+```
+ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with "frozen-lockfile"
+because pnpm-lock.yaml is not up to date with package.json
+```
+
+**原因:** `package.json`を変更したが、`pnpm-lock.yaml`をコミットしていない
+
+**解決方法:**
+```bash
+# lockfileを更新
+pnpm install
+
+# 変更を確認
+git status
+# → modified: pnpm-lock.yaml
+
+# lockfileをコミット
+git add pnpm-lock.yaml
+git commit -m "chore: Update pnpm-lock.yaml"
+git push
+
+# Netlifyで自動的に再デプロイが開始される
+```
+
+**重要:** CI環境では`--frozen-lockfile`フラグが有効なため、lockfileとpackage.jsonの完全一致が必須
+
+**修正履歴:** 2025-12-31に発見・修正（commit: 2ec5054）
+
 ### 開発サーバーが起動しない（ポート競合）
 
 **症状:** `Error: listen EADDRINUSE: address already in use :::4322`
@@ -366,6 +397,9 @@ pnpm dev
 ---
 
 **最終更新:** 2025-12-31
-**バージョン:** v1.0.1（本番ビルド修正）
+**バージョン:** v1.0.2（デプロイ修正完了）
 **ステータス:** ✅ 完成・運用中
-**重要な修正:** airtable依存関係の追加（commit: e9eb8ae）
+**重要な修正:**
+- airtable依存関係の追加（commit: e9eb8ae）
+- pnpm-lock.yaml更新（commit: 2ec5054）
+- Netlifyデプロイ成功確認済み
