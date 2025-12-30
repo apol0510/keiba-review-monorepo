@@ -1,0 +1,294 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const breadcrumbItems = [{ label: 'お問い合わせ' }];
+---
+
+<BaseLayout
+  title="お問い合わせ"
+  description="南関競馬予想サイト口コミへのお問い合わせはこちらから。サイト掲載リクエスト、口コミ報告、不具合報告など。"
+>
+  <div class="max-w-4xl mx-auto px-4 py-8 md:py-12">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 md:mb-8">
+      <ol class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+        <li class="flex items-center gap-2">
+          <a href="/" class="hover:text-blue-600 transition-colors">ホーム</a>
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </li>
+        <li class="text-slate-900 font-medium">お問い合わせ</li>
+      </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-8 md:mb-12">
+      <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">お問い合わせ</h1>
+      <p class="text-base md:text-lg text-slate-600">
+        南関競馬予想サイト口コミに関するお問い合わせは、以下のフォームよりご連絡ください。
+      </p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 border border-slate-200">
+      <div class="mb-8">
+        <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
+          <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-blue-900 mb-2">
+              お問い合わせ受付について
+            </p>
+            <p class="text-sm text-blue-700">
+              通常3営業日以内に返信いたします。お急ぎの場合はその旨をお書き添えください。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form id="contact-form" class="space-y-6">
+        <!-- お名前 -->
+        <div>
+          <label for="name" class="block text-sm font-bold text-slate-700 mb-2">
+            お名前 <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            placeholder="山田太郎"
+          />
+        </div>
+
+        <!-- メールアドレス -->
+        <div>
+          <label for="email" class="block text-sm font-bold text-slate-700 mb-2">
+            メールアドレス <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            placeholder="example@email.com"
+          />
+          <p class="text-xs text-slate-500 mt-2">返信はこちらのメールアドレス宛てに送信いたします</p>
+        </div>
+
+        <!-- お問い合わせ種別 -->
+        <div>
+          <label for="subject" class="block text-sm font-bold text-slate-700 mb-2">
+            お問い合わせ種別 <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="subject"
+            name="subject"
+            required
+            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <option value="">選択してください</option>
+            <option value="site_request">南関予想サイトの掲載リクエスト</option>
+            <option value="review_report">口コミに関する報告・削除依頼</option>
+            <option value="bug_report">不具合・エラーの報告</option>
+            <option value="partnership">広告・提携に関するお問い合わせ</option>
+            <option value="other">その他のお問い合わせ</option>
+          </select>
+        </div>
+
+        <!-- お問い合わせ内容 -->
+        <div>
+          <label for="message" class="block text-sm font-bold text-slate-700 mb-2">
+            お問い合わせ内容 <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            required
+            rows="8"
+            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+            placeholder="お問い合わせ内容をできるだけ詳しくご記入ください"
+          ></textarea>
+          <p class="text-xs text-slate-500 mt-2">サイト掲載リクエストの場合は、サイト名とURLをお知らせください</p>
+        </div>
+
+        <!-- 注意事項 -->
+        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+          <p class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            ご注意事項
+          </p>
+          <ul class="text-sm text-slate-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold mt-0.5">•</span>
+              <span>口コミの削除依頼については、削除理由を具体的にお書きください</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold mt-0.5">•</span>
+              <span>南関競馬（大井・川崎・船橋・浦和）関連の予想サイトを優先的に掲載しています</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold mt-0.5">•</span>
+              <span>ご入力いただいた個人情報は、お問い合わせ対応のみに使用します</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 送信ボタン -->
+        <button
+          type="submit"
+          class="w-full bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white py-4 px-6 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        >
+          送信する
+        </button>
+      </form>
+
+      <!-- 成功メッセージ -->
+      <div id="success-message" class="hidden mt-8">
+        <div class="p-6 bg-green-50 border-2 border-green-200 rounded-xl">
+          <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="flex-1">
+              <p class="text-green-900 font-bold text-lg mb-2">お問い合わせを受け付けました</p>
+              <p class="text-green-800 text-sm">
+                ご入力いただいたメールアドレス宛てに確認メールをお送りしました。<br />
+                通常3営業日以内に返信いたしますので、しばらくお待ちください。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- エラーメッセージ -->
+      <div id="error-message" class="hidden mt-8">
+        <div class="p-6 bg-red-50 border-2 border-red-200 rounded-xl">
+          <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="flex-1">
+              <p class="text-red-900 font-bold text-lg mb-2">送信に失敗しました</p>
+              <p class="text-red-800 text-sm">
+                申し訳ございません。時間をおいて再度お試しいただくか、<br />
+                直接メールにてご連絡ください。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 関連情報 -->
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-gradient-to-br from-blue-50 to-sky-50 rounded-xl p-6 border border-blue-100">
+        <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          よくあるお問い合わせ
+        </h2>
+        <ul class="text-sm text-slate-700 space-y-2">
+          <li>• 口コミの投稿方法について</li>
+          <li>• サイトの掲載基準について</li>
+          <li>• 口コミの承認にかかる時間</li>
+        </ul>
+        <a
+          href="/about/"
+          class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 mt-4"
+        >
+          詳しく見る
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+
+      <div class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-6 border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          利用規約・ポリシー
+        </h2>
+        <p class="text-sm text-slate-700 mb-4">
+          当サイトの利用規約やプライバシーポリシーをご確認いただけます。
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <a
+            href="/terms/"
+            class="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+          >
+            利用規約
+          </a>
+          <span class="text-slate-400">|</span>
+          <a
+            href="/privacy/"
+            class="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+          >
+            プライバシーポリシー
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  const successMessage = document.getElementById('success-message');
+  const errorMessage = document.getElementById('error-message');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = '送信中...';
+
+    // エラーメッセージを非表示
+    errorMessage?.classList.add('hidden');
+
+    try {
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        subject: formData.get('subject'),
+        message: formData.get('message'),
+        site: 'nankan-review', // サイト識別子
+      };
+
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        form.classList.add('hidden');
+        successMessage?.classList.remove('hidden');
+
+        // ページトップまでスクロール
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        throw new Error('送信失敗');
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      errorMessage?.classList.remove('hidden');
+      submitButton.disabled = false;
+      submitButton.textContent = originalText || '送信する';
+
+      // エラーメッセージまでスクロール
+      errorMessage?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+</script>

@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="ページが見つかりません - 404"
+  description="お探しのページは見つかりませんでした。URLをご確認いただくか、トップページからお探しください。"
+>
+  <div class="min-h-[70vh] flex items-center justify-center px-4 py-12">
+    <div class="max-w-2xl w-full text-center">
+      <!-- Error Icon -->
+      <div class="mb-8">
+        <div class="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full mb-6">
+          <svg class="w-20 h-20 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h1 class="text-6xl md:text-8xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent mb-4">
+          404
+        </h1>
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+          ページが見つかりません
+        </h2>
+        <p class="text-base md:text-lg text-slate-600 leading-relaxed">
+          お探しのページは移動または削除された可能性があります。<br class="hidden sm:block" />
+          URLをご確認いただくか、トップページからお探しください。
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-8 mb-8 border border-slate-200">
+        <h3 class="text-lg font-bold text-slate-900 mb-6">人気のページ</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <a
+            href="/"
+            class="flex items-center gap-3 p-4 bg-white hover:bg-blue-50 rounded-xl transition-colors border border-slate-200 hover:border-blue-300 group"
+          >
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span class="text-sm font-medium text-slate-700 group-hover:text-blue-600">トップページ</span>
+          </a>
+
+          <a
+            href="/sites/"
+            class="flex items-center gap-3 p-4 bg-white hover:bg-blue-50 rounded-xl transition-colors border border-slate-200 hover:border-blue-300 group"
+          >
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <span class="text-sm font-medium text-slate-700 group-hover:text-blue-600">サイト一覧</span>
+          </a>
+
+          <a
+            href="/about/"
+            class="flex items-center gap-3 p-4 bg-white hover:bg-blue-50 rounded-xl transition-colors border border-slate-200 hover:border-blue-300 group"
+          >
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-sm font-medium text-slate-700 group-hover:text-blue-600">このサイトについて</span>
+          </a>
+
+          <a
+            href="/contact/"
+            class="flex items-center gap-3 p-4 bg-white hover:bg-blue-50 rounded-xl transition-colors border border-slate-200 hover:border-blue-300 group"
+          >
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            <span class="text-sm font-medium text-slate-700 group-hover:text-blue-600">お問い合わせ</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a
+          href="/"
+          class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+          トップページへ戻る
+        </a>
+
+        <button
+          onclick="history.back()"
+          class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white border-2 border-slate-300 hover:border-blue-500 text-slate-700 hover:text-blue-600 rounded-xl font-bold transition-all"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          前のページへ戻る
+        </button>
+      </div>
+
+      <!-- Help Text -->
+      <div class="mt-12 pt-8 border-t border-slate-200">
+        <p class="text-sm text-slate-500 mb-4">
+          このページが表示された理由
+        </p>
+        <ul class="text-xs text-slate-500 space-y-1">
+          <li>• URLの入力間違い</li>
+          <li>• リンク先のページが移動または削除された</li>
+          <li>• ブックマークが古い情報を参照している</li>
+        </ul>
+        <p class="text-sm text-slate-600 mt-6">
+          お探しの情報が見つからない場合は、
+          <a href="/contact/" class="text-blue-600 hover:text-blue-700 underline font-medium">お問い合わせ</a>
+          ください。
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
