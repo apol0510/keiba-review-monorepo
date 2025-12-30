@@ -11,8 +11,8 @@
     "./review-engine": "./review-engine/index.ts"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
+    "build": "echo 'Shared package does not require separate build'",
+    "dev": "echo 'Shared package is built by consuming projects'"
   },
   "dependencies": {
     "airtable": "^0.12.2",
