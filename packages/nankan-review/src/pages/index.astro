@@ -9,7 +9,7 @@ const sites = sortByRankingScore(allSites).slice(0, 10);
 
 <BaseLayout title="トップページ">
   <!-- ヒーローセクション - モダンデザイン -->
-  <section class="relative overflow-hidden -mt-6 sm:-mt-8 lg:-mt-12 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 gradient-hero text-white">
+  <section class="relative overflow-hidden w-full -mt-6 sm:-mt-8 lg:-mt-12 py-8 sm:py-12 lg:py-20 gradient-hero text-white">
     <!-- 背景装飾 -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <div class="absolute -top-1/2 -right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
@@ -17,7 +17,7 @@ const sites = sortByRankingScore(allSites).slice(0, 10);
     </div>
 
     <!-- コンテンツ -->
-    <div class="relative max-w-4xl mx-auto text-center">
+    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <!-- バッジ -->
       <div class="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/10 backdrop-blur-md rounded-full text-xs sm:text-sm lg:text-base font-medium mb-4 sm:mb-6 lg:mb-8">
         <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
