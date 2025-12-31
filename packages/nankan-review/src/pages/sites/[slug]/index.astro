@@ -13,7 +13,7 @@ import { getScreenshotUrl } from '../../../../../keiba-review-all/src/lib/screen
 export async function getStaticPaths() {
   // nankanカテゴリのサイトのみ取得
   const allSites = await getSitesWithStats();
-  const nankanSites = allSites.filter(site => site.category === 'nankan' && site.status === 'approved');
+  const nankanSites = allSites.filter(site => site.category === 'nankan' && site.isApproved);
 
   return nankanSites.map(site => ({
     params: { slug: site.slug }
