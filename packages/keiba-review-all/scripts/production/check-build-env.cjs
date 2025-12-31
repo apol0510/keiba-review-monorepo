@@ -7,6 +7,9 @@
  * 設定されていない場合は、わかりやすいエラーメッセージを表示して終了します。
  */
 
+// .envファイルを読み込む（ローカル開発用）
+require('dotenv').config();
+
 const requiredEnvVars = [
   {
     name: 'AIRTABLE_API_KEY',

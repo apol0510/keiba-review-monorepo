@@ -225,15 +225,14 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID;
     </script>
 
     <script is:inline>
-      // External link tracking for GA4
+      // GA4 Enhanced Event Tracking
       document.addEventListener('DOMContentLoaded', () => {
-        // Track all external links (target="_blank")
+        // 1. External link tracking (target="_blank")
         document.querySelectorAll('a[target="_blank"]').forEach((link) => {
           link.addEventListener('click', (e) => {
             const href = link.href;
             const text = link.textContent?.trim() || '';
 
-            // Send event to GA4 if available
             if (typeof gtag !== 'undefined') {
               gtag('event', 'click', {
                 event_category: 'outbound',
@@ -243,6 +242,83 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID;
               });
             }
           });
+        });
+
+        // 2. Form submission tracking
+        document.querySelectorAll('form').forEach((form) => {
+          form.addEventListener('submit', (e) => {
+            const formId = form.id || 'unknown';
+            const formAction = form.action || window.location.pathname;
+
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'form_submit', {
+                event_category: 'engagement',
+                event_label: formId,
+                form_action: formAction,
+                value: 1
+              });
+            }
+          });
+        });
+
+        // 3. CTA button tracking - nankan-analytics clicks
+        document.querySelectorAll('a[href*="nankan-analytics"]').forEach((link) => {
+          link.addEventListener('click', (e) => {
+            const text = link.textContent?.trim() || '';
+            const href = link.href;
+
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'cta_click', {
+                event_category: 'conversion',
+                event_label: 'nankan_analytics_cta',
+                link_text: text,
+                link_url: href,
+                value: 1
+              });
+            }
+          });
+        });
+
+        // 4. Scroll depth tracking (25%, 50%, 75%, 100%)
+        let scrollMarks = { 25: false, 50: false, 75: false, 100: false };
+
+        window.addEventListener('scroll', () => {
+          const scrollPercent = Math.round(
+            (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
+          );
+
+          [25, 50, 75, 100].forEach((mark) => {
+            if (scrollPercent >= mark && !scrollMarks[mark]) {
+              scrollMarks[mark] = true;
+
+              if (typeof gtag !== 'undefined') {
+                gtag('event', 'scroll', {
+                  event_category: 'engagement',
+                  event_label: `${mark}%`,
+                  value: mark
+                });
+              }
+            }
+          });
+        });
+
+        // 5. "Site visit" button tracking
+        document.querySelectorAll('a').forEach((link) => {
+          const text = link.textContent?.trim() || '';
+          if (text.includes('サイトを見る') || text.includes('公式サイト')) {
+            link.addEventListener('click', (e) => {
+              const href = link.href;
+
+              if (typeof gtag !== 'undefined') {
+                gtag('event', 'site_visit_click', {
+                  event_category: 'conversion',
+                  event_label: 'site_visit_button',
+                  link_url: href,
+                  value: 1
+                });
+              }
+            });
+          }
         });
       });
     </script>
