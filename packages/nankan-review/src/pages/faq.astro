@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const faqs = [
+  {
+    question: '南関競馬とは何ですか？',
+    answer: '南関競馬とは、首都圏の4つの競馬場（大井・川崎・船橋・浦和）で開催される地方競馬の総称です。南関東公営競馬として運営されており、ナイター開催が多いことが特徴です。「TCK（東京シティ競馬）」「ナイター競馬」「トゥインクルレース」などの愛称で親しまれています。'
+  },
+  {
+    question: '南関競馬はいつ開催されていますか？',
+    answer: '南関競馬はほぼ毎日どこかの競馬場で開催されています。平日はナイター開催が多く、週末はデイレースも行われます。開催スケジュールは4場で持ち回りとなっており、大井・川崎が比較的頻繁に開催しています。各競馬場の公式サイトやJRAのオッズパークで開催情報を確認できます。'
+  },
+  {
+    question: '南関競馬と中央競馬（JRA）の違いは？',
+    answer: '南関競馬は地方競馬の一種で、JRAとは主催者が異なります。主な違いは：1) 開催時間（ナイター中心 vs 昼間）、2) コース（全てダート vs 芝・ダート）、3) 開催頻度（ほぼ毎日 vs 主に週末）、4) 賞金規模（比較的少額 vs 高額）。南関競馬は平日にも楽しめ、少額から参加できるのが魅力です。'
+  },
+  {
+    question: 'ナイター競馬の魅力は何ですか？',
+    answer: 'ナイター競馬の魅力は、仕事帰りにも楽しめる点です。平日の夕方から夜にかけて開催されるため、サラリーマンでも参加しやすく、照明に照らされた幻想的な雰囲気も人気です。また、デイレースとは異なる馬場状態やレース展開になることもあり、予想の奥深さも魅力の一つです。'
+  },
+  {
+    question: '南関競馬の予想サイトは中央競馬と違いますか？',
+    answer: 'はい、南関競馬専門の予想サイトは中央競馬とは異なるアプローチをとります。南関競馬は1周コースが多く、枠順や脚質の影響が中央競馬より大きいため、それらを重視した予想が必要です。また、コース別の特性（大井・川崎・船橋・浦和）を理解していることが重要で、専門サイトはそれらのデータを詳しく分析しています。'
+  },
+  {
+    question: '南関4場それぞれの特徴は？',
+    answer: '大井（TCK）：直線350m、先行有利。南関の中心的存在。川崎：直線304m、逃げ馬が圧倒的に有利。ナイター競馬の先駆け。船橋：直線280m（最短）、内枠の逃げ馬が最強。差し馬は極めて不利。浦和：直線300m、先行馬有利だが差し馬にもチャンス。各場のコース特性を理解することが予想の鍵です。'
+  },
+  {
+    question: '南関競馬の予想で重要なポイントは？',
+    answer: '南関競馬の予想で重要なポイントは：1) 枠順（内枠が圧倒的に有利な場が多い）、2) 脚質（逃げ・先行馬が有利）、3) コース実績（各競馬場での成績）、4) 騎手（リーディング上位の腕前）、5) 馬場状態（良・重で有利な馬が変わる）。特に枠順と脚質は中央競馬以上に重視すべきです。'
+  },
+  {
+    question: '南関競馬予想サイトの選び方は？',
+    answer: '南関競馬予想サイトを選ぶ際は、以下をチェックしてください：1) 南関4場すべてをカバーしているか、2) コース別のデータ分析があるか、3) 枠順・脚質を重視した予想か、4) 的中実績が公開されているか、5) 口コミ評価が良いか。当サイトでは実際の利用者の口コミを掲載しているので、参考にしてください。'
+  },
+  {
+    question: '南関競馬の払戻金は中央競馬と同じですか？',
+    answer: 'はい、南関競馬でも中央競馬と同様に馬券を購入でき、的中すれば払戻金を受け取れます。馬券の種類（単勝・複勝・馬連・馬単・3連複・3連単など）も同じです。ただし、南関競馬は出走頭数が少ないレースが多いため、オッズや配当が中央競馬と異なる傾向があります。'
+  },
+  {
+    question: '南関競馬の馬券はどこで買えますか？',
+    answer: '南関競馬の馬券は、各競馬場の窓口の他、オッズパーク、SPAT4、楽天競馬などのインターネット投票サイトで購入できます。スマホアプリも充実しており、自宅や外出先からでも簡単に馬券を購入できます。初心者の方は、少額から始められるインターネット投票がおすすめです。'
+  },
+  {
+    question: '南関競馬の重賞レースはありますか？',
+    answer: 'はい、南関競馬にも多数の重賞レースがあります。代表的なのは「東京大賞典（大井・GI）」「川崎記念（川崎・GI）」「かしわ記念（船橋・GI）」「さきたま杯（浦和・GII）」などです。これらの重賞レースは賞金も高く、全国から強豪馬が集まるため、見応えがあります。'
+  },
+  {
+    question: '南関競馬のデータ分析はどこで見られますか？',
+    answer: '南関競馬のデータ分析は、南関アナリティクス（https://nankan-analytics.com）で詳しく提供されています。コース別データ、騎手成績、馬場状態別分析、枠順別勝率など、南関競馬に特化した豊富なデータを無料で閲覧できます。予想サイトと併せて活用することで、的中率を高められます。'
+  },
+  {
+    question: '南関競馬予想サイトの無料と有料の違いは？',
+    answer: '無料予想サイトでは基本的な予想情報やオッズ情報が提供されますが、有料サイトではより詳細なデータ分析、買い目の絞り込み、サポート体制などが充実しています。南関競馬は毎日開催されるため、有料サイトを利用する場合は月額制がコストパフォーマンスが良い傾向にあります。'
+  },
+  {
+    question: '南関競馬の初心者におすすめの賭け方は？',
+    answer: '初心者の方には「複勝」または「ワイド」がおすすめです。複勝は3着以内に入れば的中、ワイドは2頭が3着以内に入れば的中するため、比較的当たりやすいです。慣れてきたら「馬連」「3連複」と段階的にステップアップしていくと良いでしょう。少額（100円〜）から始めることが大切です。'
+  },
+  {
+    question: '南関競馬で稼ぐことはできますか？',
+    answer: '南関競馬で継続的に利益を上げることは簡単ではありません。しかし、優良な予想サイトやデータ分析ツールを活用し、適切な資金管理を行うことで、的中率や回収率を高めることは可能です。重要なのは、ギャンブルとして過度に期待せず、余裕資金の範囲内で楽しむことです。'
+  }
+];
+
+const siteUrl = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
+
+// 構造化データ
+const faqStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(faq => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer
+    }
+  }))
+};
+---
+
+<BaseLayout
+  title="よくある質問（FAQ）| 南関競馬予想サイト口コミ"
+  description="南関競馬・南関競馬予想サイトに関するよくある質問をまとめました。南関4場の特徴、予想のポイント、おすすめの賭け方など、初心者の方にも分かりやすく解説しています。"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqStructuredData)} />
+
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900 mb-3">
+        よくある質問（FAQ）
+      </h1>
+      <p class="text-slate-600 leading-relaxed">
+        南関競馬・南関競馬予想サイトに関するよくある質問をまとめました。
+      </p>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl p-6 mb-8 border border-blue-100">
+      <h2 class="text-lg font-bold text-slate-900 mb-4">お探しの情報はこちらから</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <a href="/sites/" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+          南関予想サイト一覧
+        </a>
+        <a href="/ranking/" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+          ランキング
+        </a>
+        <a href="/venues/ooi/" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+          南関4場ガイド
+        </a>
+        <a href="/contact/" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+          お問い合わせ
+        </a>
+      </div>
+    </div>
+
+    <!-- FAQ List -->
+    <div class="space-y-4">
+      {faqs.map((faq, index) => (
+        <details class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden group">
+          <summary class="cursor-pointer p-6 hover:bg-blue-50 transition-colors">
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+                Q{index + 1}
+              </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-slate-900 text-lg group-open:text-blue-600 transition-colors">
+                  {faq.question}
+                </h3>
+              </div>
+              <svg class="w-6 h-6 text-slate-400 group-open:rotate-180 transition-transform flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </summary>
+          <div class="px-6 pb-6">
+            <div class="flex items-start gap-4 pt-4 border-t border-slate-100">
+              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm">
+                A
+              </div>
+              <div class="flex-1">
+                <p class="text-slate-700 leading-relaxed">
+                  {faq.answer}
+                </p>
+              </div>
+            </div>
+          </div>
+        </details>
+      ))}
+    </div>
+
+    <!-- CTA Section -->
+    <div class="mt-12 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl p-8 text-center border border-blue-100">
+      <h2 class="text-2xl font-bold text-slate-900 mb-3">
+        お探しの情報が見つかりませんでしたか？
+      </h2>
+      <p class="text-slate-600 mb-6">
+        その他のご質問がございましたら、お気軽にお問い合わせください。
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a
+          href="/contact/"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 font-bold rounded-lg transition-colors shadow-sm"
+        >
+          お問い合わせ
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+        <a
+          href="/sites/"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition-colors"
+        >
+          予想サイト一覧を見る
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

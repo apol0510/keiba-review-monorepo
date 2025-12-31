@@ -1,0 +1,228 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getSitesByCategory, sortByRankingScore } from '@keiba-review/shared/lib';
+
+const sites = await getSitesByCategory('nankan');
+const rankedSites = sortByRankingScore(sites).slice(0, 5);
+
+const siteUrl = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: '浦和競馬場完全ガイド | 地元密着型の競馬場',
+  description: '浦和競馬場の完全ガイド。コース特性、地域密着の運営、予想のポイントを詳しく解説。埼玉の南関競馬。',
+  author: {
+    '@type': 'Organization',
+    name: '南関競馬予想サイト口コミ'
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: '南関競馬予想サイト口コミ',
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteUrl}/og/default.png`
+    }
+  },
+  datePublished: '2026-01-01',
+  dateModified: '2026-01-01'
+};
+---
+
+<BaseLayout
+  title="浦和競馬場完全ガイド | 南関競馬予想サイト口コミ"
+  description="浦和競馬場の完全ガイド。埼玉県の地元密着型競馬場のコース特性、予想のポイント、おすすめ予想サイトを紹介。"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Hero -->
+    <div class="bg-gradient-to-br from-sky-700 to-blue-700 text-white rounded-2xl p-8 md:p-12 mb-8">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-3xl font-bold">
+          浦
+        </div>
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold mb-2">浦和競馬場</h1>
+          <p class="text-sky-100">地元密着型の競馬場</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 基本情報 -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">基本情報</h2>
+      <div class="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="border-b border-slate-100 pb-4">
+            <dt class="text-sm text-slate-600 mb-1">正式名称</dt>
+            <dd class="font-bold text-slate-900">浦和競馬場</dd>
+          </div>
+          <div class="border-b border-slate-100 pb-4">
+            <dt class="text-sm text-slate-600 mb-1">所在地</dt>
+            <dd class="font-bold text-slate-900">埼玉県さいたま市南区別所4-1-1</dd>
+          </div>
+          <div class="border-b border-slate-100 pb-4">
+            <dt class="text-sm text-slate-600 mb-1">コース</dt>
+            <dd class="font-bold text-slate-900">ダート1周1,200m</dd>
+          </div>
+          <div class="border-b border-slate-100 pb-4">
+            <dt class="text-sm text-slate-600 mb-1">開催形態</dt>
+            <dd class="font-bold text-slate-900">ナイター・デイレース</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- コース特性 -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">コース特性</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-lg border border-slate-100">
+          <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="text-2xl">🏁</span>
+            コースレイアウト
+          </h3>
+          <ul class="space-y-2 text-slate-700">
+            <li class="flex items-start gap-2">
+              <span class="text-sky-600 font-bold">•</span>
+              <span>右回りダートコース</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-sky-600 font-bold">•</span>
+              <span>直線距離：約300m（やや短め）</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-sky-600 font-bold">•</span>
+              <span>コーナー：比較的緩やか</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-sky-600 font-bold">•</span>
+              <span>坂：若干の起伏あり</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-lg border border-slate-100">
+          <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="text-2xl">📊</span>
+            傾向と特徴
+          </h3>
+          <ul class="space-y-2 text-slate-700">
+            <li class="flex items-start gap-2">
+              <span class="text-sky-600 font-bold">•</span>
+              <span>先行馬が有利（直線やや短め）</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-sky-600 font-bold">•</span>
+              <span>差し馬にもチャンスあり</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-sky-600 font-bold">•</span>
+              <span>バランス型のコース設計</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-sky-600 font-bold">•</span>
+              <span>馬場状態の影響を受けやすい</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 予想のポイント -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">予想のポイント</h2>
+      <div class="bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-8 border border-sky-100">
+        <div class="space-y-6">
+          <div>
+            <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <span class="w-8 h-8 bg-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">1</span>
+              脚質の幅が広い
+            </h3>
+            <p class="text-slate-700 pl-10">
+              浦和は先行馬が有利だが、差し馬も届く可能性あり。展開次第で様々な馬にチャンス。
+            </p>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <span class="w-8 h-8 bg-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">2</span>
+              馬場状態を最重視
+            </h3>
+            <p class="text-slate-700 pl-10">
+              良馬場・重馬場で有利な馬が変わる。馬場状態と馬の適性を必ずチェック。
+            </p>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <span class="w-8 h-8 bg-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">3</span>
+              地元馬・地元騎手に注目
+            </h3>
+            <p class="text-slate-700 pl-10">
+              浦和所属の馬・騎手は地の利あり。浦和での成績は信頼できる指標。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- おすすめ予想サイト -->
+    <section class="mb-12">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-900">浦和競馬の予想に強いサイト</h2>
+        <a href="/sites/" class="text-sky-600 hover:text-sky-700 font-medium text-sm flex items-center gap-1">
+          すべて見る
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+      {rankedSites.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rankedSites.map((site) => (
+            <a href={`/sites/${site.slug}/`} class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-6 border border-slate-100 hover:border-sky-200 group">
+              <h3 class="font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">
+                {site.name}
+              </h3>
+              <p class="text-sm text-slate-600 mb-4 line-clamp-2">
+                {site.description}
+              </p>
+              <div class="flex items-center gap-4 text-sm">
+                <span class="flex items-center gap-1 text-yellow-600 font-medium">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                  </svg>
+                  {site.average_rating?.toFixed(1) || 'N/A'}
+                </span>
+                <span class="text-slate-500">{site.review_count}件</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-12 bg-white rounded-xl border border-slate-200">
+          <p class="text-slate-600">予想サイト準備中</p>
+        </div>
+      )}
+    </section>
+
+    <!-- CTA -->
+    <div class="bg-gradient-to-br from-sky-700 to-blue-700 text-white rounded-2xl p-8 md:p-12 text-center">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">浦和競馬のデータ分析なら</h2>
+      <p class="text-sky-100 mb-6 max-w-2xl mx-auto">
+        南関アナリティクスでは、浦和競馬場の馬場状態別データ、地元馬成績、騎手分析などを詳しく提供しています。
+      </p>
+      <a
+        href="https://nankan-analytics.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 bg-white text-sky-700 hover:bg-sky-50 px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-xl hover:scale-105"
+      >
+        南関アナリティクスで分析する
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</BaseLayout>
