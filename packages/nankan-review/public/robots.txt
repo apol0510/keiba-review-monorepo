@@ -1,0 +1,10 @@
+# https://nankan.keiba-review.jp/robots.txt
+
+User-agent: *
+Allow: /
+
+# サイトマップ
+Sitemap: https://nankan.keiba-review.jp/sitemap.xml
+
+# クロール速度調整（Googlebotなど）
+Crawl-delay: 1

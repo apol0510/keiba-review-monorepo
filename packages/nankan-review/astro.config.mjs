@@ -5,7 +5,7 @@ import netlify from '@astrojs/netlify';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://nankan-review.jp',
+  site: 'https://nankan.keiba-review.jp',
   integrations: [
     react(),
   ],
