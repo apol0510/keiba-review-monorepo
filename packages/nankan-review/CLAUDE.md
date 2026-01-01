@@ -485,13 +485,98 @@ node scripts/populate-nankan-sites.mjs
   - [ ] カスタムドメイン設定（nankan.keiba-review.jp）
   - [ ] SSL証明書確認
 
+## Google Analytics 4統合
+
+### 測定ID
+- `G-CYJ4BWEWEG`（keiba-review.jpプロパティ内のデータストリーム）
+
+### 実装済みイベント（2026-01-01）
+
+**1. `cta_click` - nankan-analyticsへのCTAクリック**
+- `event_category: 'conversion'`
+- `event_label: 'nankan_analytics_cta'`
+- `link_text: クリックされたテキスト`
+- `link_url: 遷移先URL`
+- `value: 1`
+
+**2. `site_visit_click` - 「サイトを見る」ボタンクリック**
+- `event_category: 'conversion'`
+- `event_label: 'site_visit_button'`
+- `link_url: 遷移先URL`
+- `value: 1`
+
+**3. `scroll` - スクロール深度トラッキング**
+- `event_category: 'engagement'`
+- `event_label: '25%' | '50%' | '75%' | '100%'`
+- `value: 25 | 50 | 75 | 100`
+
+**4. `form_submit` - フォーム送信**
+- `event_category: 'engagement'`
+- `event_label: フォームID`
+- `form_action: フォームアクション`
+
+**5. `click` - 外部リンククリック (target="_blank")**
+- `event_category: 'outbound'`
+- `event_label: リンクURL`
+- `link_text: リンクテキスト`
+
+### 重要な実装詳細
+
+**グローバルスコープ修正（BaseLayout.astro:73）:**
+```javascript
+// ✅ グローバルスコープで定義
+window.gtag = function gtag(){dataLayer.push(arguments);}
+```
+
+**Navigation Delay パターン:**
+- `target="_blank"` の場合: 遅延なし（新しいタブで開くため）
+- 同じタブで開く場合: `event_callback` + `setTimeout(200ms)` で遅延
+
+### コンバージョン設定手順
+
+**GA4での設定（方法2: カスタムイベント作成）:**
+
+```
+1. GA4 > 管理 > データの表示 > イベント > 「イベントを作成」
+
+2. CTA Conversion:
+   - イベント名: nankan_cta_click_conversion
+   - キーイベントとしてマークを付ける: ✅ ON
+   - 条件: event_name = cta_click
+   - 保存 → ☆クリック
+
+3. Site Visit Conversion:
+   - イベント名: nankan_site_visit_conversion
+   - キーイベントとしてマークを付ける: ✅ ON
+   - 条件: event_name = site_visit_click
+   - 保存 → ☆クリック
+```
+
+### 動作確認
+
+```bash
+# 1. https://nankan.keiba-review.jp を開く
+# 2. nankan-analyticsリンクをクリック
+# 3. GA4 > リアルタイム > イベント で cta_click を確認
+# 4. GA4 > リアルタイム > コンバージョン で nankan_cta_click_conversion を確認
+```
+
+### トラブルシューティング
+
+**イベントが記録されない場合:**
+1. `window.gtag` がグローバルスコープで定義されているか確認
+2. Console で `typeof gtag !== 'undefined'` が `true` を返すか確認
+3. Netlify環境変数 `PUBLIC_GA_ID` が設定されているか確認
+4. リアルタイムレポートで確認（24時間の遅延がある場合あり）
+
 ---
 
-**最終更新:** 2025-12-31
-**バージョン:** v1.0.3（404エラー修正完了）
+**最終更新:** 2026-01-01
+**バージョン:** v1.1.0（GA4強化トラッキング実装完了）
 **ステータス:** ✅ 完成・運用中
 **重要な修正:**
 - airtable依存関係の追加（commit: e9eb8ae）
 - pnpm-lock.yaml更新（commit: 2ec5054）
 - getStaticPaths()フィルタ条件修正 - サイト詳細ページ404エラー解決（commit: 02a4fea）
+- GA4トラッキング強化: window.gtag修正 + navigation delay実装（commit: f6335ee）
 - Netlifyデプロイ成功確認済み

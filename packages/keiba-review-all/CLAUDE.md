@@ -476,6 +476,91 @@ ADMIN_EMAIL              # メール通知用
 1. GA4管理画面 → 「レポート」→「リアルタイム」
 2. 自分でサイトにアクセスして、カウントが増えるか確認
 
+### GA4強化トラッキング実装（2026-01-01）
+
+**実装された拡張イベント:**
+
+1. **`cta_click`** - nankan-analyticsへのCTAクリック
+   - `event_category: 'conversion'`
+   - `event_label: 'nankan_analytics_cta'`
+   - `link_text: クリックされたテキスト`
+   - `link_url: 遷移先URL`
+   - `value: 1`
+
+2. **`site_visit_click`** - 「サイトを見る」ボタンクリック
+   - `event_category: 'conversion'`
+   - `event_label: 'site_visit_button'`
+   - `link_url: 遷移先URL`
+   - `value: 1`
+
+3. **`scroll`** - スクロール深度トラッキング
+   - `event_category: 'engagement'`
+   - `event_label: '25%' | '50%' | '75%' | '100%'`
+   - `value: 25 | 50 | 75 | 100`
+
+4. **`form_submit`** - フォーム送信
+   - `event_category: 'engagement'`
+   - `event_label: フォームID`
+   - `form_action: フォームアクション`
+
+**重要な修正（BaseLayout.astro:73）:**
+```javascript
+// ❌ BEFORE (ローカルスコープ - 動作しない)
+function gtag(){dataLayer.push(arguments);}
+
+// ✅ AFTER (グローバルスコープ - 動作する)
+window.gtag = function gtag(){dataLayer.push(arguments);}
+```
+
+**Navigation Delay パターン:**
+```javascript
+// target="_blank" の場合は遅延不要（新しいタブで開くため）
+if (target === '_blank') {
+  gtag('event', 'cta_click', { ... });
+} else {
+  // 同じタブで開く場合は、イベント送信完了まで遅延
+  e.preventDefault();
+  gtag('event', 'cta_click', {
+    ...,
+    event_callback: () => { window.location.href = href; }
+  });
+  setTimeout(() => { window.location.href = href; }, 200); // フォールバック
+}
+```
+
+**コンバージョン設定方法:**
+
+**方法1: イベント一覧から設定（推奨 - 24時間後）**
+```
+1. GA4 > 管理 > データの表示 > イベント
+2. cta_click を探す（24時間後に表示）
+3. 右側の「キーイベントとしてマークを付ける」トグルをON
+```
+
+**方法2: カスタムイベント作成（即座に設定可能）**
+```
+1. GA4 > 管理 > データの表示 > イベント > 「イベントを作成」
+2. カスタム イベント名: cta_click_conversion
+3. キーイベントとしてマークを付ける: ✅ ON
+4. 一致する条件:
+   - パラメータ: event_name
+   - 演算子: 次と等しい
+   - 値: cta_click
+5. 保存
+6. ☆ をクリックしてキーイベントに設定
+```
+
+**動作確認:**
+```bash
+# 1. サイトでnankan-analyticsリンクをクリック
+# 2. GA4 > リアルタイム > イベント で cta_click を確認
+# 3. GA4 > リアルタイム > コンバージョン で cta_click_conversion を確認
+```
+
+**測定ID:**
+- keiba-review-all: `G-XPYVRK69NT`
+- nankan-review: `G-CYJ4BWEWEG`
+
 ## SerpAPI統合ガイド
 
 ### SerpAPIとは
