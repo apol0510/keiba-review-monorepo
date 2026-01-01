@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # 手動実行も可能
 
 jobs:
-  send-reminder:
+  create-issue:
     runs-on: ubuntu-latest
 
     steps:
@@ -99,56 +99,4 @@ GA4 > レポート > ライフサイクル > 集客 > トラフィック獲得
               labels: ['weekly-review', 'automated', 'analytics']
             });
 
-            console.log(\`Created issue #\${issue.data.number}: \${issue.data.html_url}\`);
-
-      - name: Send Discord Notification
-        if: always()
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: |
-          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
-            echo "⚠️ DISCORD_WEBHOOK_URL is not set. Skipping Discord notification."
-            exit 0
-          fi
-
-          TODAY=$(TZ=Asia/Tokyo date +'%Y-%m-%d')
-          WEEK=$(TZ=Asia/Tokyo date +'Week %U')
-
-          curl -H "Content-Type: application/json" \
-            -X POST \
-            -d '{
-              "embeds": [{
-                "title": "📊 週次レビューの時間です",
-                "description": "Claude Codeで週次レビューを実行してください",
-                "color": 3447003,
-                "fields": [
-                  {
-                    "name": "📅 日付",
-                    "value": "'"$TODAY"' ('"$WEEK"')",
-                    "inline": false
-                  },
-                  {
-                    "name": "🤖 Claude Codeで実行",
-                    "value": "```\n週次レビュー\n```",
-                    "inline": false
-                  },
-                  {
-                    "name": "📋 必要なデータ",
-                    "value": "• 訪問者数（過去7日間）\n• nankan-analyticsクリック数\n• オーガニック検索の割合",
-                    "inline": false
-                  },
-                  {
-                    "name": "🔗 リンク",
-                    "value": "[GitHub Issue](https://github.com/apol0510/keiba-review-monorepo/issues) | [GA4](https://analytics.google.com/)",
-                    "inline": false
-                  }
-                ],
-                "footer": {
-                  "text": "keiba-review-monorepo | Month 1 進行中"
-                },
-                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"'"
-              }]
-            }' \
-            "$DISCORD_WEBHOOK_URL"
-
-          echo "✅ Discord notification sent successfully"
+            console.log('Created issue #' + issue.data.number + ': ' + issue.data.html_url);
