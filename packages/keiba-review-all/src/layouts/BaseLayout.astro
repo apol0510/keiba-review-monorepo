@@ -373,6 +373,23 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID;
             });
           }
         });
+
+        // 6. FAQ interaction tracking
+        document.querySelectorAll('[data-faq-toggle]').forEach((toggle) => {
+          toggle.addEventListener('click', (e) => {
+            const faqId = toggle.getAttribute('data-faq-id') || 'unknown';
+            const faqTitle = toggle.textContent?.trim().substring(0, 50) || '';
+
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'faq_interaction', {
+                event_category: 'engagement',
+                event_label: faqId,
+                faq_title: faqTitle,
+                value: 1
+              });
+            }
+          });
+        });
       });
     </script>
   </body>

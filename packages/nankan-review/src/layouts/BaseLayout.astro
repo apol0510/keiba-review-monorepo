@@ -353,6 +353,44 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID;
             });
           }
         });
+
+        // 6. Venue guide page view tracking
+        const currentPath = window.location.pathname;
+        const venuePages = {
+          '/venues/ooi/': '大井',
+          '/venues/kawasaki/': '川崎',
+          '/venues/funabashi/': '船橋',
+          '/venues/urawa/': '浦和'
+        };
+
+        if (venuePages[currentPath]) {
+          if (typeof gtag !== 'undefined') {
+            gtag('event', 'venue_guide_view', {
+              event_category: 'engagement',
+              event_label: venuePages[currentPath],
+              venue_name: venuePages[currentPath],
+              page_path: currentPath,
+              value: 1
+            });
+          }
+        }
+
+        // 7. FAQ interaction tracking
+        document.querySelectorAll('[data-faq-toggle]').forEach((toggle) => {
+          toggle.addEventListener('click', (e) => {
+            const faqId = toggle.getAttribute('data-faq-id') || 'unknown';
+            const faqTitle = toggle.textContent?.trim().substring(0, 50) || '';
+
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'faq_interaction', {
+                event_category: 'engagement',
+                event_label: faqId,
+                faq_title: faqTitle,
+                value: 1
+              });
+            }
+          });
+        });
       });
     </script>
   </body>
