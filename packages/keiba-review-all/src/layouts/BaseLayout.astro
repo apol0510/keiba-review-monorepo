@@ -266,15 +266,42 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID;
           link.addEventListener('click', (e) => {
             const text = link.textContent?.trim() || '';
             const href = link.href;
+            const target = link.target;
 
-            if (typeof gtag !== 'undefined') {
-              gtag('event', 'cta_click', {
-                event_category: 'conversion',
-                event_label: 'nankan_analytics_cta',
-                link_text: text,
-                link_url: href,
-                value: 1
-              });
+            // target="_blank"の場合は遅延不要（新しいタブで開くため）
+            if (target === '_blank') {
+              if (typeof gtag !== 'undefined') {
+                gtag('event', 'cta_click', {
+                  event_category: 'conversion',
+                  event_label: 'nankan_analytics_cta',
+                  link_text: text,
+                  link_url: href,
+                  value: 1
+                });
+              }
+            } else {
+              // 同じタブで開く場合は、イベント送信完了まで遅延
+              e.preventDefault();
+
+              if (typeof gtag !== 'undefined') {
+                gtag('event', 'cta_click', {
+                  event_category: 'conversion',
+                  event_label: 'nankan_analytics_cta',
+                  link_text: text,
+                  link_url: href,
+                  value: 1,
+                  event_callback: () => {
+                    window.location.href = href;
+                  }
+                });
+
+                // フォールバック: 200ms後に強制的に遷移
+                setTimeout(() => {
+                  window.location.href = href;
+                }, 200);
+              } else {
+                window.location.href = href;
+              }
             }
           });
         });
@@ -308,14 +335,40 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID;
           if (text.includes('サイトを見る') || text.includes('公式サイト')) {
             link.addEventListener('click', (e) => {
               const href = link.href;
+              const target = link.target;
 
-              if (typeof gtag !== 'undefined') {
-                gtag('event', 'site_visit_click', {
-                  event_category: 'conversion',
-                  event_label: 'site_visit_button',
-                  link_url: href,
-                  value: 1
-                });
+              // target="_blank"の場合は遅延不要（新しいタブで開くため）
+              if (target === '_blank') {
+                if (typeof gtag !== 'undefined') {
+                  gtag('event', 'site_visit_click', {
+                    event_category: 'conversion',
+                    event_label: 'site_visit_button',
+                    link_url: href,
+                    value: 1
+                  });
+                }
+              } else {
+                // 同じタブで開く場合は、イベント送信完了まで遅延
+                e.preventDefault();
+
+                if (typeof gtag !== 'undefined') {
+                  gtag('event', 'site_visit_click', {
+                    event_category: 'conversion',
+                    event_label: 'site_visit_button',
+                    link_url: href,
+                    value: 1,
+                    event_callback: () => {
+                      window.location.href = href;
+                    }
+                  });
+
+                  // フォールバック: 200ms後に強制的に遷移
+                  setTimeout(() => {
+                    window.location.href = href;
+                  }, 200);
+                } else {
+                  window.location.href = href;
+                }
               }
             });
           }
