@@ -163,8 +163,8 @@ async function updateReviewWithTweetId(recordId, tweetId) {
  */
 async function getUnpostedReviews() {
   // FREE API制限: 1日50ツイート、月500ツイート
-  // テスト投稿: 1件のみ
-  const MAX_POSTS_PER_RUN = 1;
+  // 通常運用: 1回の実行で最大3件まで投稿
+  const MAX_POSTS_PER_RUN = 3;
 
   try {
     const records = await base('Reviews')
@@ -175,15 +175,39 @@ async function getUnpostedReviews() {
       })
       .all();
 
-    return records.map(record => ({
-      id: record.id,
-      SiteName: record.get('SiteName') || record.get('Title') || '競馬予想サイト',
-      SiteSlug: record.get('SiteSlug') || 'site',
-      Rating: record.get('Rating'),
-      Comment: record.get('Comment') || record.get('Content') || record.get('Title'),
-      Category: record.get('Category') || '総合',
-      CreatedAt: record.get('CreatedAt')
-    }));
+    // Siteリンクから実際のサイト情報を取得
+    const reviewsWithSiteInfo = await Promise.all(
+      records.map(async (record) => {
+        let siteName = record.get('SiteName');
+        let siteSlug = record.get('SiteSlug');
+
+        // SiteNameまたはSiteSlugが空の場合、Siteリンクから取得
+        if (!siteName || !siteSlug) {
+          const siteLinks = record.get('Site');
+          if (siteLinks && siteLinks.length > 0) {
+            try {
+              const siteRecord = await base('Sites').find(siteLinks[0]);
+              siteName = siteName || siteRecord.get('Name') || record.get('Title');
+              siteSlug = siteSlug || siteRecord.get('Slug') || siteRecord.get('Name')?.toLowerCase().replace(/\s+/g, '-');
+            } catch (error) {
+              console.warn('⚠️ Siteレコード取得エラー:', error.message);
+            }
+          }
+        }
+
+        return {
+          id: record.id,
+          SiteName: siteName || record.get('Title') || '競馬予想サイト',
+          SiteSlug: siteSlug || 'unknown-site',
+          Rating: record.get('Rating'),
+          Comment: record.get('Comment') || record.get('Content') || record.get('Title'),
+          Category: record.get('Category') || '総合',
+          CreatedAt: record.get('CreatedAt')
+        };
+      })
+    );
+
+    return reviewsWithSiteInfo;
   } catch (error) {
     console.error('❌ Airtable取得エラー:', error);
     throw error;
