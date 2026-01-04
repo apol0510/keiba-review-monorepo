@@ -162,6 +162,9 @@ async function updateReviewWithTweetId(recordId, tweetId) {
 /**
  * まだXに投稿していない最新口コミを取得
  * FREE API対応: 月500ツイート制限を考慮
+ *
+ * NOTE: SiteName, SiteSlug, Categoryは事前にpopulate-review-fields.cjsで
+ * 一括設定済みのため、ランタイムでのSite取得は不要
  */
 async function getUnpostedReviews() {
   // FREE API制限: 1日50ツイート、月500ツイート
@@ -178,38 +181,15 @@ async function getUnpostedReviews() {
       })
       .all();
 
-    // Siteリンクから実際のサイト情報を取得
-    const reviewsWithSiteInfo = await Promise.all(
-      records.map(async (record) => {
-        let siteName = record.get('SiteName');
-        let siteSlug = record.get('SiteSlug');
-
-        // SiteNameまたはSiteSlugが空の場合、Siteリンクから取得
-        if (!siteName || !siteSlug) {
-          const siteLinks = record.get('Site');
-          if (siteLinks && siteLinks.length > 0) {
-            try {
-              const siteRecord = await base('Sites').find(siteLinks[0]);
-              siteName = siteName || siteRecord.get('Name') || record.get('Title');
-              siteSlug = siteSlug || siteRecord.get('Slug') || siteRecord.get('Name')?.toLowerCase().replace(/\s+/g, '-');
-            } catch (error) {
-              console.warn('⚠️ Siteレコード取得エラー:', error.message);
-            }
-          }
-        }
-
-        return {
-          id: record.id,
-          SiteName: siteName || record.get('Title') || '南関競馬予想サイト',
-          SiteSlug: siteSlug || 'unknown-site',
-          Rating: record.get('Rating'),
-          Comment: record.get('Comment') || record.get('Content') || record.get('Title'),
-          CreatedAt: record.get('CreatedAt')
-        };
-      })
-    );
-
-    return reviewsWithSiteInfo;
+    // 簡潔化: 全フィールドは既に設定済みのため直接取得
+    return records.map(record => ({
+      id: record.id,
+      SiteName: record.get('SiteName'),
+      SiteSlug: record.get('SiteSlug'),
+      Rating: record.get('Rating'),
+      Comment: record.get('Comment'),
+      CreatedAt: record.get('CreatedAt')
+    }));
   } catch (error) {
     console.error('❌ Airtable取得エラー:', error);
     throw error;
