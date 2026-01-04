@@ -14,7 +14,8 @@
   },
   "devDependencies": {
     "airtable": "^0.12.2",
-    "turbo": "^2.3.3"
+    "turbo": "^2.3.3",
+    "twitter-api-v2": "^1.17.2"
   },
   "packageManager": "pnpm@9.15.0",
   "engines": {

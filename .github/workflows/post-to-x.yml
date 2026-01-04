@@ -1,0 +1,96 @@
+name: Post to X (Twitter)
+
+on:
+  schedule:
+    # 6時間ごと（1日4回）
+    # AM 6:00, PM 12:00, PM 6:00, AM 0:00 JST
+    - cron: '0 21 * * *'  # AM 6:00 JST
+    - cron: '0 3 * * *'   # PM 12:00 JST
+    - cron: '0 9 * * *'   # PM 6:00 JST
+    - cron: '0 15 * * *'  # AM 0:00 JST
+  workflow_dispatch:
+
+jobs:
+  post-keiba-review-all:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/keiba-review-all
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: .
+        run: npm install
+
+      - name: Post to X (keiba-review-all)
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          X_API_KEY: ${{ secrets.KEIBA_REVIEW_ALL_X_API_KEY }}
+          X_API_SECRET: ${{ secrets.KEIBA_REVIEW_ALL_X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.KEIBA_REVIEW_ALL_X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.KEIBA_REVIEW_ALL_X_ACCESS_SECRET }}
+          SITE_URL: https://keiba-review.jp
+        run: node scripts/post-to-x.cjs
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ keiba-review-all: X自動投稿が完了しました"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ keiba-review-all: X自動投稿に失敗しました"
+          exit 1
+
+  post-nankan-review:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/nankan-review
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: .
+        run: npm install
+
+      - name: Post to X (nankan-review)
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          X_API_KEY: ${{ secrets.NANKAN_REVIEW_X_API_KEY }}
+          X_API_SECRET: ${{ secrets.NANKAN_REVIEW_X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.NANKAN_REVIEW_X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.NANKAN_REVIEW_X_ACCESS_SECRET }}
+          SITE_URL: https://nankan.keiba-review.jp
+        run: node scripts/post-to-x.cjs
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ nankan-review: X自動投稿が完了しました"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ nankan-review: X自動投稿に失敗しました"
+          exit 1
