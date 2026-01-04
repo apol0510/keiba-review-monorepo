@@ -216,7 +216,7 @@ async function main() {
   for (const review of unpostedReviews) {
     console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
     console.log(`📰 口コミ: ${review.SiteName} (⭐${review.Rating})`);
-    console.log(`📝 コメント: ${review.Comment.substring(0, 50)}...`);
+    console.log(`📝 コメント: ${review.Comment ? review.Comment.substring(0, 50) + '...' : '(コメントなし)'}`);
 
     try {
       // Xに投稿
