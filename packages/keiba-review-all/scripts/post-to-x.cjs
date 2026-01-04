@@ -166,8 +166,9 @@ async function updateReviewWithTweetId(recordId, tweetId) {
  */
 async function getUnpostedReviews() {
   // FREE API制限: 1日50ツイート、月500ツイート
-  // 通常運用: 1回の実行で最大3件まで投稿
-  const MAX_POSTS_PER_RUN = 3;
+  // 通常運用: 1回の実行で最大2件まで投稿
+  // ⚠️ 両サイト合計で月間制限内に収める: 1日4回 × 2件 × 2サイト × 30日 = 480ツイート < 500
+  const MAX_POSTS_PER_RUN = 2;
 
   try {
     const records = await base('Reviews')
