@@ -13,9 +13,6 @@ on:
 jobs:
   post-keiba-review-all:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/keiba-review-all
 
     steps:
       - name: Checkout code
@@ -25,13 +22,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        working-directory: .
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Post to X (keiba-review-all)
+        working-directory: packages/keiba-review-all
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
@@ -55,9 +67,6 @@ jobs:
 
   post-nankan-review:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/nankan-review
 
     steps:
       - name: Checkout code
@@ -67,13 +76,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        working-directory: .
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Post to X (nankan-review)
+        working-directory: packages/nankan-review
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
