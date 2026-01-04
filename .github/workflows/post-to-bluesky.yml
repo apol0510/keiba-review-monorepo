@@ -3,8 +3,9 @@ name: Post to Bluesky
 # トリガー設定
 on:
   # 定期実行: 6時間ごと（1日4回）
-  schedule:
-    - cron: '0 */6 * * *'  # UTC 0, 6, 12, 18時 = JST 9, 15, 21, 3時
+  # 注: 将来運用予定のため、現在は無効化
+  # schedule:
+  #   - cron: '0 */6 * * *'  # UTC 0, 6, 12, 18時 = JST 9, 15, 21, 3時
 
   # 手動実行を許可
   workflow_dispatch:
@@ -20,18 +21,18 @@ jobs:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
 
-      # 2. Node.jsセットアップ
+      # 2. pnpmインストール（Node.jsセットアップの前に実行）
+      - name: pnpmインストール
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 3. Node.jsセットアップ
       - name: Node.jsセットアップ
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-
-      # 3. pnpmインストール
-      - name: pnpmインストール
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       # 4. @atproto/apiインストール
       - name: Bluesky API依存関係インストール
