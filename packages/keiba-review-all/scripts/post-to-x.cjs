@@ -13,6 +13,7 @@
  * - SITE_URL: サイトURL（デフォルト: https://keiba-review.jp）
  */
 
+require('dotenv').config({ path: '.env' });
 const Airtable = require('airtable');
 const { TwitterApi } = require('twitter-api-v2');
 
@@ -162,8 +163,8 @@ async function updateReviewWithTweetId(recordId, tweetId) {
  */
 async function getUnpostedReviews() {
   // FREE API制限: 1日50ツイート、月500ツイート
-  // 安全のため1回の実行で最大3件まで投稿
-  const MAX_POSTS_PER_RUN = 3;
+  // テスト投稿: 1件のみ
+  const MAX_POSTS_PER_RUN = 1;
 
   try {
     const records = await base('Reviews')
@@ -176,11 +177,11 @@ async function getUnpostedReviews() {
 
     return records.map(record => ({
       id: record.id,
-      SiteName: record.get('SiteName'),
-      SiteSlug: record.get('SiteSlug'),
+      SiteName: record.get('SiteName') || record.get('Title') || '競馬予想サイト',
+      SiteSlug: record.get('SiteSlug') || 'site',
       Rating: record.get('Rating'),
-      Comment: record.get('Comment'),
-      Category: record.get('Category'),
+      Comment: record.get('Comment') || record.get('Content') || record.get('Title'),
+      Category: record.get('Category') || '総合',
       CreatedAt: record.get('CreatedAt')
     }));
   } catch (error) {
