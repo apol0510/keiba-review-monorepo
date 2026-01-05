@@ -90,6 +90,21 @@ function generateTweetText(review) {
   const comment = review.Comment || '';
   const shortComment = comment.length > 50 ? comment.substring(0, 50) + '...' : comment;
 
+  // コメントが空の場合のデフォルトメッセージ生成
+  const defaultComment = (() => {
+    // 評価に基づいてデフォルトコメントを生成
+    if (rating >= 4) {
+      return '多くのユーザーから高評価を得ている競馬予想サイトです。';
+    } else if (rating === 3) {
+      return '競馬予想サイトとして運営されています。';
+    } else {
+      return '利用者の声が寄せられている競馬予想サイトです。';
+    }
+  })();
+
+  // 実際に使用するコメント（空の場合はデフォルト）
+  const commentToUse = comment.trim() ? shortComment : defaultComment;
+
   // ツイート本文作成（280文字制限）
   // XのURL文字数カウント: URLは長さに関わらず23文字としてカウントされる
   const URL_CHAR_COUNT = 23;
@@ -103,7 +118,7 @@ function generateTweetText(review) {
     1 +                      // スペース
     stars.length +           // 星
     4 +                      // \n\n「」
-    shortComment.length +    // コメント
+    commentToUse.length +    // コメント
     2 +                      // \n\n
     9 +                      // 👉 詳細はこちら
     1 +                      // \n
@@ -112,10 +127,10 @@ function generateTweetText(review) {
     hashtags.join(' ').length; // ハッシュタグ
 
   // 280文字を超える場合はコメントをさらに短縮
-  let finalComment = shortComment;
+  let finalComment = commentToUse;
   if (fixedPartsLength > 280) {
-    const maxCommentLength = 280 - (fixedPartsLength - shortComment.length) - 3; // ...分を引く
-    finalComment = comment.substring(0, Math.max(0, maxCommentLength)) + '...';
+    const maxCommentLength = 280 - (fixedPartsLength - commentToUse.length) - 3; // ...分を引く
+    finalComment = (comment.trim() || defaultComment).substring(0, Math.max(0, maxCommentLength)) + '...';
   }
 
   return `${emoji} 【新着口コミ】${siteName} ${stars}\n\n「${finalComment}」\n\n👉 詳細はこちら\n${url}\n\n${hashtags.join(' ')}`;
