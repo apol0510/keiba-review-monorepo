@@ -110,16 +110,6 @@ const sites = sortByRankingScore(allSites);
                   </span>
                 </div>
 
-                <!-- Screenshot Badge -->
-                {site.screenshotUrl && (
-                  <div class="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span>スクリーンショット確認済み</span>
-                  </div>
-                )}
-
                 <!-- Hover Arrow -->
                 <div class="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
                   <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
