@@ -43,6 +43,6 @@ const helpfulCount = (review.helpful_count || review.helpfulCount || 0) as numbe
     <span class="font-medium">{displayUsername}</span>
   </div>
 
-  <!-- Helpful Button (一時的に無効化 - Netlify Function未実装) -->
-  <!-- <HelpfulButton reviewId={review.id} initialCount={helpfulCount} client:load /> -->
+  <!-- Helpful Button -->
+  <HelpfulButton reviewId={review.id} initialCount={helpfulCount} client:load />
 </div>
