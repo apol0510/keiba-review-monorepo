@@ -267,7 +267,7 @@ const breadcrumbItems = [
             href={site.url}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
           >
             サイトを見る
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,8 +336,8 @@ const breadcrumbItems = [
                 href={`?${sortBy !== 'newest' ? `sort=${sortBy}` : ''}`}
                 class={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   !filterRating
-                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md font-bold'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border-2 border-slate-300'
                 }`}
               >
                 すべて
