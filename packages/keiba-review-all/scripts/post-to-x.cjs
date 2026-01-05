@@ -62,7 +62,7 @@ function generateTweetText(review) {
 
   // サイトのSlugを取得（存在しない場合はサイト名からSlugを生成）
   const siteSlug = review.SiteSlug || siteName.toLowerCase().replace(/\s+/g, '-');
-  const url = `${SITE_URL}/sites/${siteSlug}/?utm_source=twitter&utm_medium=social&utm_campaign=auto_post`;
+  const url = `${SITE_URL}/keiba-yosou/${siteSlug}/?utm_source=twitter&utm_medium=social&utm_campaign=auto_post`;
 
   // カテゴリに応じた絵文字
   const categoryEmoji = {
