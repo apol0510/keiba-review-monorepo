@@ -1,9 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getSitesByCategory, sortByRankingScore } from '@keiba-review/shared/lib';
+import { getSitesWithStats, sortByRankingScore } from '@keiba-review/shared/lib';
 
 // 南関競馬サイトのみ取得
-const sites = await getSitesByCategory('nankan');
+const allSites = await getSitesWithStats();
+const sites = allSites.filter(site => site.category === 'nankan');
 const rankedSites = sortByRankingScore(sites);
 const topSites = rankedSites.slice(0, 10);
 
