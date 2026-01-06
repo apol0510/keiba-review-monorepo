@@ -9,6 +9,10 @@ on:
       - '.github/workflows/deploy-keiba-review-all.yml'
   workflow_dispatch:
 
+concurrency:
+  group: deploy-keiba-review-all-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
