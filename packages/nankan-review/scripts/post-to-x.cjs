@@ -60,7 +60,7 @@ const NANKAN_VENUE_EMOJI = {
 };
 
 /**
- * 投稿テキスト生成（南関競馬特化版）
+ * 投稿テキスト生成（南関競馬特化版・バリエーション強化）
  */
 function generateTweetText(review) {
   const siteName = review.SiteName;
@@ -73,6 +73,17 @@ function generateTweetText(review) {
 
   // 南関競馬の絵文字（デフォルトは夜間レース）
   const emoji = '🌃';
+
+  // 導入文のバリエーション（南関競馬特化6種類）
+  const introPatterns = [
+    '【新着口コミ】',
+    '【南関ユーザーの声】',
+    '【ナイター予想】',
+    '【南関4場の評判】',
+    '【利用者レビュー】',
+    '【南関予想サイト】'
+  ];
+  const intro = introPatterns[Math.floor(Math.random() * introPatterns.length)];
 
   // ハッシュタグ（南関競馬特化）
   const hashtags = ['#南関競馬', '#競馬予想'];
@@ -88,6 +99,21 @@ function generateTweetText(review) {
   } else if (comment.includes('浦和')) {
     hashtags.push('#浦和競馬');
   }
+
+  // 南関特化の特別メッセージ（評価が高い場合のみ）
+  const nankanSpecialMessage = (() => {
+    if (rating >= 4) {
+      const messages = [
+        '夜間レースの予想に強い！',
+        'ナイター予想の実績あり',
+        '南関4場の情報が充実',
+        'TCK予想に定評',
+        '地方競馬の穴馬情報が豊富'
+      ];
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+    return null;
+  })();
 
   // コメントを短縮（最大50文字）
   const shortComment = comment.length > 50 ? comment.substring(0, 50) + '...' : comment;
@@ -111,16 +137,20 @@ function generateTweetText(review) {
   // XのURL文字数カウント: URLは長さに関わらず23文字としてカウントされる
   const URL_CHAR_COUNT = 23;
 
+  // カテゴリ特別メッセージを含める場合の調整
+  const specialMessagePart = nankanSpecialMessage ? `\n💡 ${nankanSpecialMessage}` : '';
+
   // 固定部分の文字数を計算
   const fixedPartsLength =
     emoji.length +           // 絵文字（通常2文字）
     1 +                      // スペース
-    10 +                     // 【新着口コミ】
+    intro.length +           // 導入文（可変）
     siteName.length +        // サイト名
     1 +                      // スペース
     stars.length +           // 星
     4 +                      // \n\n「」
     commentToUse.length +    // コメント
+    specialMessagePart.length + // 南関特別メッセージ
     2 +                      // \n\n
     9 +                      // 👉 詳細はこちら
     1 +                      // \n
@@ -135,7 +165,7 @@ function generateTweetText(review) {
     finalComment = (comment.trim() || defaultComment).substring(0, Math.max(0, maxCommentLength)) + '...';
   }
 
-  return `${emoji} 【新着口コミ】${siteName} ${stars}\n\n「${finalComment}」\n\n👉 詳細はこちら\n${url}\n\n${hashtags.join(' ')}`;
+  return `${emoji} ${intro}${siteName} ${stars}\n\n「${finalComment}」${specialMessagePart}\n\n👉 詳細はこちら\n${url}\n\n${hashtags.join(' ')}`;
 }
 
 /**
@@ -242,10 +272,12 @@ async function main() {
       // Airtableを更新
       await updateReviewWithTweetId(review.id, tweetId);
 
-      // レート制限対策（15秒待機）
+      // レート制限対策（30-60秒ランダム待機）
       if (unpostedReviews.indexOf(review) < unpostedReviews.length - 1) {
-        console.log('⏱️  15秒待機中...');
-        await new Promise(resolve => setTimeout(resolve, 15000));
+        const waitTime = 30000 + Math.floor(Math.random() * 30000); // 30-60秒
+        const waitSeconds = Math.floor(waitTime / 1000);
+        console.log(`⏱️  ${waitSeconds}秒待機中...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
 
     } catch (error) {

@@ -2,12 +2,10 @@ name: Post to X (Twitter)
 
 on:
   schedule:
-    # 6時間ごと（1日4回）
-    # AM 6:00, PM 12:00, PM 6:00, AM 0:00 JST
-    - cron: '0 21 * * *'  # AM 6:00 JST
-    - cron: '0 3 * * *'   # PM 12:00 JST
-    - cron: '0 9 * * *'   # PM 6:00 JST
-    - cron: '0 15 * * *'  # AM 0:00 JST
+    # 12時間ごと（1日2回）- アカウントロック防止
+    # AM 9:00, PM 6:00 JST（通勤・帰宅時間帯）
+    - cron: '0 0 * * *'   # AM 9:00 JST（通勤時間帯）
+    - cron: '0 9 * * *'   # PM 6:00 JST（帰宅時間帯）
   workflow_dispatch:
 
 jobs:
@@ -41,6 +39,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Add random delay (0-15 minutes)
+        run: |
+          # ランダム待機（0-900秒 = 0-15分）
+          DELAY=$((RANDOM % 900))
+          echo "⏱️  ランダム待機: ${DELAY}秒"
+          sleep $DELAY
 
       - name: Post to X (keiba-review-all)
         working-directory: packages/keiba-review-all
@@ -95,6 +100,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Add random delay (0-15 minutes)
+        run: |
+          # ランダム待機（0-900秒 = 0-15分）
+          DELAY=$((RANDOM % 900))
+          echo "⏱️  ランダム待機: ${DELAY}秒"
+          sleep $DELAY
 
       - name: Post to X (nankan-review)
         working-directory: packages/nankan-review

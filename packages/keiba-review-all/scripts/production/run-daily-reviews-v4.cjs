@@ -574,7 +574,8 @@ async function postReview(site, allReviews) {
       console.error(`  ❌ ${site.name}: エラー発生 - ${error.message}`);
       failedCount++;
     }
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Airtableレート制限対策: 5 requests/secondを超えないよう2秒待機
+    await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
   console.log('\n✅ 口コミ自動投稿完了\n');

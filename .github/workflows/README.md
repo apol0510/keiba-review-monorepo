@@ -64,25 +64,6 @@ Monorepo全体のCI/CDを管理するGitHub Actionsワークフロー
 
 **実行時間:** 約5-10分
 
-### 7. Post to X (post-to-x.yml)
-**トリガー:** 6時間ごと（1日4回: AM6:00, PM12:00, PM6:00, AM0:00 JST）
-
-**内容:**
-- 未投稿の承認済み口コミをXに自動投稿
-- 1回の実行で最大3件まで投稿
-- TweetIDとTweetedAtをAirtableに記録
-
-**実行時間:** 約5-10分
-
-### 8. Post to Bluesky (post-to-bluesky.yml)
-**トリガー:** 6時間ごと（1日4回）
-
-**内容:**
-- keiba-review-allとnankan-reviewの紹介投稿
-- 16種類のテンプレートからランダム選択
-
-**実行時間:** 約3-5分
-
 ## 🔐 必須GitHub Secrets
 
 ### 共通（全ワークフロー）
@@ -112,26 +93,6 @@ CLOUDINARY_API_KEY        # Cloudinary APIキー
 CLOUDINARY_API_SECRET     # Cloudinary APIシークレット
 ```
 
-### SNS自動投稿関連
-```
-# X (Twitter) Developer API - keiba-review-all
-KEIBA_REVIEW_ALL_X_API_KEY              # X API Consumer Key (API Key)
-KEIBA_REVIEW_ALL_X_API_SECRET           # X API Consumer Secret (API Secret)
-KEIBA_REVIEW_ALL_X_ACCESS_TOKEN         # X API Access Token
-KEIBA_REVIEW_ALL_X_ACCESS_SECRET        # X API Access Token Secret
-
-# X (Twitter) Developer API - nankan-review
-# 注: keiba-review-allと同じAirtable Baseを使用（Categoryでフィルタ）
-NANKAN_REVIEW_X_API_KEY                 # X API Consumer Key (API Key)
-NANKAN_REVIEW_X_API_SECRET              # X API Consumer Secret (API Secret)
-NANKAN_REVIEW_X_ACCESS_TOKEN            # X API Access Token
-NANKAN_REVIEW_X_ACCESS_SECRET           # X API Access Token Secret
-
-# Bluesky
-BLUESKY_IDENTIFIER        # Blueskyハンドル（例: keiba-review.bsky.social）
-BLUESKY_PASSWORD          # Blueskyパスワード
-```
-
 ## 🚀 セットアップ手順
 
 ### 1. GitHubリポジトリにSecretsを設定
@@ -152,22 +113,6 @@ gh secret set PUBLIC_GA_ID_NANKAN
 gh secret set CLOUDINARY_CLOUD_NAME
 gh secret set CLOUDINARY_API_KEY
 gh secret set CLOUDINARY_API_SECRET
-
-# keiba-review-all用
-gh secret set KEIBA_REVIEW_ALL_X_API_KEY
-gh secret set KEIBA_REVIEW_ALL_X_API_SECRET
-gh secret set KEIBA_REVIEW_ALL_X_ACCESS_TOKEN
-gh secret set KEIBA_REVIEW_ALL_X_ACCESS_SECRET
-
-# nankan-review用（keiba-review-allと同じAirtable Baseを使用）
-gh secret set NANKAN_REVIEW_X_API_KEY
-gh secret set NANKAN_REVIEW_X_API_SECRET
-gh secret set NANKAN_REVIEW_X_ACCESS_TOKEN
-gh secret set NANKAN_REVIEW_X_ACCESS_SECRET
-
-# Bluesky
-gh secret set BLUESKY_IDENTIFIER
-gh secret set BLUESKY_PASSWORD
 ```
 
 ### 2. Netlifyサイトの作成
@@ -224,8 +169,6 @@ gh run view <run-id> --log
 | 毎日 AM4:00 | Auto Post Reviews | 口コミ自動投稿 |
 | 毎週月曜 AM5:00 | Screenshot Capture | スクリーンショット取得 |
 | 毎日 AM9:00 | Daily Monitoring | 日次モニタリング |
-| 6時間ごと (AM6:00, PM12:00, PM6:00, AM0:00) | Post to X | X自動投稿（最大3件/回） |
-| 6時間ごと | Post to Bluesky | Bluesky自動投稿 |
 
 ## 🔧 トラブルシューティング
 
@@ -252,4 +195,4 @@ gh run view <run-id> --log
 
 ---
 
-最終更新: 2026-01-03
+最終更新: 2025-12-29
