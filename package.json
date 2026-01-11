@@ -1,6 +1,6 @@
 {
   "name": "keiba-review-monorepo",
-  "version": "1.0.0",
+  "version": "1.7.0",
   "private": true,
   "description": "競馬予想サイト口コミプラットフォーム Monorepo",
   "workspaces": [

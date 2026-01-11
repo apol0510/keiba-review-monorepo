@@ -1,3 +1,19 @@
+/**
+ * 期間指定で口コミ件数を確認するスクリプト
+ *
+ * 用途:
+ * - 特定期間の口コミ投稿状況を確認
+ * - 日別の投稿件数を集計
+ * - 欠損日（口コミが0件の日）を検出
+ *
+ * 使い方:
+ * AIRTABLE_API_KEY="..." AIRTABLE_BASE_ID="..." node scripts/check-reviews-jan5-11.cjs
+ *
+ * 期間を変更する場合:
+ * - filterByFormulaのIS_AFTER/IS_BEFOREの日付を変更
+ * - expectedDatesの配列を変更
+ */
+
 const Airtable = require('airtable');
 const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
 
