@@ -3,7 +3,7 @@
   publish = "packages/keiba-review-all/dist"
 
 [functions]
-  directory = "packages/keiba-review-all/netlify/functions"
+  directory = "netlify/functions"
 
 # 静的ファイルのキャッシュ（1年間）
 [[headers]]

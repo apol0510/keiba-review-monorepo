@@ -108,28 +108,20 @@ export async function getAllSites(): Promise<Site[]> {
     sort: [{ field: 'CreatedAt', direction: 'desc' }]
   }).all();
 
-  return records.map(record => {
-    const avgRatingField = record.fields['Average Rating'];
-    // AirtableのNaN対応: { specialValue: 'NaN' } オブジェクトをundefinedに変換
-    const averageRating = (avgRatingField && typeof avgRatingField === 'object' && 'specialValue' in avgRatingField)
-      ? undefined
-      : (avgRatingField as number);
-
-    return {
-      id: record.id,
-      name: record.fields.Name as string,
-      slug: record.fields.Slug as string,
-      url: record.fields.URL as string,
-      description: record.fields.Description as string || '',
-      category: record.fields.Category as Category,
-      screenshotUrl: record.fields.ScreenshotURL as string || undefined,
-      isApproved: record.fields.IsApproved !== undefined ? (record.fields.IsApproved as boolean) : true,
-      status: (record.fields.IsApproved !== undefined && !record.fields.IsApproved) ? 'pending' : 'active',
-      reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
-      averageRating,
-      createdAt: record.fields.CreatedAt as string
-    };
-  });
+  return records.map(record => ({
+    id: record.id,
+    name: record.fields.Name as string,
+    slug: record.fields.Slug as string,
+    url: record.fields.URL as string,
+    description: record.fields.Description as string || '',
+    category: record.fields.Category as Category,
+    screenshotUrl: record.fields.ScreenshotURL as string,
+    isApproved: record.fields.IsApproved as boolean || false,
+    status: record.fields.IsApproved ? 'active' : 'pending',
+    reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
+    averageRating: record.fields['Average Rating'] as number,
+    createdAt: record.fields.CreatedAt as string
+  }));
 }
 
 // 承認済みサイト取得
@@ -142,34 +134,25 @@ export async function getApprovedSites(): Promise<Site[]> {
   }
 
   const records = await base('Sites').select({
-    // IsApprovedフィールドが存在しない場合の暫定対応: Categoryが存在すればOK
-    filterByFormula: '{Category} != ""',
+    filterByFormula: '{IsApproved} = TRUE()',
     sort: [{ field: 'DisplayPriority', direction: 'desc' }, { field: 'CreatedAt', direction: 'desc' }]
   }).all();
 
-  const sites = records.map(record => {
-    const avgRatingField = record.fields['Average Rating'];
-    // AirtableのNaN対応: { specialValue: 'NaN' } オブジェクトをundefinedに変換
-    const averageRating = (avgRatingField && typeof avgRatingField === 'object' && 'specialValue' in avgRatingField)
-      ? undefined
-      : (avgRatingField as number);
-
-    return {
-      id: record.id,
-      name: record.fields.Name as string,
-      slug: record.fields.Slug as string,
-      url: record.fields.URL as string,
-      description: record.fields.Description as string || '',
-      category: record.fields.Category as Category,
-      screenshotUrl: record.fields.ScreenshotURL as string || undefined,
-      isApproved: record.fields.IsApproved !== undefined ? (record.fields.IsApproved as boolean) : true,
-      status: 'active',
-      reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
-      averageRating,
-      displayPriority: (record.fields.DisplayPriority as number) || 50,
-      createdAt: record.fields.CreatedAt as string
-    };
-  });
+  const sites = records.map(record => ({
+    id: record.id,
+    name: record.fields.Name as string,
+    slug: record.fields.Slug as string,
+    url: record.fields.URL as string,
+    description: record.fields.Description as string || '',
+    category: record.fields.Category as Category,
+    screenshotUrl: record.fields.ScreenshotURL as string,
+    isApproved: true,
+    status: 'active',
+    reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
+    averageRating: record.fields['Average Rating'] as number,
+    displayPriority: (record.fields.DisplayPriority as number) || 50,
+    createdAt: record.fields.CreatedAt as string
+  }));
 
   // キャッシュに保存
   setCache(cacheKey, sites);
@@ -179,34 +162,25 @@ export async function getApprovedSites(): Promise<Site[]> {
 // カテゴリ別サイト取得
 export async function getSitesByCategory(category: Category): Promise<Site[]> {
   const records = await base('Sites').select({
-    // IsApprovedフィールドが存在しない場合の暫定対応
-    filterByFormula: `{Category} = '${category}'`,
+    filterByFormula: `AND({IsApproved} = TRUE(), {Category} = '${category}')`,
     sort: [{ field: 'DisplayPriority', direction: 'desc' }, { field: 'CreatedAt', direction: 'desc' }]
   }).all();
 
-  return records.map(record => {
-    const avgRatingField = record.fields['Average Rating'];
-    // AirtableのNaN対応: { specialValue: 'NaN' } オブジェクトをundefinedに変換
-    const averageRating = (avgRatingField && typeof avgRatingField === 'object' && 'specialValue' in avgRatingField)
-      ? undefined
-      : (avgRatingField as number);
-
-    return {
-      id: record.id,
-      name: record.fields.Name as string,
-      slug: record.fields.Slug as string,
-      url: record.fields.URL as string,
-      description: record.fields.Description as string || '',
-      category: record.fields.Category as Category,
-      screenshotUrl: record.fields.ScreenshotURL as string || undefined,
-      isApproved: record.fields.IsApproved !== undefined ? (record.fields.IsApproved as boolean) : true,
-      status: 'active',
-      reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
-      averageRating,
-      displayPriority: (record.fields.DisplayPriority as number) || 50,
-      createdAt: record.fields.CreatedAt as string
-    };
-  });
+  return records.map(record => ({
+    id: record.id,
+    name: record.fields.Name as string,
+    slug: record.fields.Slug as string,
+    url: record.fields.URL as string,
+    description: record.fields.Description as string || '',
+    category: record.fields.Category as Category,
+    screenshotUrl: record.fields.ScreenshotURL as string,
+    isApproved: true,
+    status: 'active',
+    reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
+    averageRating: record.fields['Average Rating'] as number,
+    displayPriority: (record.fields.DisplayPriority as number) || 50,
+    createdAt: record.fields.CreatedAt as string
+  }));
 }
 
 // Slug指定でサイト取得
@@ -228,14 +202,7 @@ export async function getSiteBySlug(slug: string): Promise<Site | null> {
   }
 
   const record = records[0];
-  const screenshotUrl = record.fields.ScreenshotURL as string || undefined;
-
-  const avgRatingField = record.fields['Average Rating'];
-  // AirtableのNaN対応: { specialValue: 'NaN' } オブジェクトをundefinedに変換
-  const averageRating = (avgRatingField && typeof avgRatingField === 'object' && 'specialValue' in avgRatingField)
-    ? undefined
-    : (avgRatingField as number);
-
+  const screenshotUrl = record.fields.ScreenshotURL as string;
   const site = {
     id: record.id,
     name: record.fields.Name as string,
@@ -245,10 +212,10 @@ export async function getSiteBySlug(slug: string): Promise<Site | null> {
     category: record.fields.Category as Category,
     screenshotUrl,
     screenshot_url: screenshotUrl, // snake_caseエイリアス
-    isApproved: record.fields.IsApproved !== undefined ? (record.fields.IsApproved as boolean) : true,
-    status: (record.fields.IsApproved !== undefined && !record.fields.IsApproved) ? 'pending' : 'active',
+    isApproved: record.fields.IsApproved as boolean || false,
+    status: record.fields.IsApproved ? 'active' : 'pending',
     reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
-    averageRating,
+    averageRating: record.fields['Average Rating'] as number,
     createdAt: record.fields.CreatedAt as string
   } as any; // 型エラー回避のためanyを使用
 
@@ -309,7 +276,7 @@ export async function getReviewsBySite(siteId: string): Promise<Review[]> {
   return records.map(record => ({
     id: record.id,
     siteId: record.fields.Site ? (record.fields.Site as string[])[0] : '',
-    siteName: record.fields.SiteName as string,
+    siteName: record.fields['Site Name'] as string,
     username: record.fields.UserName as string,
     rating: record.fields.Rating as number,
     title: record.fields.Title as string,
@@ -348,7 +315,7 @@ export async function getApprovedReviewsBySite(siteId: string): Promise<Review[]
   const reviews = records.map(record => ({
     id: record.id,
     siteId: record.fields.Site ? (record.fields.Site as string[])[0] : '',
-    siteName: record.fields.SiteName as string,
+    siteName: record.fields['Site Name'] as string,
     username: record.fields.UserName as string,
     rating: record.fields.Rating as number,
     title: record.fields.Title as string,
@@ -379,7 +346,7 @@ export async function getPendingReviews(): Promise<Review[]> {
   return records.map(record => ({
     id: record.id,
     siteId: record.fields.Site ? (record.fields.Site as string[])[0] : '',
-    siteName: record.fields.SiteName as string,
+    siteName: record.fields['Site Name'] as string,
     username: record.fields.UserName as string,
     rating: record.fields.Rating as number,
     title: record.fields.Title as string,

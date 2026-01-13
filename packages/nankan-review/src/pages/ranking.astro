@@ -1,9 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getSitesWithStats, sortByRankingScore } from '@keiba-review/shared/lib';
+import { getSitesByCategory, sortByRankingScore } from '@keiba-review/shared/lib';
 
-const allSites = await getSitesWithStats();
-const sites = allSites.filter(site => site.category === 'nankan');
+const sites = await getSitesByCategory('nankan');
 const rankedSites = sortByRankingScore(sites);
 
 const siteUrl = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';

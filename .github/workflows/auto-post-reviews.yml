@@ -29,14 +29,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run daily reviews (keiba-review-all)
-        id: post-reviews
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
         working-directory: packages/keiba-review-all
-        run: |
-          node scripts/production/run-daily-reviews-v4.cjs 2>&1 | tee /tmp/review-output.log
-          echo "LOG_FILE=/tmp/review-output.log" >> $GITHUB_ENV
+        run: node scripts/production/run-daily-reviews-v4.cjs
 
       - name: Verify execution (keiba-review-all)
         env:
@@ -45,43 +42,12 @@ jobs:
         working-directory: packages/keiba-review-all
         run: node scripts/production/verify-daily-execution.cjs
 
-      - name: Generate Summary Report
-        if: always()
+      - name: Report success
+        if: success()
         run: |
-          echo "## 📊 口コミ自動投稿レポート" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| 項目 | 内容 |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🕐 実行日時 | $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S JST') |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🎯 投稿先 | keiba-review-all（全カテゴリ） |" >> $GITHUB_STEP_SUMMARY
-
-          # ログから成功/失敗件数を抽出
-          if [ -f /tmp/review-output.log ]; then
-            SUCCESS_COUNT=$(grep "成功:" /tmp/review-output.log | tail -1 | sed 's/.*成功: \([0-9]*\)件.*/\1/' || echo "0")
-            FAILED_COUNT=$(grep "失敗:" /tmp/review-output.log | tail -1 | sed 's/.*失敗: \([0-9]*\)件.*/\1/' || echo "0")
-            TOTAL_COUNT=$((SUCCESS_COUNT + FAILED_COUNT))
-
-            echo "| ✅ 成功 | ${SUCCESS_COUNT}件 |" >> $GITHUB_STEP_SUMMARY
-            echo "| ❌ 失敗 | ${FAILED_COUNT}件 |" >> $GITHUB_STEP_SUMMARY
-            echo "| 📝 合計 | ${TOTAL_COUNT}件 |" >> $GITHUB_STEP_SUMMARY
-
-            # 成功率を計算
-            if [ "$TOTAL_COUNT" -gt 0 ]; then
-              SUCCESS_RATE=$((SUCCESS_COUNT * 100 / TOTAL_COUNT))
-              echo "| 📈 成功率 | ${SUCCESS_RATE}% |" >> $GITHUB_STEP_SUMMARY
-            fi
-          else
-            echo "| ⚠️ ステータス | ログファイルが見つかりません |" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # ステータスに応じたメッセージ
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ **実行結果: 成功**" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **実行結果: 失敗** - ログを確認してください" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "✅ 口コミ自動投稿が完了しました"
+          echo "📝 投稿先: keiba-review-all（全カテゴリ）"
+          echo "⏰ 実行時刻: $(date '+%Y-%m-%d %H:%M:%S JST')"
 
       - name: Send notification on failure
         if: failure()

@@ -11,15 +11,9 @@ importers:
       airtable:
         specifier: ^0.12.2
         version: 0.12.2
-      dotenv:
-        specifier: ^16.4.7
-        version: 16.6.1
       turbo:
         specifier: ^2.3.3
         version: 2.7.2
-      twitter-api-v2:
-        specifier: ^1.17.2
-        version: 1.28.0
 
   packages/keiba-review-all:
     dependencies:
@@ -4016,9 +4010,6 @@ packages:
   turbo@2.7.2:
     resolution: {integrity: sha512-5JIA5aYBAJSAhrhbyag1ZuMSgUZnHtI+Sq3H8D3an4fL8PeF+L1yYvbEJg47akP1PFfATMf5ehkqFnxfkmuwZQ==}
     hasBin: true
-
-  twitter-api-v2@1.28.0:
-    resolution: {integrity: sha512-VBmiAMylCEr94OChaHJ+0TBrOZNrduwWUe7QLoa/KdOdv1fNiToJ0xZGOrNKFd2B7jrAdAkfUW6yA5LuXYOYLQ==}
 
   type-fest@4.41.0:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
@@ -8812,8 +8803,6 @@ snapshots:
       turbo-linux-arm64: 2.7.2
       turbo-windows-64: 2.7.2
       turbo-windows-arm64: 2.7.2
-
-  twitter-api-v2@1.28.0: {}
 
   type-fest@4.41.0: {}
 

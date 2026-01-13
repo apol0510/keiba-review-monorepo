@@ -59,8 +59,8 @@ const averageRating = reviewCount > 0
   ? allReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
   : undefined;
 
-site.reviewCount = reviewCount;
-site.averageRating = averageRating;
+site.review_count = reviewCount;
+site.average_rating = averageRating;
 
 // 星評価でフィルタリング
 if (filterRating) {
@@ -85,14 +85,14 @@ const structuredData = {
   '@type': 'Product',
   name: site.name,
   description: site.description,
-  image: site.screenshotUrl,
+  image: site.screenshot_url,
   url: `${siteUrl}/sites/${site.slug}/`,
   aggregateRating:
-    reviews.length > 0 && site.averageRating
+    reviews.length > 0 && site.average_rating
       ? {
           '@type': 'AggregateRating',
-          ratingValue: site.averageRating.toFixed(1),
-          reviewCount: site.reviewCount.toString(),
+          ratingValue: site.average_rating.toFixed(1),
+          reviewCount: site.review_count.toString(),
           bestRating: '5',
           worstRating: '1',
         }
@@ -140,12 +140,12 @@ const breadcrumbStructuredData = {
 
 // SEO最適化されたメタディスクリプション生成
 const generateMetaDescription = () => {
-  const ratingText = site.averageRating
-    ? `平均評価${site.averageRating.toFixed(1)}★`
+  const ratingText = site.average_rating
+    ? `平均評価${site.average_rating.toFixed(1)}★`
     : '';
 
-  const reviewCountText = site.reviewCount > 0
-    ? `${site.reviewCount}件の口コミ`
+  const reviewCountText = site.review_count > 0
+    ? `${site.review_count}件の口コミ`
     : '口コミ募集中';
 
   const recentReview = reviews.length > 0 ? reviews[0] : null;
@@ -159,10 +159,10 @@ const generateMetaDescription = () => {
 // 関連サイト取得（南関カテゴリで評価が高い上位6件、現在のサイトは除外）
 const allSites = await getSitesWithStats();
 const relatedSites = allSites
-  .filter(s => s.category === 'nankan' && s.slug !== site.slug && s.isApproved)
+  .filter(s => s.category === 'nankan' && s.slug !== site.slug && s.status === 'approved')
   .sort((a, b) => {
-    const scoreA = (a.averageRating || 0) * Math.log(a.reviewCount + 1);
-    const scoreB = (b.averageRating || 0) * Math.log(b.reviewCount + 1);
+    const scoreA = (a.average_rating || 0) * Math.log(a.review_count + 1);
+    const scoreB = (b.average_rating || 0) * Math.log(b.review_count + 1);
     return scoreB - scoreA;
   })
   .slice(0, 6);
@@ -210,9 +210,9 @@ const breadcrumbItems = [
         <!-- Screenshot -->
         <div class="md:w-1/3">
           <div class="aspect-video bg-gradient-to-br from-slate-100 to-blue-50 relative overflow-hidden">
-            {site.screenshotUrl ? (
+            {site.screenshot_url ? (
               <OptimizedImage
-                src={getScreenshotUrl(site.slug, site.screenshotUrl)}
+                src={getScreenshotUrl(site.slug, site.screenshot_url)}
                 alt={`${site.name}のスクリーンショット`}
                 width={600}
                 height={400}
@@ -239,13 +239,13 @@ const breadcrumbItems = [
           </div>
 
           <div class="flex items-center gap-4 mb-6">
-            <StarRating rating={site.averageRating || 0} size="lg" />
+            <StarRating rating={site.average_rating || 0} size="lg" />
             <div>
               <span class="text-2xl md:text-3xl font-bold text-slate-900">
-                {site.averageRating ? site.averageRating.toFixed(1) : '0.0'}
+                {site.average_rating ? site.average_rating.toFixed(1) : '0.0'}
               </span>
               <span class="text-slate-600">/ 5.0</span>
-              <span class="text-sm text-slate-500 ml-2">({site.reviewCount}件の口コミ)</span>
+              <span class="text-sm text-slate-500 ml-2">({site.review_count}件の口コミ)</span>
             </div>
           </div>
 
@@ -267,7 +267,7 @@ const breadcrumbItems = [
             href={site.url}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
           >
             サイトを見る
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,8 +336,8 @@ const breadcrumbItems = [
                 href={`?${sortBy !== 'newest' ? `sort=${sortBy}` : ''}`}
                 class={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   !filterRating
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md font-bold'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border-2 border-slate-300'
+                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 すべて

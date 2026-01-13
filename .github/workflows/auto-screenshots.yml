@@ -3,9 +3,8 @@ name: Weekly Screenshot Capture
 on:
   # 毎週月曜午前5時（JST）に実行
   # 口コミ投稿（AM4:00）の1時間後に実行してAPI衝突を回避
-  # ⚠️ Cloudinary環境変数が設定されるまで無効化
-  # schedule:
-  #   - cron: '0 20 * * 0' # UTC 20:00 日曜 = JST 5:00 月曜
+  schedule:
+    - cron: '0 20 * * 0' # UTC 20:00 日曜 = JST 5:00 月曜
 
   # 手動実行も可能
   workflow_dispatch:

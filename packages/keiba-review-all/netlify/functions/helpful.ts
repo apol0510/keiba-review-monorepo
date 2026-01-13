@@ -1,15 +1,16 @@
-import type { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
+import type { Handler } from '@netlify/functions';
 import Airtable from 'airtable';
 
-const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+export const handler: Handler = async (event) => {
   // CORSヘッダー
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json',
   };
 
-  // OPTIONSリクエスト（preflight）への対応
+  // OPTIONSリクエスト（プリフライト）
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -18,7 +19,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     };
   }
 
-  // POSTメソッドのみ許可
+  // POSTのみ許可
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -28,7 +29,6 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
   }
 
   try {
-    // リクエストボディをパース
     const { reviewId } = JSON.parse(event.body || '{}');
 
     if (!reviewId) {
@@ -39,12 +39,11 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       };
     }
 
-    // Airtable設定
-    const apiKey = process.env.AIRTABLE_API_KEY;
-    const baseId = process.env.AIRTABLE_BASE_ID;
+    // Airtable接続
+    const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+    const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 
-    if (!apiKey || !baseId) {
-      console.error('Airtable credentials not found');
+    if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
       return {
         statusCode: 500,
         headers,
@@ -52,26 +51,15 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       };
     }
 
-    const base = new Airtable({ apiKey }).base(baseId);
+    const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 
-    // レコードを取得
+    // 現在のカウントを取得
     const record = await base('Reviews').find(reviewId);
-
-    if (!record) {
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ error: 'Review not found' }),
-      };
-    }
-
-    // HelpfulCountを取得（存在しない場合は0）
     const currentCount = (record.fields.HelpfulCount as number) || 0;
-    const newCount = currentCount + 1;
 
-    // HelpfulCountを更新
+    // カウントを +1
     await base('Reviews').update(reviewId, {
-      HelpfulCount: newCount,
+      HelpfulCount: currentCount + 1,
     });
 
     return {
@@ -79,20 +67,19 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       headers,
       body: JSON.stringify({
         success: true,
-        count: newCount
+        newCount: currentCount + 1,
       }),
     };
   } catch (error) {
     console.error('Error updating helpful count:', error);
+
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({
         error: 'Failed to update helpful count',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       }),
     };
   }
 };
-
-export { handler };
