@@ -161,27 +161,51 @@ const { reviewId, initialCount } = Astro.props;
   // MutationObserver: DOM変更（並び替え・フィルタリング）を監視して再初期化
   // これにより、後から追加されたボタンも初期状態（クリック済み表示など）が正しく反映される
   if (typeof MutationObserver !== 'undefined') {
+    let reinitTimeout: number | null = null;
+
+    // デバウンス: 連続発火を防止（200ms）
+    const debouncedReinit = () => {
+      if (reinitTimeout !== null) {
+        clearTimeout(reinitTimeout);
+      }
+      reinitTimeout = window.setTimeout(() => {
+        initializeHelpfulButtons();
+        reinitTimeout = null;
+      }, 200);
+    };
+
     const observer = new MutationObserver((mutations) => {
       let shouldReinit = false;
 
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
-          if (node instanceof Element && node.querySelector('.helpful-button')) {
-            shouldReinit = true;
+          if (node instanceof Element) {
+            // 追加されたノード自体が .helpful-button の場合
+            // または 子孫に .helpful-button が含まれる場合
+            if (node.matches('.helpful-button') || node.querySelector('.helpful-button')) {
+              shouldReinit = true;
+            }
           }
         });
       });
 
       if (shouldReinit) {
-        initializeHelpfulButtons();
+        debouncedReinit();
       }
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      observer.observe(document.body, {
+      // 監視対象を口コミ一覧コンテナに限定（document.body全域は過剰）
+      // 並び替え・フィルタリングで変更される部分のみを監視
+      const reviewContainer = document.querySelector('.review-list, main, #reviews-container');
+      const target = reviewContainer || document.body;
+
+      observer.observe(target, {
         childList: true,
         subtree: true
       });
+
+      console.log('[HelpfulButton] MutationObserver監視開始:', target.className || 'document.body');
     });
   }
 </script>
