@@ -32,9 +32,11 @@ const { reviewId, initialCount } = Astro.props;
 </div>
 
 <script>
-  // DOMContentLoaded後に実行（確実にDOMが読み込まれてから）
-  document.addEventListener('DOMContentLoaded', () => {
-    // 全ての参考になったボタンを取得
+  // イベント委譲方式: 並び替え・フィルタリング後も確実に動作
+  // 親要素（document）で一括リスンし、後からDOMに追加されるボタンも100%拾う
+
+  // 初期化関数: 全ボタンの初期状態を設定
+  function initializeHelpfulButtons() {
     const containers = document.querySelectorAll('.helpful-button');
 
     containers.forEach((container) => {
@@ -43,17 +45,12 @@ const { reviewId, initialCount } = Astro.props;
       const button = container.querySelector('.helpful-btn') as HTMLButtonElement;
       const countDisplay = container.querySelector('.count-display') as HTMLSpanElement;
       const successMessage = container.querySelector('.success-message') as HTMLSpanElement;
-      const loadingMessage = container.querySelector('.loading-message') as HTMLSpanElement;
 
       if (!button || !reviewId) return;
 
-      let count = initialCount;
-      let clicked = false;
-      let loading = false;
-
       // 初期表示: カウントが0より大きい場合は表示
-      if (count > 0) {
-        countDisplay.textContent = `(${count})`;
+      if (initialCount > 0) {
+        countDisplay.textContent = `(${initialCount})`;
         countDisplay.style.display = 'inline';
       }
 
@@ -62,68 +59,131 @@ const { reviewId, initialCount } = Astro.props;
       const hasClicked = localStorage.getItem(storageKey);
 
       if (hasClicked === 'true') {
-        clicked = true;
         button.disabled = true;
         button.classList.remove('bg-blue-50', 'text-blue-700', 'hover:bg-blue-100', 'hover:shadow-sm');
         button.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
         successMessage.style.display = 'inline-block';
       }
+    });
+  }
 
-      // クリックイベント
-      button.addEventListener('click', async () => {
-        if (clicked || loading) return;
+  // DOMContentLoaded後に初期化
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeHelpfulButtons();
 
-        loading = true;
-        button.disabled = true;
-        button.classList.add('opacity-50', 'cursor-wait');
-        loadingMessage.style.display = 'inline-block';
+    // イベント委譲: document全体でクリックイベントをリスン
+    document.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement;
 
-        try {
-          const response = await fetch('/.netlify/functions/helpful', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reviewId })
-          });
+      // クリックされた要素が helpful-btn または その子要素かチェック
+      const button = target.closest('.helpful-btn') as HTMLButtonElement;
+      if (!button) return;
 
-          if (response.ok) {
-            count += 1;
-            clicked = true;
+      // 既にdisabledなら何もしない
+      if (button.disabled) return;
 
-            // UI更新
-            countDisplay.textContent = `(${count})`;
-            countDisplay.style.display = 'inline';
+      // 親コンテナとreviewIdを取得
+      const container = button.closest('.helpful-button');
+      if (!container) return;
 
-            button.classList.remove('bg-blue-50', 'text-blue-700', 'hover:bg-blue-100', 'hover:shadow-sm', 'opacity-50', 'cursor-wait');
-            button.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+      const reviewId = container.getAttribute('data-review-id');
+      if (!reviewId) return;
 
-            loadingMessage.style.display = 'none';
-            successMessage.style.display = 'inline-block';
+      // UI要素を取得
+      const countDisplay = container.querySelector('.count-display') as HTMLSpanElement;
+      const successMessage = container.querySelector('.success-message') as HTMLSpanElement;
+      const loadingMessage = container.querySelector('.loading-message') as HTMLSpanElement;
 
-            // ローカルストレージに保存
-            localStorage.setItem(storageKey, 'true');
-          } else {
-            console.error('Failed to update helpful count');
-            alert('エラーが発生しました。もう一度お試しください。');
+      // ローカルストレージチェック（二重クリック防止）
+      const storageKey = `helpful-${reviewId}`;
+      if (localStorage.getItem(storageKey) === 'true') {
+        return;
+      }
 
-            // エラー時は元に戻す
-            button.disabled = false;
-            button.classList.remove('opacity-50', 'cursor-wait');
-            loadingMessage.style.display = 'none';
-            loading = false;
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          alert('ネットワークエラーが発生しました。もう一度お試しください。');
+      // UI: 送信中状態
+      button.disabled = true;
+      button.classList.add('opacity-50', 'cursor-wait');
+      loadingMessage.style.display = 'inline-block';
 
-          // エラー時は元に戻す
+      console.log(`[HelpfulButton] クリック検出: reviewId=${reviewId}`); // デバッグ用
+
+      try {
+        const response = await fetch('/.netlify/functions/helpful', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reviewId })
+        });
+
+        console.log(`[HelpfulButton] APIレスポンス: ${response.status}`); // デバッグ用
+
+        if (response.ok) {
+          const data = await response.json();
+          const newCount = data.count || 0;
+
+          // UI更新: 成功
+          countDisplay.textContent = `(${newCount})`;
+          countDisplay.style.display = 'inline';
+
+          button.classList.remove('bg-blue-50', 'text-blue-700', 'hover:bg-blue-100', 'hover:shadow-sm', 'opacity-50', 'cursor-wait');
+          button.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+
+          loadingMessage.style.display = 'none';
+          successMessage.style.display = 'inline-block';
+
+          // ローカルストレージに保存
+          localStorage.setItem(storageKey, 'true');
+
+          console.log(`[HelpfulButton] 成功: count=${newCount}`); // デバッグ用
+        } else {
+          // APIエラー（400/500）
+          const errorData = await response.json().catch(() => ({}));
+          console.error('[HelpfulButton] APIエラー:', response.status, errorData);
+          alert(`エラーが発生しました（${response.status}）。もう一度お試しください。`);
+
+          // UI: 元に戻す（再試行可能）
           button.disabled = false;
           button.classList.remove('opacity-50', 'cursor-wait');
           loadingMessage.style.display = 'none';
-          loading = false;
         }
-      });
+      } catch (error) {
+        // ネットワークエラー
+        console.error('[HelpfulButton] ネットワークエラー:', error);
+        alert('ネットワークエラーが発生しました。インターネット接続を確認して、もう一度お試しください。');
+
+        // UI: 元に戻す（再試行可能）
+        button.disabled = false;
+        button.classList.remove('opacity-50', 'cursor-wait');
+        loadingMessage.style.display = 'none';
+      }
     });
   });
+
+  // MutationObserver: DOM変更（並び替え・フィルタリング）を監視して再初期化
+  // これにより、後から追加されたボタンも初期状態（クリック済み表示など）が正しく反映される
+  if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver((mutations) => {
+      let shouldReinit = false;
+
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof Element && node.querySelector('.helpful-button')) {
+            shouldReinit = true;
+          }
+        });
+      });
+
+      if (shouldReinit) {
+        initializeHelpfulButtons();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    });
+  }
 </script>
 
 <style>

@@ -536,6 +536,23 @@ PUBLIC_GA_ID_NANKAN
 # SerpAPI
 SERPAPI_KEY
 
+# SNS自動投稿（X Developer API - keiba-review-all）
+KEIBA_REVIEW_ALL_X_API_KEY              # X Developer API Key
+KEIBA_REVIEW_ALL_X_API_SECRET           # X Developer API Secret
+KEIBA_REVIEW_ALL_X_ACCESS_TOKEN         # X Access Token
+KEIBA_REVIEW_ALL_X_ACCESS_SECRET        # X Access Token Secret
+
+# SNS自動投稿（X Developer API - nankan-review）
+# 注: keiba-review-allと同じAirtable Baseを使用（Categoryでフィルタ）
+NANKAN_REVIEW_X_API_KEY                 # X Developer API Key
+NANKAN_REVIEW_X_API_SECRET              # X Developer API Secret
+NANKAN_REVIEW_X_ACCESS_TOKEN            # X Access Token
+NANKAN_REVIEW_X_ACCESS_SECRET           # X Access Token Secret
+
+# SNS自動投稿（Bluesky）
+BLUESKY_IDENTIFIER        # Blueskyハンドル
+BLUESKY_PASSWORD          # Blueskyパスワード
+
 # Cloudinary（オプション）
 CLOUDINARY_CLOUD_NAME
 CLOUDINARY_API_KEY
@@ -563,6 +580,489 @@ CLOUDINARY_API_SECRET
 - **normal（通常サイト）**: ⭐2-4、2-3日に1回40%投稿、平均3.0
 - **poor（低品質サイト）**: ⭐1-3、3-4日に1回30%投稿、平均2.0
 - **malicious（悪質サイト）**: ⭐1-2、5日に1回20%投稿、平均1.5
+
+### SNS自動投稿
+
+GA4-GROWTH-ROADMAP.mdのMonth 4で計画されている「SNS拡散施策」を前倒しで実装。
+**全サイト（keiba-review-all、nankan-review、将来の4-6サイト）統合プロモーション**でトラフィック増加とnankan-analyticsへの導線強化を目的とする。
+
+**重要な戦略:**
+- **1つの統合SNSアカウントで全サイトをプロモーション**（スケーラブル）
+- 新サイト追加時も自動対応（管理コスト一定）
+- フォロワーを集約し影響力を最大化
+
+#### 1. X Developer API（GitHub Actions）
+
+**戦略: 各サイト専用アカウントで運用**
+- **keiba-review-all**: 総合競馬予想サイト口コミ専用アカウント（@keiba_review 推奨）
+- **nankan-review**: 南関競馬特化専用アカウント（@nankan_review 推奨）
+
+**特徴:**
+- ✅ X Developer API使用（Free tierで月500ツイートまで無料）
+- ✅ GitHub Actions無料枠で実行
+- ✅ サイトごとに専用アカウント（ターゲット層最適化）
+- ✅ 新サイト追加時も自動対応
+- ✅ Airtableから未投稿記事を取得して自動投稿
+
+**投稿頻度（2026-01-07最適化）:**
+- 1日2回（AM 9:00, PM 6:00 JST）
+- 通勤・帰宅時間帯を狙った戦略的投稿
+- 月間240ツイート（制限500の48%、安全マージン52%）
+
+**アカウントロック防止対策（2026-01-07実装）:**
+- ✅ 投稿内容のバリエーション強化（導入文6種類、カテゴリ別特別メッセージ）
+- ✅ 投稿時刻のランダム化（0-15分のランダム待機）
+- ✅ レート制限対策の強化（30-60秒ランダム待機）
+- ✅ 評価⭐4以上でカテゴリ別特別メッセージ表示
+- 詳細: `docs/X-API-LIMITS.md`
+
+**実装方法:**
+
+##### GitHub Actions ワークフロー
+```yaml
+# .github/workflows/post-to-x.yml
+name: Post to X (Twitter)
+
+on:
+  schedule:
+    # 12時間ごと（1日2回）- アカウントロック防止
+    # AM 9:00, PM 6:00 JST（通勤・帰宅時間帯）
+    - cron: '0 0 * * *'   # AM 9:00 JST（通勤時間帯）
+    - cron: '0 9 * * *'   # PM 6:00 JST（帰宅時間帯）
+  workflow_dispatch:
+
+jobs:
+  # Job 1: keiba-review-all用
+  post-keiba-review-all:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/keiba-review-all
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: .
+        run: npm install
+
+      - name: Post to X (keiba-review-all)
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          X_API_KEY: ${{ secrets.KEIBA_REVIEW_ALL_X_API_KEY }}
+          X_API_SECRET: ${{ secrets.KEIBA_REVIEW_ALL_X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.KEIBA_REVIEW_ALL_X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.KEIBA_REVIEW_ALL_X_ACCESS_SECRET }}
+          SITE_URL: https://keiba-review.jp
+        run: node scripts/post-to-x.cjs
+
+  # Job 2: nankan-review用
+  post-nankan-review:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/nankan-review
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: .
+        run: npm install
+
+      - name: Post to X (nankan-review)
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.NANKAN_REVIEW_AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.NANKAN_REVIEW_AIRTABLE_BASE_ID }}
+          X_API_KEY: ${{ secrets.NANKAN_REVIEW_X_API_KEY }}
+          X_API_SECRET: ${{ secrets.NANKAN_REVIEW_X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.NANKAN_REVIEW_X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.NANKAN_REVIEW_X_ACCESS_SECRET }}
+          SITE_URL: https://nankan.keiba-review.jp
+        run: node scripts/post-to-x.cjs
+```
+
+##### X投稿スクリプト
+```javascript
+// scripts/post-to-x.cjs
+const Airtable = require('airtable');
+const { TwitterApi } = require('twitter-api-v2');
+
+// 環境変数チェック
+const requiredEnvVars = [
+  { name: 'AIRTABLE_API_KEY', value: process.env.AIRTABLE_API_KEY },
+  { name: 'AIRTABLE_BASE_ID', value: process.env.AIRTABLE_BASE_ID },
+  { name: 'X_API_KEY', value: process.env.X_API_KEY },
+  { name: 'X_API_SECRET', value: process.env.X_API_SECRET },
+  { name: 'X_ACCESS_TOKEN', value: process.env.X_ACCESS_TOKEN },
+  { name: 'X_ACCESS_SECRET', value: process.env.X_ACCESS_SECRET }
+];
+
+for (const { name, value } of requiredEnvVars) {
+  if (!value) {
+    console.error(`❌ エラー: 環境変数 ${name} が設定されていません`);
+    process.exit(1);
+  }
+}
+
+// Airtable設定
+const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY })
+  .base(process.env.AIRTABLE_BASE_ID);
+
+// X API クライアント（OAuth 1.0a User Context）
+const twitterClient = new TwitterApi({
+  appKey: process.env.X_API_KEY,
+  appSecret: process.env.X_API_SECRET,
+  accessToken: process.env.X_ACCESS_TOKEN,
+  accessSecret: process.env.X_ACCESS_SECRET,
+});
+
+const SITE_URL = process.env.SITE_URL || 'https://keiba-review.jp';
+
+/**
+ * 投稿テキスト生成
+ */
+function generateTweetText(review) {
+  const siteName = review.SiteName;
+  const rating = review.Rating;
+  const stars = '⭐'.repeat(rating);
+  const url = `${SITE_URL}/sites/${review.SiteSlug}/?utm_source=twitter&utm_medium=social&utm_campaign=auto_post`;
+
+  // カテゴリに応じた絵文字
+  const categoryEmoji = {
+    '南関': '🌃',
+    '中央': '🏇',
+    '地方': '🐴',
+    'AI': '🤖'
+  };
+  const emoji = categoryEmoji[review.Category] || '📝';
+
+  // ハッシュタグ
+  const hashtags = ['#競馬予想', `#${review.Category}競馬`];
+
+  return `${emoji} 【新着口コミ】${siteName} ${stars}\n\n「${review.Comment.substring(0, 50)}...」\n\n👉 詳細はこちら\n${url}\n\n${hashtags.join(' ')}`;
+}
+
+/**
+ * まだXに投稿していない最新口コミを取得
+ * FREE API対応: 月500ツイート制限を考慮
+ */
+async function getUnpostedReviews() {
+  // FREE API制限: 1日50ツイート、月500ツイート
+  // 安全のため1回の実行で最大3件まで投稿
+  const MAX_POSTS_PER_RUN = 3;
+
+  try {
+    const records = await base('Reviews')
+      .select({
+        filterByFormula: "AND({Status} = '承認済み', {TweetID} = '')",
+        sort: [{ field: 'CreatedAt', direction: 'desc' }],
+        maxRecords: MAX_POSTS_PER_RUN
+      })
+      .all();
+
+    return records.map(record => ({
+      id: record.id,
+      SiteName: record.get('SiteName'),
+      SiteSlug: record.get('SiteSlug'),
+      Rating: record.get('Rating'),
+      Comment: record.get('Comment'),
+      Category: record.get('Category')
+    }));
+  } catch (error) {
+    console.error('❌ Airtable取得エラー:', error);
+    throw error;
+  }
+}
+
+/**
+ * Xに投稿
+ */
+async function postToX(review) {
+  try {
+    const tweetText = generateTweetText(review);
+    console.log(`\n📝 投稿内容:\n${tweetText}\n`);
+
+    const tweet = await twitterClient.v2.tweet(tweetText);
+    console.log(`✅ Xに投稿しました: https://twitter.com/user/status/${tweet.data.id}`);
+
+    return tweet.data.id;
+  } catch (error) {
+    console.error('❌ X投稿エラー:', error);
+    throw error;
+  }
+}
+
+/**
+ * AirtableにツイートIDを記録
+ */
+async function updateReviewWithTweetId(recordId, tweetId) {
+  try {
+    await base('Reviews').update(recordId, {
+      TweetID: tweetId,
+      TweetedAt: new Date().toISOString()
+    });
+    console.log(`✅ Airtableを更新しました（RecordID: ${recordId}）`);
+  } catch (error) {
+    console.error('❌ Airtable更新エラー:', error);
+  }
+}
+
+/**
+ * メイン処理
+ */
+async function main() {
+  console.log('🚀 X自動投稿スクリプト開始...\n');
+
+  const unpostedReviews = await getUnpostedReviews();
+
+  if (unpostedReviews.length === 0) {
+    console.log('ℹ️ 投稿する口コミがありません');
+    return;
+  }
+
+  console.log(`📋 ${unpostedReviews.length}件の未投稿口コミが見つかりました\n`);
+
+  for (const review of unpostedReviews) {
+    console.log(`\n📰 口コミ: ${review.SiteName}`);
+
+    try {
+      const tweetId = await postToX(review);
+      await updateReviewWithTweetId(review.id, tweetId);
+
+      // レート制限対策（15秒待機）
+      console.log('⏱️  15秒待機中...');
+      await new Promise(resolve => setTimeout(resolve, 15000));
+    } catch (error) {
+      console.error(`❌ 投稿失敗: ${review.SiteName}`);
+      console.error(error);
+      continue;
+    }
+  }
+
+  console.log('\n✅ X自動投稿スクリプト完了');
+}
+
+main().catch(error => {
+  console.error('❌ スクリプト実行エラー:', error);
+  process.exit(1);
+});
+```
+
+**重要なポイント:**
+- Airtableから未投稿の口コミ（`Status='承認済み' AND TweetID=''`）を取得
+- 1回の実行で最大2件まで投稿（FREE API制限対策）
+- 投稿後にTweetIDとTweetedAtをAirtableに記録
+- レート制限対策で30-60秒ランダム待機
+- 投稿内容のバリエーション強化（導入文6種類、カテゴリ別特別メッセージ）
+- 投稿時刻のランダム化（0-15分待機）
+
+**投稿頻度（2026-01-07最適化）:**
+- 12時間ごと（1日2回 × 最大2件 × 2サイト = 1日最大8ツイート）
+- 月間: 8ツイート × 30日 = 240ツイート（500ツイート制限の48%、安全マージン52%）
+- 通勤・帰宅時間帯（AM 9:00, PM 6:00 JST）を狙った戦略的投稿
+
+**X Developer API設定手順:**
+1. [X Developer Portal](https://developer.x.com/en/portal/dashboard)でアカウント登録
+2. プロジェクト作成（Free tier選択）
+3. アプリ作成（Read and Write権限）
+4. API Key、API Secret、Access Token、Access Token Secretを取得
+5. GitHub Secretsに登録（下記参照）
+
+**注意事項:**
+- Free tierは**月500ツイートまで**（2024年仕様変更）
+- 1日最大8ツイート × 30日 = 240ツイート（制限の48%、安全マージン52%）
+- レート制限: 15分間に50ツイートまで（30-60秒ランダム待機で回避）
+- ハッシュタグは3-5個まで
+- 画像添付でエンゲージメント+50%（将来実装予定）
+- **アカウントロック防止**: 投稿頻度削減、バリエーション強化、ランダム化実装済み
+- 詳細: `docs/X-API-LIMITS.md`
+
+#### 2. Bluesky自動投稿（GitHub Actions）
+
+**特徴:**
+- ✅ 完全無料（API制限なし）
+- ✅ GitHub Actions無料枠で実行
+- ✅ 投稿制限なし
+
+**実装方法:**
+
+##### GitHub Actions ワークフロー
+```yaml
+# .github/workflows/post-to-bluesky.yml
+name: Post to Bluesky
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # 6時間ごと
+  workflow_dispatch:
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @atproto/api
+
+      - name: Post to Bluesky
+        env:
+          BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
+          BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
+        run: node scripts/post-to-bluesky.js
+```
+
+##### Bluesky投稿スクリプト
+```javascript
+// scripts/post-to-bluesky.js
+import { BskyAgent } from '@atproto/api'
+
+const agent = new BskyAgent({ service: 'https://bsky.social' })
+
+await agent.login({
+  identifier: process.env.BLUESKY_IDENTIFIER, // keiba-review.bsky.social
+  password: process.env.BLUESKY_PASSWORD,
+})
+
+const posts = [
+  // 総合プラットフォーム紹介
+  '【競馬予想サイト口コミ】keiba-reviewで優良サイトを探そう！\n\n✅ 中央・地方・南関全対応\n✅ リアルな口コミ多数\n✅ カテゴリ別ランキング\n\nhttps://keiba-review.jp',
+
+  // nankan-review紹介
+  '【南関競馬特化】nankan-reviewで南関予想サイトを比較！\n\n🌃 大井・川崎・船橋・浦和\n📊 競馬場ガイド充実\n\nhttps://nankan.keiba-review.jp',
+
+  // 将来のサイトも含む（16テンプレート）
+  // 詳細: scripts/post-to-bluesky.js
+]
+
+const randomPost = posts[Math.floor(Math.random() * posts.length)]
+await agent.post({ text: randomPost })
+```
+
+**重要:** 16種類のテンプレートで全サイト（現在2サイト+将来4-6サイト）をカバー
+
+**投稿頻度:**
+- 6時間ごと（1日4回）
+- ランダムなテンプレートから選択
+- 重複投稿回避
+
+#### 3. 必須環境変数・シークレット
+
+**GitHub Secrets（X Developer API用 - keiba-review-all）:**
+```bash
+KEIBA_REVIEW_ALL_X_API_KEY              # X Developer API Key
+KEIBA_REVIEW_ALL_X_API_SECRET           # X Developer API Secret
+KEIBA_REVIEW_ALL_X_ACCESS_TOKEN         # X Access Token
+KEIBA_REVIEW_ALL_X_ACCESS_SECRET        # X Access Token Secret
+```
+
+**GitHub Secrets（X Developer API用 - nankan-review）:**
+```bash
+# 注: nankan-reviewはkeiba-review-allと同じAirtable Baseを使用
+# Categoryフィールドでフィルタリングするため、専用のAirtable Secretsは不要
+NANKAN_REVIEW_X_API_KEY                 # X Developer API Key
+NANKAN_REVIEW_X_API_SECRET              # X Developer API Secret
+NANKAN_REVIEW_X_ACCESS_TOKEN            # X Access Token
+NANKAN_REVIEW_X_ACCESS_SECRET           # X Access Token Secret
+```
+
+**GitHub Secrets（Bluesky用）:**
+```bash
+BLUESKY_IDENTIFIER     # Blueskyハンドル（例: keiba-review.bsky.social）
+BLUESKY_PASSWORD       # Blueskyパスワード
+```
+
+**SNSアカウント推奨名:**
+- X (keiba-review-all): `@keiba_review` または `@keiba_review_jp`
+- X (nankan-review): `@nankan_review` または `@nankan_keiba`
+- Bluesky: `keiba-review.bsky.social`
+
+#### 4. 効果測定（GA4連携）
+
+**UTMパラメータ付与:**
+```
+# 総合サイト
+https://keiba-review.jp?utm_source=twitter&utm_medium=social&utm_campaign=auto_post
+https://keiba-review.jp?utm_source=bluesky&utm_medium=social&utm_campaign=auto_post
+
+# nankan-review（南関特化）
+https://nankan.keiba-review.jp?utm_source=twitter&utm_medium=social&utm_campaign=auto_post
+https://nankan.keiba-review.jp?utm_source=bluesky&utm_medium=social&utm_campaign=auto_post
+```
+
+**GA4で測定:**
+- 全サイトのSNS経由訪問者数
+- SNS → nankan-analytics遷移率
+- サイト別エンゲージメント率
+- 最も効果的な投稿パターン
+
+#### 5. 期待効果（Month 4-6）
+
+| 指標 | Month 1（現状） | Month 6目標 | SNS寄与 |
+|------|----------------|-------------|---------|
+| **月間訪問者（両サイト合計）** | 550-1,100 | 2,300-3,700 | +200-300（SNS経由） |
+| **被リンク獲得** | 0-2 | 20-30 | +5-10（SNS拡散） |
+| **ブランド認知** | 低 | 中 | SNSフォロワー100-300人 |
+| **nankan-analytics遷移** | 22-55 | 180-320 | +50-80（SNS経由） |
+
+**スケーラビリティ:**
+- 新サイト追加（chuo-keiba-review等）時も自動的にSNS投稿対象に
+- 管理コスト一定（1アカウントのみ）
+- フォロワーは分散せず集約
+
+#### 6. 運用指針
+
+**自動投稿タイミング（2026-01-07実装）:**
+- 毎日: AM 9:00（通勤時間帯）、PM 6:00（帰宅時間帯）
+- ±15分のランダム待機（bot検知回避）
+- 1回あたり最大2件 × 2サイト = 4ツイート/回
+
+**手動投稿の推奨タイミング:**
+- 平日: 12:00-13:00（昼休み）、20:00-22:00（夜間）
+- 土日: 10:00-12:00（午前）、15:00-17:00（レース前）
+
+**投稿内容:**
+- 新着口コミ紹介（40%） - 全サイト対応
+- サイト更新情報（30%） - keiba-review-all、nankan-review等
+- 競馬Tips（20%） - 中央・地方・南関
+- nankan-analytics紹介（10%） - メインゴール
+
+**エンゲージメント向上施策:**
+- 画像添付（競馬場写真、スクリーンショット）
+- 質問形式の投稿（カテゴリ別に最適化）
+- ハッシュタグ活用:
+  - 共通: `#競馬予想` `#競馬予想サイト`
+  - カテゴリ別: `#南関競馬` `#中央競馬` `#地方競馬` `#AI予想`
+
+#### 7. ドキュメント
+
+詳細な設定手順は以下を参照：
+- `docs/X-DEVELOPER-API-SETUP.md` - X Developer API設定手順書（全サイト対応）
+- `docs/X-API-LIMITS.md` - X API制限管理＆アカウントロック防止対策ガイド
+- `docs/GITHUB-SECRETS-SETUP.md` - GitHub Secrets設定手順書（X & Bluesky）
+- `scripts/post-to-x.js` - X投稿スクリプト（バリエーション強化版、全サイト対応）
+- `.github/workflows/post-to-x.yml` - GitHub Actions（12時間ごと自動実行、1日2回）
+- `scripts/post-to-bluesky.js` - Bluesky投稿スクリプト（16テンプレート、全サイト対応）
+- `.github/workflows/post-to-bluesky.yml` - GitHub Actions（6時間ごと自動実行）
 
 ## 🔧 トラブルシューティング
 
@@ -644,6 +1144,142 @@ pnpm --version  # 9.15.0以上であることを確認
 - [Airtable API](https://airtable.com/developers/web/api/introduction)
 - [Google Analytics 4](https://support.google.com/analytics/answer/10089681)
 
+## 🔧 X自動投稿の根本解決（2026-01-04実装）
+
+### 問題の経緯
+
+**症状:**
+- nankan-review自動投稿が反映されない
+- X API Free tier制限超過（月間720ツイート > 500ツイート制限）
+- 一部の口コミレコードでSiteName/SiteSlug/Categoryが未設定
+
+**根本原因:**
+1. 既存754件の口コミレコードに必須フィールドが未設定
+2. post-to-x.cjsが毎回Promise.allで複雑なSite取得を実行（遅い、エラーリスク高い）
+3. MAX_POSTS_PER_RUN = 3 で月間制限を超過
+
+### 実施した根本解決策
+
+#### 1. データ一括補完（populate-review-fields.cjs）
+
+**実行結果:**
+```
+✅ 更新: 754件
+✅ スキップ: 0件
+✅ エラー: 0件
+```
+
+**機能:**
+- 全口コミレコードにSiteName、SiteSlug、Categoryを一括設定
+- Sitesテーブルからリンク経由で情報取得
+- カテゴリ推測ロジック実装（南関、中央、地方、AI、無料、総合）
+- レート制限対策（100ms delay）
+
+**カテゴリ推測キーワード:**
+- **南関**: 南関、大井、川崎、船橋、浦和、nankan
+- **中央**: 中央、jra、東京競馬、阪神、中京、京都
+- **地方**: 地方、nar、園田、金沢、名古屋、高知
+- **AI**: ai、人工知能
+- **無料**: 無料、フリー
+- **総合**: デフォルト
+
+#### 2. post-to-x.cjs簡潔化
+
+**変更前（複雑）:**
+```javascript
+const reviewsWithSiteInfo = await Promise.all(
+  records.map(async (record) => {
+    let siteName = record.get('SiteName');
+    let siteSlug = record.get('SiteSlug');
+
+    // 複雑なランタイムSite取得ロジック（30行）
+    if (!siteName || !siteSlug) {
+      const siteLinks = record.get('Site');
+      // ... 非同期処理 ...
+    }
+    return { id, SiteName: siteName || 'フォールバック', ... };
+  })
+);
+```
+
+**変更後（シンプル）:**
+```javascript
+return records.map(record => ({
+  id: record.id,
+  SiteName: record.get('SiteName'),
+  SiteSlug: record.get('SiteSlug'),
+  Rating: record.get('Rating'),
+  Comment: record.get('Comment'),
+  Category: record.get('Category'),
+  CreatedAt: record.get('CreatedAt')
+}));
+```
+
+**効果:**
+- 30行 → 8行（-73%）
+- Promise.all削除 → パフォーマンス向上
+- エラーリスク削減 → 安定性向上
+
+#### 3. X API制限対応
+
+**変更:**
+```javascript
+// 変更前
+const MAX_POSTS_PER_RUN = 3;  // 月間720ツイート → 超過
+
+// 変更後
+const MAX_POSTS_PER_RUN = 2;  // 月間480ツイート → 制限内
+```
+
+**計算:**
+```
+実行頻度: 1日4回（6時間ごと）
+1回あたり: 2件 × 2サイト = 4ツイート
+1日合計: 4回 × 4ツイート = 16ツイート
+月間最大: 16 × 30日 = 480ツイート < 500ツイート制限 ✅
+安全マージン: 20ツイート/月
+```
+
+#### 4. エラー修正
+
+**undefined Commentフィールド対応:**
+```javascript
+// 変更前（エラー発生）
+console.log(`📝 コメント: ${review.Comment.substring(0, 50)}...`);
+
+// 変更後（エラー回避）
+console.log(`📝 コメント: ${review.Comment ? review.Comment.substring(0, 50) + '...' : '(コメントなし)'}`);
+```
+
+### 運用確認済み
+
+**GitHub Actionsワークフロー実行結果（2026-01-04 17:30 JST）:**
+
+```
+✅ keiba-review-all: 2件投稿成功
+  - https://twitter.com/user/status/2007731496602243463
+  - https://twitter.com/user/status/2007731561416855748
+
+✅ nankan-review: 2件投稿成功
+  - https://twitter.com/user/status/2007731511328493727
+  - https://twitter.com/user/status/2007731576189395307
+```
+
+### 関連ドキュメント
+
+- **docs/X-API-LIMITS.md**: X API制限管理ガイド
+  - 制限値の詳細説明
+  - 調整オプション3種類
+  - モニタリング方法
+  - トラブルシューティング
+
+### テストスクリプト
+
+**作成済み:**
+- `packages/keiba-review-all/scripts/test-simplified-post-to-x.cjs`: 簡潔化版テスト
+- `packages/nankan-review/scripts/test-simplified-post-to-x.cjs`: 簡潔化版テスト
+- `packages/nankan-review/scripts/test-post-to-x-dryrun.cjs`: ドライランテスト
+
 ## 🎯 運用指針
 
 ### SEO戦略
@@ -662,6 +1298,21 @@ pnpm --version  # 9.15.0以上であることを確認
 - NGワード検出（URLリンク禁止）
 - 自動投稿は品質別にロジック調整
 
+### X自動投稿管理
+- **実行頻度**: 1日2回（AM 9:00, PM 6:00 JST）※通勤・帰宅時間帯
+- **投稿数制限**: 2件/回/サイト（月間240ツイート、制限内）
+- **データ品質**: 754件全てにSiteName/SiteSlug/Category設定済み
+- **モニタリング**: docs/X-API-LIMITS.md参照
+
+### 口コミ自動投稿管理
+- **実行頻度**: 毎日AM4:00（JST）
+- **投稿件数**: 平均30-35件/日（確率制御により変動）
+- **データ品質**:
+  - ✅ 1/5-1/11: 274件の口コミが正常に投稿済み（平均39件/日）
+  - ✅ エラーハンドリング強化済み（1件の失敗で全体が止まらない）
+  - ✅ Airtableレート制限対策（2秒待機）
+- **モニタリング**: GitHub Actions Summaryで成功/失敗件数を自動表示
+
 ## 🤝 貢献
 
 このプロジェクトはnankan-analyticsエコシステムの一部です。
@@ -679,6 +1330,40 @@ pnpm --version  # 9.15.0以上であることを確認
 
 ---
 
-**最終更新:** 2025-12-30
-**バージョン:** Monorepo v1.2.0（Phase 4進行中 - カスタムドメイン完全移行）
+**最終更新:** 2026-01-11
+**バージョン:** Monorepo v1.7.0（Phase 4完了 - 口コミ自動投稿の耐障害性強化と監視改善）
 **メンテナ:** @apol0510
+
+**主要な変更（v1.7.0 - 2026-01-11）:**
+- ✅ **耐障害性強化**: 1件の失敗で全体が止まらない設計に改善
+  - サイト単位のtry-catchエラーハンドリング実装
+  - 成功/失敗カウンターによる結果サマリー表示
+  - メイン関数の.catch()でプロセス終了を明確化
+- ✅ **レート制限対策**: Airtable API待機時間を1秒→2秒に延長
+  - 5 requests/second制限を確実に回避
+  - ネットワーク不安定時も安定動作
+- ✅ **監視強化**: GitHub Actions Summaryに詳細レポート表示
+  - 成功/失敗件数、成功率を表形式で自動出力
+  - ログを開かなくても一目で状態を確認可能
+  - 運用監視が大幅に効率化
+- ✅ **データ検証**: 1/5-1/11期間の口コミ投稿状況を確認
+  - 274件の口コミが正常に投稿されていることを確認（平均39件/日）
+  - バックフィル不要であることを確認
+- 📄 check-reviews-jan5-11.cjs 追加（期間指定でデータ確認可能）
+
+**主要な変更（v1.6.0 - 2026-01-07）:**
+- ✅ X投稿頻度削減: 1日4回 → 1日2回（月間480 → 240ツイート、-50%）
+- ✅ 投稿内容のバリエーション強化（導入文6種類、カテゴリ別特別メッセージ）
+- ✅ 投稿時刻のランダム化（GitHub Actions: 0-15分待機）
+- ✅ レート制限対策の強化（待機時間30-60秒ランダム化）
+- ✅ 通勤・帰宅時間帯を狙った戦略的投稿（AM 9:00, PM 6:00 JST）
+- ✅ アカウントロックリスクを極めて低いレベルに低減
+- 📄 docs/X-API-LIMITS.md 大幅更新（アカウントロック防止対策セクション追加）
+
+**主要な変更（v1.5.0 - 2026-01-04）:**
+- ✅ 754件の口コミデータ一括補完（populate-review-fields.cjs）
+- ✅ post-to-x.cjs簡潔化（30行→8行、-73%）
+- ✅ X API制限対応（月間480ツイート、制限内）
+- ✅ エラー修正（undefined Comment対応）
+- ✅ 本番環境動作確認済み（両サイト投稿成功）
+- 📄 docs/X-API-LIMITS.md 作成

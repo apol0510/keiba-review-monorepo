@@ -559,10 +559,30 @@ async function postReview(site, allReviews) {
 
   console.log('📝 口コミ投稿開始\n');
 
+  let successCount = 0;
+  let failedCount = 0;
+
   for (const site of sitesToPost) {
-    await postReview(site, allReviews);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const result = await postReview(site, allReviews);
+      if (result) {
+        successCount++;
+      } else {
+        failedCount++;
+      }
+    } catch (error) {
+      console.error(`  ❌ ${site.name}: エラー発生 - ${error.message}`);
+      failedCount++;
+    }
+    // Airtableレート制限対策: 5 requests/secondを超えないよう2秒待機
+    await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
   console.log('\n✅ 口コミ自動投稿完了\n');
-})();
+  console.log(`📊 結果サマリー:`);
+  console.log(`  成功: ${successCount}件`);
+  console.log(`  失敗: ${failedCount}件`);
+})().catch(error => {
+  console.error('❌ スクリプト実行エラー:', error);
+  process.exit(1);
+});

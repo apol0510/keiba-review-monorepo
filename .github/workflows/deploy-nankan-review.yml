@@ -9,6 +9,10 @@ on:
       - '.github/workflows/deploy-nankan-review.yml'
   workflow_dispatch:
 
+concurrency:
+  group: deploy-nankan-review-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
