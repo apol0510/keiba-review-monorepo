@@ -86,6 +86,12 @@ const { reviewId, initialCount } = Astro.props;
       const container = button.closest('.helpful-button');
       if (!container) return;
 
+      // ★ in-flightロック: 送信中の再入を構造的に遮断
+      if (container.dataset.sending === '1') {
+        console.log('[HelpfulButton] 送信中のため、再入を防止');
+        return;
+      }
+
       const reviewId = container.getAttribute('data-review-id');
       if (!reviewId) return;
 
@@ -100,7 +106,8 @@ const { reviewId, initialCount } = Astro.props;
         return;
       }
 
-      // UI: 送信中状態
+      // UI: 送信中状態 + in-flightロック設定
+      container.dataset.sending = '1'; // ★ 送信中フラグを立てる
       button.disabled = true;
       button.classList.add('opacity-50', 'cursor-wait');
       loadingMessage.style.display = 'inline-block';
@@ -118,7 +125,13 @@ const { reviewId, initialCount } = Astro.props;
 
         if (response.ok) {
           const data = await response.json();
-          const newCount = data.count || 0;
+          const newCount = data.count;
+
+          // ★ count整合性チェック: APIが必ずnumberを返す保証
+          if (typeof newCount !== 'number') {
+            console.error('[HelpfulButton] APIレスポンス異常: countが数値ではありません', data);
+            throw new Error('Invalid API response: count is not a number');
+          }
 
           // UI更新: 成功
           countDisplay.textContent = `(${newCount})`;
@@ -133,6 +146,9 @@ const { reviewId, initialCount } = Astro.props;
           // ローカルストレージに保存
           localStorage.setItem(storageKey, 'true');
 
+          // ★ in-flightロック解除（成功時）
+          delete container.dataset.sending;
+
           console.log(`[HelpfulButton] 成功: count=${newCount}`); // デバッグ用
         } else {
           // APIエラー（400/500）
@@ -144,6 +160,9 @@ const { reviewId, initialCount } = Astro.props;
           button.disabled = false;
           button.classList.remove('opacity-50', 'cursor-wait');
           loadingMessage.style.display = 'none';
+
+          // ★ in-flightロック解除（APIエラー時）
+          delete container.dataset.sending;
         }
       } catch (error) {
         // ネットワークエラー
@@ -154,6 +173,9 @@ const { reviewId, initialCount } = Astro.props;
         button.disabled = false;
         button.classList.remove('opacity-50', 'cursor-wait');
         loadingMessage.style.display = 'none';
+
+        // ★ in-flightロック解除（ネットワークエラー時）
+        delete container.dataset.sending;
       }
     });
   });
