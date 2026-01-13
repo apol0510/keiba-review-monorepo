@@ -1,6 +1,6 @@
 ---
 import StarRating from './StarRating.astro';
-import HelpfulButton from './HelpfulButton';
+import HelpfulButtonAstro from './HelpfulButtonAstro.astro';
 import type { Review } from '@keiba-review/shared/lib';
 
 interface Props {
@@ -44,5 +44,5 @@ const helpfulCount = (review.helpful_count || review.helpfulCount || 0) as numbe
   </div>
 
   <!-- Helpful Button -->
-  <HelpfulButton reviewId={review.id} initialCount={helpfulCount} client:load />
+  <HelpfulButtonAstro reviewId={review.id} initialCount={helpfulCount} />
 </div>
