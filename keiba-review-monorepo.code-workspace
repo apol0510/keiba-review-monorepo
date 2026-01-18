@@ -1,0 +1,77 @@
+{
+  "folders": [
+    {
+      "name": "📦 Root (Monorepo)",
+      "path": "."
+    },
+    {
+      "name": "🔧 Shared",
+      "path": "packages/shared"
+    },
+    {
+      "name": "🏇 keiba-review-all",
+      "path": "packages/keiba-review-all"
+    },
+    {
+      "name": "🌃 nankan-review",
+      "path": "packages/nankan-review"
+    }
+  ],
+  "settings": {
+    // VSCodeクラッシュ対策設定
+    "typescript.tsserver.maxTsServerMemory": 4096,
+
+    // ファイル除外（メモリ削減）
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.astro": true,
+      "**/.netlify": true,
+      "**/.cache": true,
+      "**/package-lock.json": true,
+      "**/.DS_Store": true
+    },
+
+    // ファイル監視除外
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/dist/**": true,
+      "**/.astro/**": true,
+      "**/.netlify/**": true,
+      "**/.cache/**": true
+    },
+
+    // 検索除外
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.astro": true,
+      "**/.netlify": true,
+      "**/package-lock.json": true,
+      "**/pnpm-lock.yaml": true
+    },
+
+    // Git最適化
+    "git.ignoreLimitWarning": true,
+    "git.autorefresh": false,
+
+    // エディタ安定性向上
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {},
+
+    // Astro設定
+    "astro.content-intellisense": false,
+
+    // Monorepo固有設定
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "javascript.preferences.importModuleSpecifier": "non-relative"
+  },
+  "extensions": {
+    "recommendations": [
+      "astro-build.astro-vscode",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "bradlc.vscode-tailwindcss"
+    ]
+  }
+}

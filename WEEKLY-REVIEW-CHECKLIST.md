@@ -50,7 +50,7 @@ GA4 > レポート > ライフサイクル > エンゲージメント > 概要
 ```
 GA4 > レポート > ライフサイクル > エンゲージメント > イベント
 イベント名: click
-パラメータでフィルタ: link_url contains "nankan-analytics.com"
+パラメータでフィルタ: link_url contains "nankan-analytics.keiba.link"
 期間: 過去7日間
 ```
 

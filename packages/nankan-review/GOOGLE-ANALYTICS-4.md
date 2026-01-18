@@ -215,7 +215,7 @@ GA4とGoogle Search Consoleを連携:
 
 | ディメンション名 | イベントパラメータ | 例 |
 |---------------|-----------------|---|
-| リンクURL | `event_label` | https://nankan-analytics.com |
+| リンクURL | `event_label` | https://nankan-analytics.keiba.link |
 | リンクテキスト | `link_text` | 南関アナリティクスへ |
 
 設定方法:

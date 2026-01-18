@@ -25,7 +25,7 @@ const nankanSites = [
   {
     Name: '南関アナリティクス',
     Slug: 'nankan-analytics',
-    URL: 'https://nankan-analytics.com',
+    URL: 'https://nankan-analytics.keiba.link',
     Description: '南関競馬専門のAI予想サイト。大井・川崎・船橋・浦和の4場に特化したデータ分析と予想を提供。機械学習による高精度な予想で、ナイター競馬ファンをサポートします。',
     Category: 'nankan',
     IsApproved: true,

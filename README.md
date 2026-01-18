@@ -182,7 +182,7 @@ pnpm --filter=@keiba-review/nankan-review dev
 このプロジェクトはnankan-analyticsエコシステムの一部です。
 
 **プロジェクト構成:**
-- nankan-analytics.com - 南関競馬AI予想（メイン）
+- nankan-analytics.keiba.link - 南関競馬AI予想（メイン）
 - keiba-review.jp - 総合口コミサイト（導線1）
 - nankan-review.jp - 南関特化口コミサイト（導線2）
 
