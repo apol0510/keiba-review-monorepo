@@ -1,6 +1,6 @@
 [build]
   command = "pnpm install && pnpm --filter=@keiba-review/keiba-review-all build"
-  publish = "dist"
+  publish = "packages/keiba-review-all/dist"
 
 [functions]
   directory = "netlify/functions"
