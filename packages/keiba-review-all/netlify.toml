@@ -1,6 +1,7 @@
-# [build]セクションはコメントアウト（GitHub Actionsで既にビルド済み）
-# build.command を削除することで、netlify deployコマンドが自動ビルドを試みるのを防ぐ
-# Web UIからのデプロイは、Netlify Web UI側の設定を使用
+# GitHub Actions用：ビルドをスキップ（既にビルド済み）
+[build]
+  command = ""  # 空のコマンドでビルドをスキップ
+  publish = "dist"
 
 [functions]
   directory = "netlify/functions"
