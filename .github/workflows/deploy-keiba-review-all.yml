@@ -51,8 +51,8 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
         run: |
           netlify deploy --prod \
-            --dir=dist \
-            --functions=netlify/functions \
+            --dir=$PWD/dist \
+            --functions=$PWD/netlify/functions \
             --site=${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }} \
             --message="Deploy from GitHub Actions"
 
