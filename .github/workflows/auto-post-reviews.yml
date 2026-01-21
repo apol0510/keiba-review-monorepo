@@ -88,3 +88,37 @@ jobs:
         run: |
           echo "❌ 口コミ自動投稿に失敗しました"
           echo "GitHub Actionsのログを確認してください"
+
+      # ===== 🚀 Netlifyデプロイ (2026-01-21追加) =====
+      # 口コミ投稿後、サイトをリビルド&デプロイして反映する
+      - name: Build site (keiba-review-all)
+        if: success()
+        working-directory: packages/keiba-review-all
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          SITE_URL: https://keiba-review.jp
+          PUBLIC_GA_ID: ${{ secrets.PUBLIC_GA_ID }}
+        run: pnpm build
+
+      - name: Deploy to Netlify (keiba-review-all)
+        if: success()
+        working-directory: packages/keiba-review-all
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_KEIBA_REVIEW_ALL }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
+        run: |
+          npm install -g netlify-cli
+          netlify deploy --prod --dir=dist
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 デプロイ完了" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **keiba-review.jp** に最新の口コミが反映されました" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 サイトURL: https://keiba-review.jp" >> $GITHUB_STEP_SUMMARY
