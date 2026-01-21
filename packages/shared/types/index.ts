@@ -97,3 +97,34 @@ export const MAX_REVIEWS_PER_SITE: Record<SiteQuality, number> = {
   poor: 40,          // 最大40件
   malicious: 50      // 最大50件
 };
+
+// ========================================
+// APIレスポンス型定義
+// ========================================
+
+// 成功レスポンス（基本）
+export interface ApiSuccessResponse {
+  success: true;
+}
+
+// エラーレスポンス
+export interface ApiErrorResponse {
+  error: string;
+  details?: string;
+}
+
+// いいねボタン レスポンス
+export interface HelpfulCountResponse extends ApiSuccessResponse {
+  count: number;
+}
+
+// 口コミ投稿 レスポンス
+export interface SubmitReviewResponse extends ApiSuccessResponse {
+  message: string;
+  reviewId?: string;
+}
+
+// お問い合わせ レスポンス
+export interface ContactResponse extends ApiSuccessResponse {
+  message: string;
+}
