@@ -45,15 +45,17 @@ jobs:
         run: npm install -g netlify-cli
 
       - name: Deploy to Netlify
+        working-directory: packages/keiba-review-all
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_KEIBA_REVIEW_ALL }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
         run: |
           netlify deploy --prod \
-            --cwd=packages/keiba-review-all \
             --dir=dist \
             --functions=netlify/functions \
-            --message="Deploy from GitHub Actions"
+            --message="Deploy from GitHub Actions" \
+            --site=$NETLIFY_SITE_ID \
+            --auth=$NETLIFY_AUTH_TOKEN
 
       - name: Report deployment status
         if: success()
