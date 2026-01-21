@@ -50,12 +50,18 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_KEIBA_REVIEW_ALL }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
         run: |
+          # netlify.tomlを一時的にリネーム（GitHub Actions時は無視）
+          mv netlify.toml netlify.toml.bak || true
+
           netlify deploy --prod \
             --dir=dist \
             --functions=netlify/functions \
             --message="Deploy from GitHub Actions" \
             --site=$NETLIFY_SITE_ID \
             --auth=$NETLIFY_AUTH_TOKEN
+
+          # netlify.tomlを復元
+          mv netlify.toml.bak netlify.toml || true
 
       - name: Report deployment status
         if: success()
