@@ -50,8 +50,9 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
         run: |
           netlify deploy --prod \
-            --dir=packages/keiba-review-all/dist \
-            --functions=packages/keiba-review-all/netlify/functions \
+            --cwd=packages/keiba-review-all \
+            --dir=dist \
+            --functions=netlify/functions \
             --message="Deploy from GitHub Actions"
 
       - name: Report deployment status
