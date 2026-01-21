@@ -1,7 +1,7 @@
 # GitHub Actions用：ビルドをスキップ（既にビルド済み）
+# publish設定はnetlify deployコマンドの--dirパラメータを使用
 [build]
   command = ""  # 空のコマンドでビルドをスキップ
-  publish = "dist"
 
 [functions]
   directory = "netlify/functions"
