@@ -4,6 +4,59 @@
 
 ---
 
+## 2026-01-21: GitHub Actions Netlifyデプロイ修正 ✅
+
+### Monorepo環境でのNetlifyデプロイ問題の根本解決
+
+**問題:**
+- GitHub Actionsでのkeiba-review-all Netlifyデプロイが連続失敗
+- エラー: "The deploy directory has not been found"
+- 原因: monorepo環境でNetlify CLIがディレクトリパスを誤って解釈
+- netlify.tomlとGitHub Actionsワークフローの設定競合
+
+**試行錯誤:**
+- 11回の修正試行
+- 様々なアプローチを検証（--cwd、working-directory、netlify.toml調整など）
+
+**最終解決策:**
+
+1. **GitHub Actionsワークフロー修正** (`.github/workflows/deploy-keiba-review-all.yml`)
+   ```yaml
+   - name: Deploy to Netlify
+     working-directory: packages/keiba-review-all
+     run: |
+       netlify deploy --prod \
+         --dir=$PWD/dist \
+         --functions=$PWD/netlify/functions \
+         --site=${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
+   ```
+   - 絶対パス (`$PWD`) を使用してデプロイディレクトリを指定
+   - `--site`パラメータで明示的にサイトIDを指定
+
+2. **netlify.toml修正** (`packages/keiba-review-all/netlify.toml`)
+   ```toml
+   [build]
+     command = ""  # 空のビルドコマンド（GitHub Actionsで既にビルド済み）
+   ```
+   - `publish`設定を削除（CLIパラメータを優先）
+   - ビルドコマンドを空に設定し、二重ビルドを防止
+
+3. **DEPLOYMENT.md更新**
+   - monorepo特有のトラブルシューティング追加
+   - 再発防止策のドキュメント化
+
+**影響:**
+- GitHub Actionsデプロイが安定化
+- 今後の同様の問題を予防
+- monorepo環境でのNetlifyデプロイのベストプラクティス確立
+
+**効果:**
+- CI/CDパイプラインの信頼性向上
+- デプロイ失敗による開発遅延の解消
+- 他のmonorepoプロジェクトへの知見共有
+
+---
+
 ## 2025-12-22 - 午後: SEO改善
 
 ### Search Console「代替ページ」問題の修正 ✅
