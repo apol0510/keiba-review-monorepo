@@ -1,7 +1,6 @@
-[build]
-  base = "packages/keiba-review-all"
-  command = "pnpm install && pnpm --filter=@keiba-review/keiba-review-all build"
-  publish = "dist"
+# [build]セクションはコメントアウト（GitHub Actionsで既にビルド済み）
+# build.command を削除することで、netlify deployコマンドが自動ビルドを試みるのを防ぐ
+# Web UIからのデプロイは、Netlify Web UI側の設定を使用
 
 [functions]
   directory = "netlify/functions"
