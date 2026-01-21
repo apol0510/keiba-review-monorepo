@@ -41,21 +41,16 @@ jobs:
           PUBLIC_GA_ID: ${{ secrets.PUBLIC_GA_ID }}
         run: pnpm --filter=@keiba-review/keiba-review-all build
 
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3
-        with:
-          publish-dir: './packages/keiba-review-all/dist'
-          functions-dir: './packages/keiba-review-all/netlify/functions'
-          production-branch: main
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions - keiba-review-all"
-          enable-pull-request-comment: true
-          enable-commit-comment: false
-          overwrites-pull-request-comment: true
+        working-directory: packages/keiba-review-all
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_KEIBA_REVIEW_ALL }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
-        timeout-minutes: 10
+        run: |
+          netlify deploy --prod --dir=dist --functions=netlify/functions --message="Deploy from GitHub Actions"
 
       - name: Report deployment status
         if: success()

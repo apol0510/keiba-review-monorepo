@@ -41,21 +41,16 @@ jobs:
           PUBLIC_GA_ID: ${{ secrets.PUBLIC_GA_ID_NANKAN }}
         run: pnpm --filter=@keiba-review/nankan-review build
 
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3
-        with:
-          publish-dir: './packages/nankan-review/dist'
-          functions-dir: './packages/nankan-review/netlify/functions'
-          production-branch: main
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions - nankan-review"
-          enable-pull-request-comment: true
-          enable-commit-comment: false
-          overwrites-pull-request-comment: true
+        working-directory: packages/nankan-review
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_NANKAN_REVIEW }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_NANKAN_REVIEW }}
-        timeout-minutes: 10
+        run: |
+          netlify deploy --prod --dir=dist --functions=netlify/functions --message="Deploy from GitHub Actions"
 
       - name: Report deployment status
         if: success()
