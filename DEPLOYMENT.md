@@ -208,6 +208,53 @@ gh secret set NETLIFY_AUTH_TOKEN_KEIBA_REVIEW_ALL
 publish-dir: './packages/[package-name]/dist'  # ← パスが正しいか確認
 ```
 
+### デプロイエラー: "The deploy directory has not been found"（monorepo特有）
+
+**原因:** monorepo環境でNetlify CLIが正しいディレクトリを認識できていない
+
+**症状:**
+```
+Error: The deploy directory "/home/runner/work/.../dist" has not been found.
+```
+
+**解決方法:**
+
+1. **working-directoryを使用する（推奨）**
+```yaml
+- name: Deploy to Netlify
+  working-directory: packages/keiba-review-all  # ← プロジェクトディレクトリに移動
+  env:
+    NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  run: |
+    netlify deploy --prod \
+      --dir=dist \                              # ← 相対パス
+      --functions=netlify/functions \
+      --site=$NETLIFY_SITE_ID \                 # ← 明示的に指定
+      --auth=$NETLIFY_AUTH_TOKEN
+```
+
+2. **netlify.tomlの設定を確認**
+```toml
+[build]
+  base = "packages/keiba-review-all"  # ← baseディレクトリ
+  publish = "dist"                     # ← baseからの相対パス
+```
+
+3. **避けるべき設定**
+```yaml
+# ❌ --cwdフラグは netlify deploy では機能しない
+netlify deploy --cwd=packages/keiba-review-all --dir=dist
+
+# ❌ リポジトリルートからの絶対パス（netlify.tomlと競合する）
+netlify deploy --dir=packages/keiba-review-all/dist
+```
+
+**再発防止策:**
+- monorepo環境では必ず`working-directory`を使用
+- `--site`と`--auth`パラメータを明示的に指定
+- ローカルで`netlify deploy --dry-run`でテスト
+
 ## 🔐 セキュリティ
 
 ### API キーの管理
