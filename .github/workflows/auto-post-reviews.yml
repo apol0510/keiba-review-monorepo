@@ -103,13 +103,14 @@ jobs:
 
       - name: Deploy to Netlify (keiba-review-all)
         if: success()
-        working-directory: packages/keiba-review-all
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_KEIBA_REVIEW_ALL }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
         run: |
           npm install -g netlify-cli
-          netlify deploy --prod --dir=dist
+          netlify deploy --prod \
+            --dir=packages/keiba-review-all/dist \
+            --functions=packages/keiba-review-all/netlify/functions
 
       - name: Deployment summary
         if: success()
