@@ -1273,6 +1273,111 @@ pnpm --version  # 9.15.0以上であることを確認
 - keiba-review-all: 4321
 - nankan-review: 4322
 
+### Netlifyデプロイエラー: "Projects detected" (Monorepo環境) ⚠️重要
+
+**症状:**
+```
+We've detected multiple projects inside your repository
+Error: Projects detected: @keiba-review/keiba-review-all, @keiba-review/nankan-review, @keiba-review/shared.
+Configure the project you want to work with and try again.
+```
+
+**原因:**
+Monorepo環境で`netlify deploy`コマンドを実行する際、`working-directory`が設定されていないため、リポジトリルートから実行され、複数の`package.json`が検出される。
+
+**根本原因:**
+```yaml
+# ❌ BEFORE（リポジトリルートから実行）
+- name: Deploy to Netlify
+  env:
+    NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  run: |
+    npm install -g netlify-cli
+    netlify deploy --prod \
+      --dir=packages/keiba-review-all/dist \
+      --functions=packages/keiba-review-all/netlify/functions
+```
+
+この場合、Netlifyは以下のpackage.jsonを検出する：
+- `packages/keiba-review-all/package.json`
+- `packages/nankan-review/package.json`
+- `packages/shared/package.json`
+
+そのため、「どのプロジェクトをデプロイすべきか分からない」とエラーになる。
+
+**解決方法:**
+
+`working-directory`を追加して、パッケージディレクトリから実行する：
+
+```yaml
+# ✅ AFTER（パッケージディレクトリから実行）
+- name: Deploy to Netlify
+  working-directory: packages/keiba-review-all  # 追加
+  env:
+    NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  run: |
+    npm install -g netlify-cli
+    netlify deploy --prod \
+      --dir=dist \                        # 相対パスに変更
+      --functions=netlify/functions       # 相対パスに変更
+```
+
+**なぜ解決するのか:**
+
+1. `working-directory: packages/keiba-review-all`により、ステップがパッケージディレクトリで実行される
+2. Netlifyは`packages/keiba-review-all/package.json`のみを検出する（他のpackage.jsonは親ディレクトリにあるため対象外）
+3. プロジェクトが一意に特定され、デプロイが成功する
+
+**影響を受けるワークフロー:**
+
+以下の3つのワークフローで修正が必要：
+
+1. `.github/workflows/auto-post-reviews.yml`（口コミ自動投稿後のデプロイ）
+2. `.github/workflows/deploy-keiba-review-all.yml`（keiba-review-allデプロイ）
+3. `.github/workflows/deploy-nankan-review.yml`（nankan-reviewデプロイ）
+
+**再発防止策:**
+
+- **新しいサイトを追加する場合、必ず`working-directory`を設定する**
+- デプロイステップでは常にパッケージディレクトリから実行する
+- テンプレート化して一貫性を保つ
+
+**テンプレート（コピペ用）:**
+
+```yaml
+# keiba-review-all用
+- name: Deploy to Netlify (keiba-review-all)
+  working-directory: packages/keiba-review-all
+  env:
+    NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_KEIBA_REVIEW_ALL }}
+    NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_KEIBA_REVIEW_ALL }}
+  run: |
+    npm install -g netlify-cli
+    netlify deploy --prod \
+      --dir=dist \
+      --functions=netlify/functions \
+      --message="Deploy from GitHub Actions"
+
+# nankan-review用
+- name: Deploy to Netlify (nankan-review)
+  working-directory: packages/nankan-review
+  env:
+    NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_NANKAN_REVIEW }}
+    NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_NANKAN_REVIEW }}
+  run: |
+    npm install -g netlify-cli
+    netlify deploy --prod \
+      --dir=dist \
+      --functions=netlify/functions \
+      --message="Deploy from GitHub Actions"
+```
+
+**修正履歴:** 2026-01-23に発見・修正
+
+詳細: `.github/workflows/README.md`
+
 ## 📚 参考資料
 
 ### 内部ドキュメント
