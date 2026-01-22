@@ -380,14 +380,20 @@ netlify deploy --prod
 
 ### 🚀 Netlify Monorepoデプロイガイド
 
-**⚠️ 重要: Netlifyデプロイを修正する前に必ず読むこと**
+**🚨 CRITICAL: Netlifyデプロイを修正する前に必ず読むこと**
 
-Monorepo環境でのNetlifyデプロイは**事故が起きやすい**作業です。過去の試行錯誤から学んだ教訓を文書化しました。
+Monorepo環境でのNetlifyデプロイは**事故が起きやすい**作業です（過去5コミット試行錯誤）。
+過去の失敗から学んだ教訓を文書化しました。
 
-**📚 詳細ガイド:** [docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](./docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)
-- **失敗パターン集**: nankan-reviewの5コミット試行錯誤を記録
-- **仮説が外れたときの対応プロトコル**: 「逆にしてみよう」を禁止
-- **新サイト追加時のチェックリスト**: 事故防止の必須項目
+**📚 必読ガイド:** [docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](./docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)
+
+このガイドには以下が記載されています：
+- **失敗パターン集**: nankan-reviewの5コミット試行錯誤を詳細に記録（症状、ログ証跡、根本原因、教訓）
+- **仮説が外れたときの対応プロトコル**: 「逆にしてみよう」を禁止し、根本原因分析を必須化
+- **事故防止プロトコル6項目**: デプロイ前ゲート、1コミット1仮説、禁止ワード等
+- **新サイト追加時のチェックリスト**: netlify.toml、GitHub Actions、環境変数の必須確認項目
+
+**⚠️ デプロイ作業を開始する前に、必ず上記ガイドを読んでください。同じ失敗を繰り返さないために。**
 
 **必須設定（netlify.toml）:**
 ```toml

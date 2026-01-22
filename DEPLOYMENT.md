@@ -2,6 +2,18 @@
 
 keiba-review-monorepoの各サイトをデプロイする手順
 
+**🚨 重要: デプロイ作業前に必読**
+
+Monorepo環境でのNetlifyデプロイは事故が起きやすい作業です。
+**[docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](./docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)** を必ず参照してください。
+
+このガイドには以下が記載されています：
+- 過去の失敗パターン集（5コミット試行錯誤の詳細記録）
+- 事故防止プロトコル（デプロイ前ゲート、仮説検証方法）
+- 新サイト追加時のチェックリスト
+
+---
+
 ## 🎯 デプロイ先
 
 | サイト | URL | Netlify | 用途 |

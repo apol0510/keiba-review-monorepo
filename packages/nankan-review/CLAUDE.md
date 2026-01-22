@@ -59,6 +59,9 @@
 
 #### 1) Netlify Monorepoの唯一の真実を固定する
 
+**⚠️ デプロイを修正する前に必読:**
+[docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](../../docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)に過去の失敗事例と対策が記録されています。同じミスを繰り返さないため、必ず参照してください。
+
 このリポジトリでは **Netlify の publish/functions は netlify.toml を唯一の真実とする。**
 GitHub Actions / CLI から `--dir` と `--functions` を指定しない（混在禁止）。
 

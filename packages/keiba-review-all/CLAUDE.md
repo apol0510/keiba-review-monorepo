@@ -18,10 +18,16 @@
 
 **⚠️ Monorepoでは、netlify.tomlに`base`ディレクティブが必須。これを忘れると、GitHub ActionsとNetlify UIでパス解決が異なり、片方だけ成功する事故が起きる。**
 
-**📚 詳細ガイド:** [docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](../../docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)
-- 失敗パターン集（nankan-reviewの5コミット試行錯誤を記録）
-- 仮説が外れたときの対応プロトコル
-- 新サイト追加時のチェックリスト
+**🚨 デプロイを修正する前に必ず読むこと:**
+[docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](../../docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)
+
+このガイドには以下が記載されています：
+- **失敗パターン集**: nankan-reviewの5コミット試行錯誤を詳細に記録（症状、原因、解決方法、教訓）
+- **仮説が外れたときの対応プロトコル**: 「逆にしてみよう」を禁止し、根本原因分析を必須化
+- **新サイト追加時のチェックリスト**: 事故を事前に防ぐための必須確認項目
+- **事故防止プロトコル6項目**: 実践的なデプロイ手順
+
+**同じ失敗を繰り返さないため、デプロイ作業前に必ず上記ガイドを参照してください。**
 
 **最小限の正しい設定:**
 ```toml
