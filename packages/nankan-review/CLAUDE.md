@@ -34,6 +34,118 @@
 **教訓:**
 削除を提案するのではなく、価値を与える施策を実行することで、サイトは戦略的資産となる。
 
+### Netlify デプロイの鉄則（事故防止プロトコル）
+
+**⚠️ Netlifyは「基準点（cwd）」が全て。toml と CLI の publish/dir を混在させるな。デプロイ前に dist の存在をログで証明してから実行しろ。**
+
+#### 1) Netlify Monorepoの唯一の真実を固定する
+
+このリポジトリでは **Netlify の publish/functions は netlify.toml を唯一の真実とする。**
+GitHub Actions / CLI から `--dir` と `--functions` を指定しない（混在禁止）。
+
+**✅ OK（推奨）:**
+```bash
+cd packages/nankan-review
+netlify deploy --prod  # tomlに従う
+```
+
+**❌ NG（禁止）:**
+```bash
+# 基準点がぶれて root/dist を見に行く事故が起きる
+netlify deploy --dir=dist
+
+# working-directory と cd の二重指定
+# toml と CLI の publish/functions の二重指定
+```
+
+#### 2) "デプロイ前ゲート"を必須化（これで暴走が止まる）
+
+デプロイを実行する前に、**必ず次をログに出す**（確認できない場合は変更禁止）。
+
+```bash
+# 1. 現在のディレクトリ確認
+pwd
+
+# 2. ディレクトリ内容確認
+ls -la
+
+# 3. distディレクトリの存在確認
+ls -la dist
+
+# 4. netlify.toml の publish/functions 確認
+cat netlify.toml | sed -n '1,80p'
+```
+
+**実行条件:**
+- 直近のActionsログで「Deploy path」「Configuration path」を確認し、期待値と一致すること
+- **成功宣言は禁止。**「実際に存在する dist をデプロイ対象として検証できた」場合のみ実行して良い。
+
+#### 3) 変更プロトコル（1コミット1仮説）
+
+Netlify/CI修正は必ず **1コミット＝1仮説** で行う。
+
+**1回で触って良いのは次のうち 1つだけ:**
+- `netlify.toml`
+- workflow（`cd`/`working-directory`のどちらか）
+- buildコマンド（`pnpm filter`等）
+
+**変更前に記録すること:**
+- **現状**: 何が起きているか（ログ引用）
+- **仮説**: なぜそうなるか
+- **成功条件**: どうなれば成功か（具体的なログ出力）
+- **ロールバック**: 失敗したらどのコミットに戻るか
+
+**失敗したら:**
+最後に成功したコミットに戻してから再開（状態を積み増さない）
+
+#### 4) 禁止ワード（AIの"断言癖"対策）
+
+**以下を根拠なしに出力することを禁止:**
+- ❌ "成功しました / 完璧です"
+- ❌ "本番URLは〜です"
+- ❌ "原因はこれです（断定）"
+
+**許可されるのは:**
+- ✅ 「ログに出ている事実」
+- ✅ 「確認手順」のみ
+
+#### 5) GitHub Actions 側の鉄板パターン
+
+**最も事故が少ない deploy ステップ:**
+```yaml
+- name: Deploy to Netlify
+  env:
+    NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_NANKAN_REVIEW }}
+    NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_NANKAN_REVIEW }}
+  run: |
+    cd packages/nankan-review
+    netlify deploy --prod  # オプション極小
+```
+
+**注意:**
+`--dir` / `--functions` をつけたくなる誘惑が再発トリガー。この誘惑を断つこと。
+
+#### 6) デプロイ前チェックリスト（実行前に必ず確認）
+
+```bash
+# ステップ1: 場所の確認
+pwd
+# 期待値: /path/to/keiba-review-monorepo/packages/nankan-review
+
+# ステップ2: dist の存在確認
+ls -la dist
+# 期待値: distディレクトリが存在し、index.htmlなどがある
+
+# ステップ3: netlify.toml の確認
+cat netlify.toml | grep -E "(publish|functions)"
+# 期待値:
+#   publish = "dist"
+#   functions = "netlify/functions"
+
+# ステップ4: デプロイ実行
+netlify deploy --prod
+```
+
 ---
 
 ## 🎯 プロジェクト概要
