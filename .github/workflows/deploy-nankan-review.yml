@@ -37,7 +37,7 @@ jobs:
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-          SITE_URL: https://nankan-review.jp
+          SITE_URL: https://nankan.keiba-review.jp
           PUBLIC_GA_ID: ${{ secrets.PUBLIC_GA_ID_NANKAN }}
         run: pnpm --filter=@keiba-review/nankan-review build
 
@@ -56,4 +56,4 @@ jobs:
         if: success()
         run: |
           echo "🚀 nankan-review のデプロイが完了しました"
-          echo "📍 URL: https://nankan-review.jp"
+          echo "📍 URL: https://nankan.keiba-review.jp"
