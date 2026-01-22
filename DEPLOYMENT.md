@@ -7,7 +7,7 @@ keiba-review-monorepoの各サイトをデプロイする手順
 | サイト | URL | Netlify | 用途 |
 |--------|-----|---------|------|
 | keiba-review-all | https://keiba-review.jp | ✅ | 総合口コミサイト |
-| nankan-review | https://nankan-review.jp | ✅ | 南関特化サイト |
+| nankan-review | https://nankan.keiba-review.jp | ✅ | 南関特化サイト |
 
 ## 🚀 初回デプロイ手順
 
@@ -63,7 +63,7 @@ netlify sites:create --name nankan-review
 # 環境変数設定
 netlify env:set AIRTABLE_API_KEY "your-api-key"
 netlify env:set AIRTABLE_BASE_ID "your-base-id"
-netlify env:set SITE_URL "https://nankan-review.jp"
+netlify env:set SITE_URL "https://nankan.keiba-review.jp"
 netlify env:set PUBLIC_GA_ID "G-YYYYYYYYYY"
 
 # ビルド & デプロイ
@@ -71,7 +71,7 @@ pnpm build
 netlify deploy --prod --build
 
 # カスタムドメイン設定（オプション）
-netlify domains:add nankan-review.jp
+netlify domains:add nankan.keiba-review.jp
 ```
 
 ## 🔄 継続的デプロイ（GitHub Actions）
@@ -154,7 +154,7 @@ curl -I https://keiba-review.jp
 # → HTTP/2 200
 
 # nankan-review
-curl -I https://nankan-review.jp
+curl -I https://nankan.keiba-review.jp
 # → HTTP/2 200
 ```
 

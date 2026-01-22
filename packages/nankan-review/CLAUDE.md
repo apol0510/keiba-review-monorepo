@@ -196,14 +196,14 @@ netlify sites:create --name nankan-review
 netlify env:set AIRTABLE_API_KEY "xxx"
 netlify env:set AIRTABLE_BASE_ID "xxx"
 netlify env:set PUBLIC_GA_ID "G-XXXXXXXXXX"
-netlify env:set SITE_URL "https://nankan-review.jp"
+netlify env:set SITE_URL "https://nankan.keiba-review.jp"
 
 # 本番デプロイ
 netlify deploy --prod --build
 ```
 
 ### ドメイン設定
-- 予定ドメイン: `nankan-review.jp`
+- 予定ドメイン: `nankan.keiba-review.jp`
 - Netlify DNSまたはカスタムドメイン設定
 
 ## 🔮 開発フェーズ

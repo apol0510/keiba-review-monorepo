@@ -118,7 +118,7 @@ pnpm --filter=@keiba-review/nankan-review dev
 
 南関競馬専門の口コミプラットフォーム。
 
-- URL: https://nankan-review.jp
+- URL: https://nankan.keiba-review.jp
 - カテゴリ: nankan専用
 - 特徴: 青系デザイン、nankan-analytics導線強化
 
@@ -184,7 +184,7 @@ pnpm --filter=@keiba-review/nankan-review dev
 **プロジェクト構成:**
 - nankan-analytics.keiba.link - 南関競馬AI予想（メイン）
 - keiba-review.jp - 総合口コミサイト（導線1）
-- nankan-review.jp - 南関特化口コミサイト（導線2）
+- nankan.keiba-review.jp - 南関特化口コミサイト（導線2）
 
 ## 📄 ライセンス
 

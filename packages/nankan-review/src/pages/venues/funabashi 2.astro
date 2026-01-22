@@ -7,12 +7,11 @@ const rankedSites = sortByRankingScore(sites).slice(0, 5);
 
 const siteUrl = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
 
-// 構造化データ
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: '大井競馬場（TCK）完全ガイド | コース特性・予想のコツ',
-  description: '東京シティ競馬（TCK）大井競馬場の完全ガイド。コース特性、ナイター開催、予想のポイントを詳しく解説。南関競馬の中心的存在。',
+  headline: '船橋競馬場完全ガイド | 歴史ある千葉の競馬場',
+  description: '船橋競馬場の完全ガイド。コース特性、歴史、予想のポイントを詳しく解説。南関競馬の伝統を受け継ぐ競馬場。',
   author: {
     '@type': 'Organization',
     name: '南関競馬予想サイト口コミ'
@@ -31,21 +30,21 @@ const structuredData = {
 ---
 
 <BaseLayout
-  title="大井競馬場（TCK）完全ガイド | 南関競馬予想サイト口コミ"
-  description="東京シティ競馬（TCK）大井競馬場の完全ガイド。コース特性、ナイター開催、予想のポイントを詳しく解説。南関競馬の中心的存在として多くのレースを開催しています。"
+  title="船橋競馬場完全ガイド | 南関競馬予想サイト口コミ"
+  description="船橋競馬場の完全ガイド。千葉県の歴史ある競馬場のコース特性、予想のポイント、おすすめ予想サイトを紹介。"
 >
   <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
   <div class="max-w-6xl mx-auto px-4 py-8">
     <!-- Hero -->
-    <div class="bg-gradient-to-br from-blue-600 to-sky-600 text-white rounded-2xl p-8 md:p-12 mb-8">
+    <div class="bg-gradient-to-br from-blue-700 to-sky-700 text-white rounded-2xl p-8 md:p-12 mb-8">
       <div class="flex items-center gap-4 mb-4">
         <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-3xl font-bold">
-          大
+          船
         </div>
         <div>
-          <h1 class="text-3xl md:text-4xl font-bold mb-2">大井競馬場（TCK）</h1>
-          <p class="text-blue-100">Tokyo City Keiba - 南関競馬の中心的存在</p>
+          <h1 class="text-3xl md:text-4xl font-bold mb-2">船橋競馬場</h1>
+          <p class="text-blue-100">歴史ある千葉の競馬場</p>
         </div>
       </div>
     </div>
@@ -57,19 +56,19 @@ const structuredData = {
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="border-b border-slate-100 pb-4">
             <dt class="text-sm text-slate-600 mb-1">正式名称</dt>
-            <dd class="font-bold text-slate-900">東京シティ競馬（TCK）</dd>
+            <dd class="font-bold text-slate-900">船橋競馬場</dd>
           </div>
           <div class="border-b border-slate-100 pb-4">
             <dt class="text-sm text-slate-600 mb-1">所在地</dt>
-            <dd class="font-bold text-slate-900">東京都品川区勝島2-1-2</dd>
+            <dd class="font-bold text-slate-900">千葉県船橋市若松1-2-1</dd>
           </div>
           <div class="border-b border-slate-100 pb-4">
             <dt class="text-sm text-slate-600 mb-1">コース</dt>
-            <dd class="font-bold text-slate-900">ダート1周1,200m</dd>
+            <dd class="font-bold text-slate-900">ダート1周1,000m</dd>
           </div>
           <div class="border-b border-slate-100 pb-4">
             <dt class="text-sm text-slate-600 mb-1">開催形態</dt>
-            <dd class="font-bold text-slate-900">ナイター開催（トゥインクルレース）</dd>
+            <dd class="font-bold text-slate-900">ナイター・デイレース</dd>
           </div>
         </dl>
       </div>
@@ -87,19 +86,19 @@ const structuredData = {
           <ul class="space-y-2 text-slate-700">
             <li class="flex items-start gap-2">
               <span class="text-blue-600 font-bold">•</span>
-              <span>右回りダートコース</span>
+              <span>左回りダートコース</span>
             </li>
             <li class="flex items-start gap-2">
               <span class="text-blue-600 font-bold">•</span>
-              <span>直線距離：約350m（やや短め）</span>
+              <span>直線距離：約280m（南関最短）</span>
             </li>
             <li class="flex items-start gap-2">
               <span class="text-blue-600 font-bold">•</span>
-              <span>コーナー：比較的ゆったり</span>
+              <span>コーナー：急カーブが連続</span>
             </li>
             <li class="flex items-start gap-2">
               <span class="text-blue-600 font-bold">•</span>
-              <span>坂：なだらか</span>
+              <span>坂：平坦に近い</span>
             </li>
           </ul>
         </div>
@@ -112,19 +111,19 @@ const structuredData = {
           <ul class="space-y-2 text-slate-700">
             <li class="flex items-start gap-2">
               <span class="text-blue-600 font-bold">•</span>
-              <span>先行馬が有利（直線が短い）</span>
+              <span>逃げ馬が最も有利（直線最短）</span>
             </li>
             <li class="flex items-start gap-2">
               <span class="text-blue-600 font-bold">•</span>
-              <span>内枠が有利な傾向</span>
+              <span>内枠が圧倒的優位</span>
             </li>
             <li class="flex items-start gap-2">
               <span class="text-blue-600 font-bold">•</span>
-              <span>スピード重視のレース展開</span>
+              <span>先行力とコーナーワークが鍵</span>
             </li>
             <li class="flex items-start gap-2">
               <span class="text-blue-600 font-bold">•</span>
-              <span>砂が深く、パワーも必要</span>
+              <span>差し馬は厳しい</span>
             </li>
           </ul>
         </div>
@@ -139,28 +138,28 @@ const structuredData = {
           <div>
             <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
               <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">1</span>
-              枠順を重視
+              脚質は逃げ・先行一択
             </h3>
             <p class="text-slate-700 pl-10">
-              1周コースのため、枠順が結果に大きく影響します。特に短距離戦では内枠が圧倒的に有利。
+              船橋は直線が最も短いため、逃げ・先行馬以外は勝負にならないケースが多い。
             </p>
           </div>
           <div>
             <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
               <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">2</span>
-              スピード指数を確認
+              枠順は最重要ファクター
             </h3>
             <p class="text-slate-700 pl-10">
-              大井は時計が速く出やすいコース。過去のスピード指数が高い馬は要注目。
+              1枠・2枠の内枠は大きなアドバンテージ。外枠からの巻き返しは極めて困難。
             </p>
           </div>
           <div>
             <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
               <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">3</span>
-              騎手の腕前が鍵
+              船橋巧者を最優先
             </h3>
             <p class="text-slate-700 pl-10">
-              コーナーワークやポジション取りが重要。リーディング上位の騎手は信頼度が高い。
+              船橋での勝率が高い馬・騎手は信頼度抜群。コース実績は必須チェック項目。
             </p>
           </div>
         </div>
@@ -170,7 +169,7 @@ const structuredData = {
     <!-- おすすめ予想サイト -->
     <section class="mb-12">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-slate-900">大井競馬の予想に強いサイト</h2>
+        <h2 class="text-2xl font-bold text-slate-900">船橋競馬の予想に強いサイト</h2>
         <a href="/sites/" class="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1">
           すべて見る
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,12 +208,12 @@ const structuredData = {
 
     <!-- CTA -->
     <div class="bg-gradient-to-br from-blue-700 to-sky-700 text-white rounded-2xl p-8 md:p-12 text-center">
-      <h2 class="text-2xl md:text-3xl font-bold mb-4">大井競馬のデータ分析なら</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">船橋競馬のデータ分析なら</h2>
       <p class="text-blue-100 mb-6 max-w-2xl mx-auto">
-        南関アナリティクスでは、大井競馬場のコース別データ、騎手成績、馬場状態などを詳しく分析しています。
+        南関アナリティクスでは、船橋競馬場の枠順別データ、脚質別成績、コース巧者分析などを詳しく提供しています。
       </p>
       <a
-        href="https://nankan-analytics.com"
+        href="https://nankan-analytics.keiba.link"
         target="_blank"
         rel="noopener noreferrer"
         class="inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-xl hover:scale-105"

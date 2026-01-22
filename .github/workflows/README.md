@@ -31,7 +31,7 @@ Monorepo全体のCI/CDを管理するGitHub Actionsワークフロー
 
 **内容:**
 - nankan-reviewをビルド
-- Netlifyへデプロイ（https://nankan-review.jp）
+- Netlifyへデプロイ（https://nankan.keiba-review.jp）
 
 **実行時間:** 約10-15分
 

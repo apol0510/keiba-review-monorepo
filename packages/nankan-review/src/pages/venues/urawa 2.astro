@@ -7,12 +7,11 @@ const rankedSites = sortByRankingScore(sites).slice(0, 5);
 
 const siteUrl = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
 
-// 構造化データ
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: '大井競馬場（TCK）完全ガイド | コース特性・予想のコツ',
-  description: '東京シティ競馬（TCK）大井競馬場の完全ガイド。コース特性、ナイター開催、予想のポイントを詳しく解説。南関競馬の中心的存在。',
+  headline: '浦和競馬場完全ガイド | 地元密着型の競馬場',
+  description: '浦和競馬場の完全ガイド。コース特性、地域密着の運営、予想のポイントを詳しく解説。埼玉の南関競馬。',
   author: {
     '@type': 'Organization',
     name: '南関競馬予想サイト口コミ'
@@ -31,21 +30,21 @@ const structuredData = {
 ---
 
 <BaseLayout
-  title="大井競馬場（TCK）完全ガイド | 南関競馬予想サイト口コミ"
-  description="東京シティ競馬（TCK）大井競馬場の完全ガイド。コース特性、ナイター開催、予想のポイントを詳しく解説。南関競馬の中心的存在として多くのレースを開催しています。"
+  title="浦和競馬場完全ガイド | 南関競馬予想サイト口コミ"
+  description="浦和競馬場の完全ガイド。埼玉県の地元密着型競馬場のコース特性、予想のポイント、おすすめ予想サイトを紹介。"
 >
   <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
   <div class="max-w-6xl mx-auto px-4 py-8">
     <!-- Hero -->
-    <div class="bg-gradient-to-br from-blue-600 to-sky-600 text-white rounded-2xl p-8 md:p-12 mb-8">
+    <div class="bg-gradient-to-br from-sky-700 to-blue-700 text-white rounded-2xl p-8 md:p-12 mb-8">
       <div class="flex items-center gap-4 mb-4">
         <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-3xl font-bold">
-          大
+          浦
         </div>
         <div>
-          <h1 class="text-3xl md:text-4xl font-bold mb-2">大井競馬場（TCK）</h1>
-          <p class="text-blue-100">Tokyo City Keiba - 南関競馬の中心的存在</p>
+          <h1 class="text-3xl md:text-4xl font-bold mb-2">浦和競馬場</h1>
+          <p class="text-sky-100">地元密着型の競馬場</p>
         </div>
       </div>
     </div>
@@ -57,11 +56,11 @@ const structuredData = {
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="border-b border-slate-100 pb-4">
             <dt class="text-sm text-slate-600 mb-1">正式名称</dt>
-            <dd class="font-bold text-slate-900">東京シティ競馬（TCK）</dd>
+            <dd class="font-bold text-slate-900">浦和競馬場</dd>
           </div>
           <div class="border-b border-slate-100 pb-4">
             <dt class="text-sm text-slate-600 mb-1">所在地</dt>
-            <dd class="font-bold text-slate-900">東京都品川区勝島2-1-2</dd>
+            <dd class="font-bold text-slate-900">埼玉県さいたま市南区別所4-1-1</dd>
           </div>
           <div class="border-b border-slate-100 pb-4">
             <dt class="text-sm text-slate-600 mb-1">コース</dt>
@@ -69,7 +68,7 @@ const structuredData = {
           </div>
           <div class="border-b border-slate-100 pb-4">
             <dt class="text-sm text-slate-600 mb-1">開催形態</dt>
-            <dd class="font-bold text-slate-900">ナイター開催（トゥインクルレース）</dd>
+            <dd class="font-bold text-slate-900">ナイター・デイレース</dd>
           </div>
         </dl>
       </div>
@@ -86,20 +85,20 @@ const structuredData = {
           </h3>
           <ul class="space-y-2 text-slate-700">
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">•</span>
+              <span class="text-sky-600 font-bold">•</span>
               <span>右回りダートコース</span>
             </li>
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">•</span>
-              <span>直線距離：約350m（やや短め）</span>
+              <span class="text-sky-600 font-bold">•</span>
+              <span>直線距離：約300m（やや短め）</span>
             </li>
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">•</span>
-              <span>コーナー：比較的ゆったり</span>
+              <span class="text-sky-600 font-bold">•</span>
+              <span>コーナー：比較的緩やか</span>
             </li>
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">•</span>
-              <span>坂：なだらか</span>
+              <span class="text-sky-600 font-bold">•</span>
+              <span>坂：若干の起伏あり</span>
             </li>
           </ul>
         </div>
@@ -111,20 +110,20 @@ const structuredData = {
           </h3>
           <ul class="space-y-2 text-slate-700">
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">•</span>
-              <span>先行馬が有利（直線が短い）</span>
+              <span class="text-sky-600 font-bold">•</span>
+              <span>先行馬が有利（直線やや短め）</span>
             </li>
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">•</span>
-              <span>内枠が有利な傾向</span>
+              <span class="text-sky-600 font-bold">•</span>
+              <span>差し馬にもチャンスあり</span>
             </li>
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">•</span>
-              <span>スピード重視のレース展開</span>
+              <span class="text-sky-600 font-bold">•</span>
+              <span>バランス型のコース設計</span>
             </li>
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">•</span>
-              <span>砂が深く、パワーも必要</span>
+              <span class="text-sky-600 font-bold">•</span>
+              <span>馬場状態の影響を受けやすい</span>
             </li>
           </ul>
         </div>
@@ -134,33 +133,33 @@ const structuredData = {
     <!-- 予想のポイント -->
     <section class="mb-12">
       <h2 class="text-2xl font-bold text-slate-900 mb-6">予想のポイント</h2>
-      <div class="bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl p-8 border border-blue-100">
+      <div class="bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-8 border border-sky-100">
         <div class="space-y-6">
           <div>
             <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
-              <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">1</span>
-              枠順を重視
+              <span class="w-8 h-8 bg-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">1</span>
+              脚質の幅が広い
             </h3>
             <p class="text-slate-700 pl-10">
-              1周コースのため、枠順が結果に大きく影響します。特に短距離戦では内枠が圧倒的に有利。
+              浦和は先行馬が有利だが、差し馬も届く可能性あり。展開次第で様々な馬にチャンス。
             </p>
           </div>
           <div>
             <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
-              <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">2</span>
-              スピード指数を確認
+              <span class="w-8 h-8 bg-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">2</span>
+              馬場状態を最重視
             </h3>
             <p class="text-slate-700 pl-10">
-              大井は時計が速く出やすいコース。過去のスピード指数が高い馬は要注目。
+              良馬場・重馬場で有利な馬が変わる。馬場状態と馬の適性を必ずチェック。
             </p>
           </div>
           <div>
             <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
-              <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">3</span>
-              騎手の腕前が鍵
+              <span class="w-8 h-8 bg-sky-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">3</span>
+              地元馬・地元騎手に注目
             </h3>
             <p class="text-slate-700 pl-10">
-              コーナーワークやポジション取りが重要。リーディング上位の騎手は信頼度が高い。
+              浦和所属の馬・騎手は地の利あり。浦和での成績は信頼できる指標。
             </p>
           </div>
         </div>
@@ -170,8 +169,8 @@ const structuredData = {
     <!-- おすすめ予想サイト -->
     <section class="mb-12">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-slate-900">大井競馬の予想に強いサイト</h2>
-        <a href="/sites/" class="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1">
+        <h2 class="text-2xl font-bold text-slate-900">浦和競馬の予想に強いサイト</h2>
+        <a href="/sites/" class="text-sky-600 hover:text-sky-700 font-medium text-sm flex items-center gap-1">
           すべて見る
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -181,8 +180,8 @@ const structuredData = {
       {rankedSites.length > 0 ? (
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rankedSites.map((site) => (
-            <a href={`/sites/${site.slug}/`} class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-6 border border-slate-100 hover:border-blue-200 group">
-              <h3 class="font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+            <a href={`/sites/${site.slug}/`} class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-6 border border-slate-100 hover:border-sky-200 group">
+              <h3 class="font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">
                 {site.name}
               </h3>
               <p class="text-sm text-slate-600 mb-4 line-clamp-2">
@@ -208,16 +207,16 @@ const structuredData = {
     </section>
 
     <!-- CTA -->
-    <div class="bg-gradient-to-br from-blue-700 to-sky-700 text-white rounded-2xl p-8 md:p-12 text-center">
-      <h2 class="text-2xl md:text-3xl font-bold mb-4">大井競馬のデータ分析なら</h2>
-      <p class="text-blue-100 mb-6 max-w-2xl mx-auto">
-        南関アナリティクスでは、大井競馬場のコース別データ、騎手成績、馬場状態などを詳しく分析しています。
+    <div class="bg-gradient-to-br from-sky-700 to-blue-700 text-white rounded-2xl p-8 md:p-12 text-center">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">浦和競馬のデータ分析なら</h2>
+      <p class="text-sky-100 mb-6 max-w-2xl mx-auto">
+        南関アナリティクスでは、浦和競馬場の馬場状態別データ、地元馬成績、騎手分析などを詳しく提供しています。
       </p>
       <a
-        href="https://nankan-analytics.com"
+        href="https://nankan-analytics.keiba.link"
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-xl hover:scale-105"
+        class="inline-flex items-center gap-2 bg-white text-sky-700 hover:bg-sky-50 px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-xl hover:scale-105"
       >
         南関アナリティクスで分析する
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

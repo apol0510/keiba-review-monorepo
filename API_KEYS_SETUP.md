@@ -118,8 +118,8 @@ export NETLIFY_SITE_ID_KEIBA_REVIEW_ALL="yyy-yyy-yyy"
 5. 通貨: 日本円（JPY）
 6. 「次へ」→「次へ」→「作成」
 7. 「データストリーム」→「ウェブ」
-8. ウェブサイトURL: `https://nankan-review.jp`
-9. ストリーム名: `nankan-review.jp`
+8. ウェブサイトURL: `https://nankan.keiba-review.jp`
+9. ストリーム名: `nankan.keiba-review.jp`
 10. **測定ID（`G-XXXXXXXXXX`）をコピー**
 
 ```bash
