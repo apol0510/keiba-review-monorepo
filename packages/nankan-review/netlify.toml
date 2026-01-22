@@ -1,7 +1,7 @@
 [build]
   command = "pnpm --filter=@keiba-review/nankan-review build"
-  publish = "dist"
-  functions = "netlify/functions"
+  publish = "packages/nankan-review/dist"
+  functions = "packages/nankan-review/netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
