@@ -45,15 +45,12 @@ jobs:
         run: npm install -g netlify-cli
 
       - name: Deploy to Netlify
-        working-directory: packages/nankan-review
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_NANKAN_REVIEW }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_NANKAN_REVIEW }}
         run: |
-          netlify deploy --prod \
-            --dir=dist \
-            --functions=netlify/functions \
-            --message="Deploy from GitHub Actions"
+          cd packages/nankan-review
+          netlify deploy --prod --message="Deploy from GitHub Actions"
 
       - name: Report deployment status
         if: success()
