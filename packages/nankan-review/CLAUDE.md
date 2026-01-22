@@ -36,7 +36,26 @@
 
 ### Netlify デプロイの鉄則（事故防止プロトコル）
 
-**⚠️ Netlifyは「基準点（cwd）」が全て。toml と CLI の publish/dir を混在させるな。デプロイ前に dist の存在をログで証明してから実行しろ。**
+**⚠️ Monorepoでは、netlify.tomlに`base`ディレクティブが必須。これを忘れると、GitHub ActionsとNetlify UIでパス解決が異なり、片方だけ成功する事故が起きる。**
+
+**📚 詳細ガイド:** [docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](../../docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)
+- 失敗パターン集（2026-01-22の5コミット試行錯誤を記録）
+- 仮説が外れたときの対応プロトコル
+- 新サイト追加時のチェックリスト
+
+**最小限の正しい設定:**
+```toml
+[build]
+  base = "packages/nankan-review"  # ← これが必須（Monorepo環境）
+  command = "pnpm --filter=@keiba-review/nankan-review build"
+  publish = "dist"  # baseからの相対パス
+  functions = "netlify/functions"
+```
+
+**なぜbaseが必要か:**
+- GitHub Actions: `cd packages/nankan-review` → 相対パス解決が正しい ✅
+- Netlify UI: ルートから相対パス → `/repo/dist`（存在しない）❌
+- **base指定で両環境のパス解決を統一** ✅
 
 #### 1) Netlify Monorepoの唯一の真実を固定する
 

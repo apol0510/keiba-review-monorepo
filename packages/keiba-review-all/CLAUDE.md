@@ -14,6 +14,35 @@
 - **ホスティング**: Node.js（standalone mode）
 - **外部サービス**: Bing Web Search API（サイト検知）, SendGrid（通知）, reCAPTCHA v3
 
+## Netlify デプロイの鉄則（事故防止プロトコル）
+
+**⚠️ Monorepoでは、netlify.tomlに`base`ディレクティブが必須。これを忘れると、GitHub ActionsとNetlify UIでパス解決が異なり、片方だけ成功する事故が起きる。**
+
+**📚 詳細ガイド:** [docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](../../docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)
+- 失敗パターン集（nankan-reviewの5コミット試行錯誤を記録）
+- 仮説が外れたときの対応プロトコル
+- 新サイト追加時のチェックリスト
+
+**最小限の正しい設定:**
+```toml
+[build]
+  base = "packages/keiba-review-all"  # ← これが必須（Monorepo環境）
+  command = "pnpm --filter=@keiba-review/keiba-review-all build"
+  publish = "dist"  # baseからの相対パス
+  functions = "netlify/functions"
+```
+
+**なぜbaseが必要か:**
+- GitHub Actions: `cd packages/keiba-review-all` → 相対パス解決が正しい ✅
+- Netlify UI: ルートから相対パス → `/repo/dist`（存在しない）❌
+- **base指定で両環境のパス解決を統一** ✅
+
+**典型的な失敗パターン:**
+- baseディレクティブの欠如 → GitHub ActionsとNetlify UIでパス解決が異なる
+- 仮説が外れたとき、すぐ次の仮説に飛びつく → 根本原因を分析する
+
+詳細は上記のガイドを参照してください。
+
 ## ディレクトリ構造
 
 ```

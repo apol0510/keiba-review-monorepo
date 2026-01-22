@@ -1,7 +1,8 @@
-# GitHub Actions用：ビルドをスキップ（既にビルド済み）
-# publish設定はnetlify deployコマンドの--dirパラメータを使用
 [build]
-  command = ""  # 空のコマンドでビルドをスキップ
+  base = "packages/keiba-review-all"
+  command = "pnpm --filter=@keiba-review/keiba-review-all build"
+  publish = "dist"
+  functions = "netlify/functions"
 
 [functions]
   directory = "netlify/functions"

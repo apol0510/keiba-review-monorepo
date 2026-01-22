@@ -378,6 +378,34 @@ netlify deploy --prod
 
 ---
 
+### 🚀 Netlify Monorepoデプロイガイド
+
+**⚠️ 重要: Netlifyデプロイを修正する前に必ず読むこと**
+
+Monorepo環境でのNetlifyデプロイは**事故が起きやすい**作業です。過去の試行錯誤から学んだ教訓を文書化しました。
+
+**📚 詳細ガイド:** [docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md](./docs/NETLIFY-MONOREPO-DEPLOY-GUIDE.md)
+- **失敗パターン集**: nankan-reviewの5コミット試行錯誤を記録
+- **仮説が外れたときの対応プロトコル**: 「逆にしてみよう」を禁止
+- **新サイト追加時のチェックリスト**: 事故防止の必須項目
+
+**必須設定（netlify.toml）:**
+```toml
+[build]
+  base = "packages/サイト名"  # ← これが必須（Monorepo環境）
+  command = "pnpm --filter=@scope/package build"
+  publish = "dist"  # baseからの相対パス
+```
+
+**なぜbaseが必要か:**
+- GitHub ActionsとNetlify UIで「基準点（cwd）」が異なる
+- base未指定 → 環境によってパス解決が異なる → 片方だけ成功する事故
+- base指定 → 両環境で統一的にパス解決 → 安全
+
+**新サイト追加時は、必ず詳細ガイドのチェックリストを確認してください。**
+
+---
+
 ### ⚠️ 重要な注意事項
 
 **AIは会話をリセットされるため、毎回このセクションを読むこと。**
