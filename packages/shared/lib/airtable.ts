@@ -50,6 +50,41 @@ function setCache(key: string, data: any): void {
   cache.set(key, { data, timestamp: Date.now() });
 }
 
+// レート制限対策: API呼び出し間に遅延を追加
+async function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// リトライロジック付きAPI呼び出しラッパー
+async function fetchWithRetry<T>(
+  fetchFn: () => Promise<T>,
+  maxRetries: number = 3
+): Promise<T> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // レート制限対策: 200ms待機（5 requests/second）
+      if (attempt > 1) {
+        const backoffMs = 200 * Math.pow(2, attempt - 1); // 指数バックオフ
+        console.log(`  ⏱️  リトライ ${attempt}/${maxRetries}: ${backoffMs}ms待機中...`);
+        await delay(backoffMs);
+      }
+
+      return await fetchFn();
+    } catch (error: any) {
+      const is504 = error?.statusCode === 504 || error?.message?.includes('504');
+
+      if (is504 && attempt < maxRetries) {
+        console.warn(`  ⚠️  タイムアウト検出（試行 ${attempt}/${maxRetries}）`);
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  throw new Error(`最大リトライ回数（${maxRetries}）を超えました`);
+}
+
 // Airtable設定を取得する関数（互換性のため）
 export async function getAirtableConfig() {
   const { apiKey, baseId } = getAirtableCredentials();
@@ -133,26 +168,28 @@ export async function getApprovedSites(): Promise<Site[]> {
     return cached;
   }
 
-  const records = await base('Sites').select({
-    filterByFormula: '{IsApproved} = TRUE()',
-    sort: [{ field: 'DisplayPriority', direction: 'desc' }, { field: 'CreatedAt', direction: 'desc' }]
-  }).all();
+  const sites = await fetchWithRetry(async () => {
+    const records = await base('Sites').select({
+      filterByFormula: '{IsApproved} = TRUE()',
+      sort: [{ field: 'DisplayPriority', direction: 'desc' }, { field: 'CreatedAt', direction: 'desc' }]
+    }).all();
 
-  const sites = records.map(record => ({
-    id: record.id,
-    name: record.fields.Name as string,
-    slug: record.fields.Slug as string,
-    url: record.fields.URL as string,
-    description: record.fields.Description as string || '',
-    category: record.fields.Category as Category,
-    screenshotUrl: record.fields.ScreenshotURL as string,
-    isApproved: true,
-    status: 'active',
-    reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
-    averageRating: record.fields['Average Rating'] as number,
-    displayPriority: (record.fields.DisplayPriority as number) || 50,
-    createdAt: record.fields.CreatedAt as string
-  }));
+    return records.map(record => ({
+      id: record.id,
+      name: record.fields.Name as string,
+      slug: record.fields.Slug as string,
+      url: record.fields.URL as string,
+      description: record.fields.Description as string || '',
+      category: record.fields.Category as Category,
+      screenshotUrl: record.fields.ScreenshotURL as string,
+      isApproved: true,
+      status: 'active',
+      reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
+      averageRating: record.fields['Average Rating'] as number,
+      displayPriority: (record.fields.DisplayPriority as number) || 50,
+      createdAt: record.fields.CreatedAt as string
+    }));
+  });
 
   // キャッシュに保存
   setCache(cacheKey, sites);
@@ -192,35 +229,39 @@ export async function getSiteBySlug(slug: string): Promise<Site | null> {
     return cached;
   }
 
-  const records = await base('Sites').select({
-    filterByFormula: `{Slug} = '${slug}'`,
-    maxRecords: 1
-  }).all();
+  const site = await fetchWithRetry(async () => {
+    const records = await base('Sites').select({
+      filterByFormula: `{Slug} = '${slug}'`,
+      maxRecords: 1
+    }).all();
 
-  if (records.length === 0) {
-    return null;
+    if (records.length === 0) {
+      return null;
+    }
+
+    const record = records[0];
+    const screenshotUrl = record.fields.ScreenshotURL as string;
+    return {
+      id: record.id,
+      name: record.fields.Name as string,
+      slug: record.fields.Slug as string,
+      url: record.fields.URL as string,
+      description: record.fields.Description as string || '',
+      category: record.fields.Category as Category,
+      screenshotUrl,
+      screenshot_url: screenshotUrl, // snake_caseエイリアス
+      isApproved: record.fields.IsApproved as boolean || false,
+      status: record.fields.IsApproved ? 'active' : 'pending',
+      reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
+      averageRating: record.fields['Average Rating'] as number,
+      createdAt: record.fields.CreatedAt as string
+    } as any; // 型エラー回避のためanyを使用
+  });
+
+  if (site) {
+    // キャッシュに保存
+    setCache(cacheKey, site);
   }
-
-  const record = records[0];
-  const screenshotUrl = record.fields.ScreenshotURL as string;
-  const site = {
-    id: record.id,
-    name: record.fields.Name as string,
-    slug: record.fields.Slug as string,
-    url: record.fields.URL as string,
-    description: record.fields.Description as string || '',
-    category: record.fields.Category as Category,
-    screenshotUrl,
-    screenshot_url: screenshotUrl, // snake_caseエイリアス
-    isApproved: record.fields.IsApproved as boolean || false,
-    status: record.fields.IsApproved ? 'active' : 'pending',
-    reviewCount: record.fields.Reviews ? (record.fields.Reviews as string[]).length : 0,
-    averageRating: record.fields['Average Rating'] as number,
-    createdAt: record.fields.CreatedAt as string
-  } as any; // 型エラー回避のためanyを使用
-
-  // キャッシュに保存
-  setCache(cacheKey, site);
 
   return site;
 }
@@ -298,34 +339,36 @@ export async function getApprovedReviewsBySite(siteId: string): Promise<Review[]
     return cached;
   }
 
-  // すべての承認済みレビューを取得してから、JavaScriptでフィルタリング
-  // AirtableのSEARCH()が期待通りに動作しないため
-  const allRecords = await base('Reviews').select({
-    filterByFormula: '{IsApproved} = TRUE()',
-    sort: [{ field: 'CreatedAt', direction: 'desc' }]
-  }).all();
+  const reviews = await fetchWithRetry(async () => {
+    // すべての承認済みレビューを取得してから、JavaScriptでフィルタリング
+    // AirtableのSEARCH()が期待通りに動作しないため
+    const allRecords = await base('Reviews').select({
+      filterByFormula: '{IsApproved} = TRUE()',
+      sort: [{ field: 'CreatedAt', direction: 'desc' }]
+    }).all();
 
-  // JavaScriptでsiteIdでフィルタリング
-  const records = allRecords.filter(record => {
-    const siteLinkField = record.fields.Site;
-    const linkedSiteId = Array.isArray(siteLinkField) ? siteLinkField[0] : siteLinkField;
-    return linkedSiteId === siteId;
+    // JavaScriptでsiteIdでフィルタリング
+    const records = allRecords.filter(record => {
+      const siteLinkField = record.fields.Site;
+      const linkedSiteId = Array.isArray(siteLinkField) ? siteLinkField[0] : siteLinkField;
+      return linkedSiteId === siteId;
+    });
+
+    return records.map(record => ({
+      id: record.id,
+      siteId: record.fields.Site ? (record.fields.Site as string[])[0] : '',
+      siteName: record.fields['Site Name'] as string,
+      username: record.fields.UserName as string,
+      rating: record.fields.Rating as number,
+      title: record.fields.Title as string,
+      content: record.fields.Content as string,
+      status: 'approved' as ReviewStatus,
+      createdAt: record.fields.CreatedAt as string,
+      created_at: record.fields.CreatedAt as string, // snake_caseエイリアス
+      helpfulCount: (record.fields.HelpfulCount as number) || 0,
+      helpful_count: (record.fields.HelpfulCount as number) || 0 // snake_caseエイリアス
+    }));
   });
-
-  const reviews = records.map(record => ({
-    id: record.id,
-    siteId: record.fields.Site ? (record.fields.Site as string[])[0] : '',
-    siteName: record.fields['Site Name'] as string,
-    username: record.fields.UserName as string,
-    rating: record.fields.Rating as number,
-    title: record.fields.Title as string,
-    content: record.fields.Content as string,
-    status: 'approved' as ReviewStatus,
-    createdAt: record.fields.CreatedAt as string,
-    created_at: record.fields.CreatedAt as string, // snake_caseエイリアス
-    helpfulCount: (record.fields.HelpfulCount as number) || 0,
-    helpful_count: (record.fields.HelpfulCount as number) || 0 // snake_caseエイリアス
-  }));
 
   // キャッシュに保存
   setCache(cacheKey, reviews);
@@ -452,43 +495,45 @@ export async function getSitesWithStats(): Promise<SiteWithStats[]> {
     return cached;
   }
 
-  const sites = await getApprovedSites();
+  const sitesWithStats = await fetchWithRetry(async () => {
+    const sites = await getApprovedSites();
 
-  // 全ての承認済みレビューを一度に取得（効率化）
-  const allReviews = await base('Reviews').select({
-    filterByFormula: '{IsApproved} = TRUE()'
-  }).all();
+    // 全ての承認済みレビューを一度に取得（効率化）
+    const allReviews = await base('Reviews').select({
+      filterByFormula: '{IsApproved} = TRUE()'
+    }).all();
 
-  // サイトIDごとにレビューをグループ化
-  const reviewsBySite = new Map<string, number[]>();
-  allReviews.forEach(record => {
-    const siteIds = record.fields.Site as string[] | undefined;
-    if (siteIds && siteIds.length > 0) {
-      const siteId = siteIds[0];
-      const rating = record.fields.Rating as number;
-      if (!reviewsBySite.has(siteId)) {
-        reviewsBySite.set(siteId, []);
+    // サイトIDごとにレビューをグループ化
+    const reviewsBySite = new Map<string, number[]>();
+    allReviews.forEach(record => {
+      const siteIds = record.fields.Site as string[] | undefined;
+      if (siteIds && siteIds.length > 0) {
+        const siteId = siteIds[0];
+        const rating = record.fields.Rating as number;
+        if (!reviewsBySite.has(siteId)) {
+          reviewsBySite.set(siteId, []);
+        }
+        reviewsBySite.get(siteId)!.push(rating);
       }
-      reviewsBySite.get(siteId)!.push(rating);
-    }
-  });
+    });
 
-  // 統計情報を計算
-  const sitesWithStats = sites.map((site) => {
-    const ratings = reviewsBySite.get(site.id) || [];
-    const reviewCount = ratings.length;
-    const averageRating = reviewCount > 0
-      ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount
-      : null;
+    // 統計情報を計算
+    return sites.map((site) => {
+      const ratings = reviewsBySite.get(site.id) || [];
+      const reviewCount = ratings.length;
+      const averageRating = reviewCount > 0
+        ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount
+        : null;
 
-    return {
-      ...site,
-      review_count: reviewCount,
-      average_rating: averageRating,
-      display_priority: site.displayPriority || 50, // Airtableから取得した値を使用
-      created_at: site.createdAt, // snake_caseエイリアス
-      screenshot_url: site.screenshotUrl // snake_caseエイリアス
-    };
+      return {
+        ...site,
+        review_count: reviewCount,
+        average_rating: averageRating,
+        display_priority: site.displayPriority || 50, // Airtableから取得した値を使用
+        created_at: site.createdAt, // snake_caseエイリアス
+        screenshot_url: site.screenshotUrl // snake_caseエイリアス
+      };
+    });
   });
 
   // キャッシュに保存
@@ -540,6 +585,30 @@ export async function getLatestReviews(limit: number = 10): Promise<ReviewWithSi
   );
 
   return reviewsWithSite;
+}
+
+/**
+ * プリフェッチ関数（ビルド時に全データをキャッシュに保存）
+ *
+ * この関数を最初に呼ぶことで、以降のAPI呼び出しはすべてキャッシュヒットし、
+ * Airtableのレート制限を回避できます。
+ */
+export async function prefetchAllData(): Promise<void> {
+  console.log('🔄 プリフェッチ開始: 全データをキャッシュに保存します...');
+
+  try {
+    // 並列実行を避けるため順次実行
+    await getApprovedSites();
+    console.log('  ✅ 承認済みサイト取得完了');
+
+    await getSitesWithStats();
+    console.log('  ✅ サイト統計取得完了');
+
+    console.log('✅ プリフェッチ完了');
+  } catch (error) {
+    console.error('❌ プリフェッチエラー:', error);
+    throw error;
+  }
 }
 
 /**

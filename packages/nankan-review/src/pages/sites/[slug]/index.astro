@@ -7,12 +7,15 @@ import OptimizedImage from '../../../../../keiba-review-all/src/components/Optim
 import PricingInfo from '../../../../../keiba-review-all/src/components/PricingInfo.astro';
 import ReviewForm from '../../../../../keiba-review-all/src/components/ReviewForm.tsx';
 import SiteCard from '../../../../../keiba-review-all/src/components/SiteCard.astro';
-import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats } from '@keiba-review/shared/lib';
+import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats, prefetchAllData } from '@keiba-review/shared/lib';
 import { getScreenshotUrl } from '../../../../../keiba-review-all/src/lib/screenshot-helper';
 
 export async function getStaticPaths() {
+  // 【重要】最初に全データをプリフェッチしてキャッシュに保存
+  await prefetchAllData();
+
   // nankanカテゴリのサイトのみ取得
-  const allSites = await getSitesWithStats();
+  const allSites = await getSitesWithStats(); // キャッシュヒット
   const nankanSites = allSites.filter(site => site.category === 'nankan' && site.isApproved);
 
   return nankanSites.map(site => ({

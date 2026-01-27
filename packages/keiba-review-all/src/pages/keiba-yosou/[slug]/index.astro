@@ -9,15 +9,19 @@ import Breadcrumb from '../../../components/Breadcrumb.astro';
 import ReviewForm from '../../../components/ReviewForm';
 import PricingInfo from '../../../components/PricingInfo.astro';
 import OptimizedImage from '../../../components/OptimizedImage.astro';
-import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats, categoryLabels, getApprovedSites } from '@keiba-review/shared/lib';
+import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats, categoryLabels, getApprovedSites, prefetchAllData } from '@keiba-review/shared/lib';
 import { getScreenshotUrl, getFallbackImage } from '../../../lib/screenshot-helper';
 
 // 静的パス生成（ビルド時に全ページを事前生成）
 export async function getStaticPaths() {
   console.log('🔨 ビルド時: 全ページを事前生成します...');
 
+  // 【重要】最初に全データをプリフェッチしてキャッシュに保存
+  // これにより、以降のAPI呼び出しはすべてキャッシュヒットし、レート制限を回避
+  await prefetchAllData();
+
   const categories = ['nankan', 'chuo', 'chihou'];
-  const sites = await getApprovedSites();
+  const sites = await getApprovedSites(); // キャッシュヒット
 
   console.log(`📄 生成ページ数: ${categories.length}カテゴリ + ${sites.length}サイト = ${categories.length + sites.length}ページ`);
 
