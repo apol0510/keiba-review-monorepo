@@ -111,6 +111,27 @@ jobs:
           npm install -g netlify-cli
           netlify deploy --prod --message="Auto-deploy after reviews posting"
 
+      # ===== 🚀 nankan-reviewのビルド＆デプロイ =====
+      - name: Build site (nankan-review)
+        if: success()
+        working-directory: packages/nankan-review
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          SITE_URL: https://nankan.keiba-review.jp
+          PUBLIC_GA_ID: ${{ secrets.PUBLIC_GA_ID_NANKAN }}
+        run: pnpm build
+
+      - name: Deploy to Netlify (nankan-review)
+        if: success()
+        working-directory: packages/nankan-review
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_NANKAN_REVIEW }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_NANKAN_REVIEW }}
+        run: |
+          npm install -g netlify-cli
+          netlify deploy --prod --message="Auto-deploy after reviews posting"
+
       - name: Deployment summary
         if: success()
         run: |
@@ -122,3 +143,7 @@ jobs:
           echo "✅ **keiba-review.jp** に最新の口コミが反映されました" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🔗 サイトURL: https://keiba-review.jp" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **nankan.keiba-review.jp** に最新の口コミが反映されました" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 サイトURL: https://nankan.keiba-review.jp" >> $GITHUB_STEP_SUMMARY
