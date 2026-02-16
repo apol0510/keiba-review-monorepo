@@ -8,6 +8,12 @@ const sites = allSites.filter(site => site.category === 'nankan');
 const rankedSites = sortByRankingScore(sites);
 const topSites = rankedSites.slice(0, 10);
 
+// 統計情報を計算
+const totalReviews = sites.reduce((sum, site) => sum + (site.reviewCount || 0), 0);
+const averageRating = sites.length > 0
+  ? (sites.reduce((sum, site) => sum + (site.averageRating || 0), 0) / sites.length).toFixed(1)
+  : '0.0';
+
 // 構造化データ
 const siteUrl = import.meta.env.SITE_URL || 'https://nankan.keiba-review.jp';
 const structuredData = {
@@ -95,21 +101,21 @@ const structuredData = {
       <div class="grid grid-cols-3 gap-4 md:gap-8">
         <div class="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow text-center border border-slate-100">
           <div class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent mb-2">
-            {sites.length}
+            {totalReviews}+
           </div>
-          <div class="text-xs md:text-sm text-slate-600 font-medium">登録サイト</div>
+          <div class="text-xs md:text-sm text-slate-600 font-medium">口コミ総数</div>
+        </div>
+        <div class="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow text-center border border-slate-100">
+          <div class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent mb-2">
+            ⭐{averageRating}
+          </div>
+          <div class="text-xs md:text-sm text-slate-600 font-medium">平均評価</div>
         </div>
         <div class="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow text-center border border-slate-100">
           <div class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent mb-2">
             4
           </div>
           <div class="text-xs md:text-sm text-slate-600 font-medium">対応競馬場</div>
-        </div>
-        <div class="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow text-center border border-slate-100">
-          <div class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent mb-2">
-            毎日
-          </div>
-          <div class="text-xs md:text-sm text-slate-600 font-medium">頻繁開催</div>
         </div>
       </div>
     </div>
@@ -125,9 +131,9 @@ const structuredData = {
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         <div class="bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-slate-100 text-center">
-          <div class="text-4xl mb-4">📅</div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">頻繁開催</h3>
-          <p class="text-sm text-slate-600">ほぼ毎日どこかの競馬場で開催</p>
+          <div class="text-4xl mb-4">🌃</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">ナイター開催</h3>
+          <p class="text-sm text-slate-600">仕事帰りでも楽しめる夜間レース</p>
         </div>
         <div class="bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-slate-100 text-center">
           <div class="text-4xl mb-4">🏙️</div>
