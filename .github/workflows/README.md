@@ -7,11 +7,22 @@ Monorepo全体のCI/CDを管理するGitHub Actionsワークフロー
 ### 1. CI (ci.yml)
 **トリガー:** push/PR to main/develop
 **内容:**
+- **ワークフロー整合性検証**（新サイト追加時のデプロイ設定漏れを検出）
 - すべてのパッケージのビルドテスト
 - shared → keiba-review-all → nankan-review の順でビルド
 - 依存関係の検証
 
 **実行時間:** 約10-15分
+
+**🔍 検証項目（2026-02-16追加）:**
+- packages/配下の全サイトがauto-post-reviews.ymlに含まれているか
+- 各サイトのビルドとデプロイステップが存在するか
+- netlify.tomlの設定が正しいか
+
+**検証失敗時の対応:**
+1. CLAUDE.mdの「新サイト追加チェックリスト」を参照
+2. auto-post-reviews.ymlに不足しているステップを追加
+3. CIを再実行して検証
 
 ### 2. Deploy keiba-review-all (deploy-keiba-review-all.yml)
 **トリガー:**
@@ -39,11 +50,15 @@ Monorepo全体のCI/CDを管理するGitHub Actionsワークフロー
 **トリガー:** 毎日AM4:00（JST）
 
 **内容:**
-- keiba-review-all用の口コミ自動投稿
+- 全サイト用の口コミ自動投稿（Airtable共通Base）
 - run-daily-reviews-v4.cjs実行
 - 投稿後の検証
+- **keiba-review-allのビルドとデプロイ**
+- **nankan-reviewのビルドとデプロイ**（2026-02-16追加）
 
-**実行時間:** 約20-30分
+**実行時間:** 約30-40分
+
+**⚠️ 重要:** 新サイト追加時は、このワークフローに必ずビルドとデプロイステップを追加すること
 
 ### 5. Weekly Screenshot Capture (auto-screenshots.yml)
 **トリガー:** 毎週月曜AM5:00（JST）

@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate workflows consistency
+        run: node scripts/validate-workflows.js
+
       - name: Build shared package
         run: pnpm --filter=@keiba-review/shared build
 

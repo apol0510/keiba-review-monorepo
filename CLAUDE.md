@@ -1597,6 +1597,7 @@ console.log(`📝 コメント: ${review.Comment ? review.Comment.substring(0, 5
 
 ### 口コミ自動投稿管理
 - **実行頻度**: 毎日AM4:00（JST）
+- **⚠️ 重要**: 新サイト追加時は必ず自動デプロイワークフローも更新すること（詳細は後述）
 - **投稿件数**: 平均30-35件/日（確率制御により変動）
 - **データ品質**:
   - ✅ 1/5-1/20: 564件の口コミが正常に投稿済み（平均35件/日）
@@ -1607,6 +1608,161 @@ console.log(`📝 コメント: ${review.Comment ? review.Comment.substring(0, 5
   - ✅ リアルタイムでサイトに反映（デプロイ時間: 約3分）
   - ✅ デプロイ失敗時は自動アラート
 - **モニタリング**: GitHub Actions Summaryで成功/失敗件数を自動表示
+
+## 🚨 事故の記録と再発防止策
+
+### 事故1: nankan-reviewの口コミが反映されない問題（2026-02-16）
+
+#### 症状
+- nankan-reviewサイトに口コミが表示されない
+- Airtableには南関カテゴリの口コミが存在するはず
+- keiba-review-allには正常に口コミが反映されている
+
+#### 根本原因
+**設計フローの不備:** 新サイト追加時に自動デプロイワークフローの更新を忘れた
+
+**詳細:**
+1. nankan-reviewは**keiba-review-allと同じAirtable Base**を使用する設計
+2. `Category='南関'`でフィルタリングしてデータを取得する
+3. しかし、`.github/workflows/auto-post-reviews.yml`が**keiba-review-allのみ**をデプロイしていた
+4. 口コミ投稿 → Airtableに保存 → **nankan-reviewのビルド＆デプロイがスキップ** → サイトに反映されない
+
+**なぜ事故が起きたのか:**
+- Phase 2でnankan-reviewを追加した際、auto-post-reviews.ymlの更新を忘れた
+- ワークフローが「keiba-review-all専用」として実装されていた
+- 複数サイトを考慮した設計になっていなかった
+
+#### 実施した修正（2026-02-16）
+
+**コミット:** `20f41d7` - fix(workflows): nankan-reviewの自動デプロイを追加
+
+**変更内容:**
+```yaml
+# auto-post-reviews.yml に追加
+- name: Build site (nankan-review)
+  working-directory: packages/nankan-review
+  env:
+    AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+    AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+    SITE_URL: https://nankan.keiba-review.jp
+    PUBLIC_GA_ID: ${{ secrets.PUBLIC_GA_ID_NANKAN }}
+  run: pnpm build
+
+- name: Deploy to Netlify (nankan-review)
+  working-directory: packages/nankan-review
+  env:
+    NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_NANKAN_REVIEW }}
+    NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_NANKAN_REVIEW }}
+  run: |
+    npm install -g netlify-cli
+    netlify deploy --prod --message="Auto-deploy after reviews posting"
+```
+
+#### 再発防止策
+
+**1. 新サイト追加チェックリスト（必須）**
+
+新しいサイト（例: chuo-keiba-review）を追加する際、**必ず以下を確認・実装**すること：
+
+**Phase 1: サイト基盤作成**
+- [ ] `packages/新サイト名/`ディレクトリ作成
+- [ ] `package.json`, `astro.config.mjs`, `netlify.toml`設定
+- [ ] 環境変数設定（`.env`ファイル）
+- [ ] Airtable設定確認（既存Baseを使うか、新規Baseを作るか）
+
+**Phase 2: GitHub Secrets設定**
+- [ ] `NETLIFY_AUTH_TOKEN_新サイト名`を追加
+- [ ] `NETLIFY_SITE_ID_新サイト名`を追加
+- [ ] `PUBLIC_GA_ID_新サイト名`を追加（GA4測定ID）
+- [ ] 必要に応じて`AIRTABLE_BASE_ID_新サイト名`を追加
+
+**Phase 3: GitHub Actionsワークフロー更新（最重要）**
+- [ ] `.github/workflows/auto-post-reviews.yml`に新サイトのビルド＆デプロイステップを追加
+- [ ] `.github/workflows/deploy-新サイト名.yml`を作成（個別デプロイ用）
+- [ ] `.github/workflows/ci.yml`に新サイトのビルドテストを追加
+- [ ] デプロイサマリーに新サイトの情報を追加
+
+**Phase 4: 動作確認**
+- [ ] ローカルで`pnpm dev`実行、正常に起動するか確認
+- [ ] ローカルで`pnpm build`実行、エラーなくビルドできるか確認
+- [ ] 手動でワークフロー実行（`gh workflow run auto-post-reviews.yml`）
+- [ ] GitHub Actions Summaryで新サイトがデプロイされたか確認
+- [ ] 本番URLで口コミが表示されるか確認
+
+**Phase 5: ドキュメント更新**
+- [ ] ルートの`CLAUDE.md`に新サイト情報を追加
+- [ ] `packages/新サイト名/CLAUDE.md`を作成
+- [ ] `.github/workflows/README.md`を更新
+- [ ] `DEPLOYMENT.md`を更新
+
+**2. 自動検証スクリプト（scripts/validate-workflows.js）**
+
+新サイト追加時に、ワークフローの整合性を自動チェックするスクリプトを作成：
+
+```javascript
+// scripts/validate-workflows.js
+// 実行: node scripts/validate-workflows.js
+//
+// チェック項目:
+// 1. packages/*/にあるサイトが全てauto-post-reviews.ymlに含まれているか
+// 2. 各サイトのビルド＆デプロイステップが存在するか
+// 3. 必要な環境変数が定義されているか
+// 4. netlify.tomlの設定が正しいか
+//
+// 異常があれば警告を出力し、process.exit(1)で終了
+```
+
+**3. CI/CDパイプラインでの検証**
+
+`.github/workflows/ci.yml`に検証ステップを追加：
+
+```yaml
+- name: Validate workflows consistency
+  run: node scripts/validate-workflows.js
+```
+
+これにより、PRマージ前に不整合を検出できる。
+
+**4. AIへの指示強化**
+
+CLAUDE.mdの冒頭に以下を追記：
+
+> **⚠️ 新サイト追加時の必須タスク:**
+> 1. サイト基盤の作成
+> 2. GitHub Secretsの設定
+> 3. **auto-post-reviews.ymlへのビルド＆デプロイステップ追加（最重要）**
+> 4. deploy-新サイト名.ymlの作成
+> 5. 動作確認（ローカル＆本番）
+>
+> **この5つを全て完了するまで、新サイト追加は未完了とみなす。**
+
+**5. 定期的なワークフローレビュー**
+
+月次レビュー時に以下を確認：
+- [ ] packages/*/のサイト数と、auto-post-reviews.ymlのデプロイステップ数が一致するか
+- [ ] 各サイトが正常にデプロイされているか（GitHub Actions履歴確認）
+- [ ] 口コミが全サイトに正しく反映されているか（実際にサイトを開いて確認）
+
+#### 教訓
+
+**設計の原則:**
+1. **Monorepoでは、新要素追加時に複数の設定ファイルを同期する必要がある**
+   - パッケージ追加 → ワークフロー更新 → GitHub Secrets設定 → ドキュメント更新
+   - 1つでも漏れると、機能が動作しない
+
+2. **「動いている」と「正しく動いている」は違う**
+   - keiba-review-allが動作していたため、問題に気づきにくかった
+   - 全サイトの動作を定期的に確認する仕組みが必要
+
+3. **チェックリストとバリデーションスクリプトは必須**
+   - 人間の記憶に頼らない
+   - 自動化できる検証は自動化する
+
+4. **AIへの明確な指示**
+   - 「新サイトを追加する」だけでは不十分
+   - 「新サイト追加 = 基盤作成 + ワークフロー更新 + 動作確認」と明確に定義
+
+---
 
 ## 🤝 貢献
 
