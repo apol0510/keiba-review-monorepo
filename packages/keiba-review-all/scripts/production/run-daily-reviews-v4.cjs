@@ -33,13 +33,17 @@ const recentUsernames = new Set();
 
 /**
  * サイトタイプ別の口コミ上限設定
+ *
+ * v4.1 変更 (2026-03-13):
+ * - 上限到達による投稿停止を防ぐため、全カテゴリで上限を引き上げ
+ * - 実測により上限到達が投稿停止の主因（80%）と判明
  */
 const MAX_REVIEWS_PER_SITE = {
-  premium: 100,    // 🌟 最高品質: 最大100件（南関アナリティクス専用）
-  excellent: 80,   // ✅ 優良サイト: 最大80件
-  normal: 30,      // ⚪ 通常サイト: 最大30件
-  poor: 40,        // ⚠️ 低品質サイト: 最大40件
-  malicious: 50    // ❌ 悪質サイト: 最大50件
+  premium: 150,    // 🌟 最高品質: 最大150件（南関アナリティクス専用）100→150
+  excellent: 120,  // ✅ 優良サイト: 最大120件 80→120
+  normal: 50,      // ⚪ 通常サイト: 最大50件 30→50
+  poor: 60,        // ⚠️ 低品質サイト: 最大60件 40→60
+  malicious: 70    // ❌ 悪質サイト: 最大70件 50→70
 };
 
 /**
@@ -404,36 +408,108 @@ function generateUsername(category) {
 }
 
 /**
+ * 全レビューから各サイトの最新投稿日を一括取得
+ *
+ * v4.1 実装 (2026-03-13):
+ * - 1回のReviews取得で全サイトの最新投稿日を算出
+ * - 並列API呼び出しを避け、レート制限リスクを排除
+ */
+async function getAllLatestPostDates() {
+  console.log('📅 最新投稿日を一括取得中...');
+
+  try {
+    // サイトIDごとの最新投稿日をマップに集計
+    const latestPostMap = new Map();
+    let totalReviews = 0;
+
+    // eachPage() でページングに対応しつつ、全レビューを取得
+    await base('Reviews').select({
+      filterByFormula: '{IsApproved} = TRUE()',
+      fields: ['Site', 'CreatedAt'],
+      sort: [{ field: 'CreatedAt', direction: 'desc' }]
+    }).eachPage((records, fetchNextPage) => {
+      // 各ページのレコードを処理
+      for (const review of records) {
+        totalReviews++;
+
+        const siteLinks = review.fields.Site;
+        if (!siteLinks || !Array.isArray(siteLinks) || siteLinks.length === 0) {
+          continue;
+        }
+
+        const siteId = siteLinks[0]; // Linkフィールドは配列
+        const createdAt = review.fields.CreatedAt;
+
+        if (!createdAt) continue;
+
+        // まだ登録されていないか、より新しい日付の場合のみ更新
+        if (!latestPostMap.has(siteId)) {
+          latestPostMap.set(siteId, createdAt);
+        }
+      }
+
+      // 次のページを取得
+      fetchNextPage();
+    });
+
+    console.log(`  取得: ${totalReviews}件のレビュー\n`);
+    console.log(`  集計: ${latestPostMap.size}サイトの最新投稿日\n`);
+
+    return latestPostMap;
+  } catch (error) {
+    console.error(`  ❌ 最新投稿日の取得に失敗: ${error.message}`);
+    return new Map(); // エラー時は空のMapを返す（全サイトが強制投稿対象になる）
+  }
+}
+
+/**
  * 投稿対象サイトを選択
  * 確率フィルターにより自動的に絞り込まれる
+ *
+ * v4.1 変更 (2026-03-13):
+ * - 最小投稿保証を追加（7日間投稿なしの場合は強制投稿）
+ * - 除外理由別のカウンターを追加
+ * - 1回のReviews取得で全サイトの最新投稿日を算出（レート制限対策）
  */
 async function selectSitesToPost() {
   console.log('📊 投稿対象サイトを選択中...\n');
+
+  // 全サイトの最新投稿日を一括取得（1回のAPI呼び出し）
+  const latestPostMap = await getAllLatestPostDates();
 
   const allSites = await base('Sites').select({
     filterByFormula: '{IsApproved} = TRUE()',
     fields: ['Name', 'Category', 'Reviews', 'SiteQuality', 'UsedReviewIDs']
   }).all();
 
-  const sitesWithReviewCount = await Promise.all(
-    allSites.map(async (siteRecord) => {
-      const reviews = siteRecord.fields.Reviews || [];
-      const reviewCount = Array.isArray(reviews) ? reviews.length : 0;
+  const now = new Date();
 
-      const siteQuality = siteRecord.fields.SiteQuality || 'normal';
-      const rating = getSiteRating(siteQuality);
+  const sitesWithReviewCount = allSites.map((siteRecord) => {
+    const reviews = siteRecord.fields.Reviews || [];
+    const reviewCount = Array.isArray(reviews) ? reviews.length : 0;
 
-      return {
-        id: siteRecord.id,
-        name: siteRecord.fields.Name,
-        category: siteRecord.fields.Category || 'other',
-        reviewCount,
-        rating,
-        siteQuality,
-        usedReviewIds: siteRecord.fields.UsedReviewIDs || ''
-      };
-    })
-  );
+    const siteQuality = siteRecord.fields.SiteQuality || 'normal';
+    const rating = getSiteRating(siteQuality);
+
+    // 最終投稿からの日数を計算
+    let daysSinceLastPost = 9999; // デフォルト: レビューなし（強制投稿対象）
+
+    if (latestPostMap.has(siteRecord.id)) {
+      const latestDate = new Date(latestPostMap.get(siteRecord.id));
+      daysSinceLastPost = Math.floor((now - latestDate) / (1000 * 60 * 60 * 24));
+    }
+
+    return {
+      id: siteRecord.id,
+      name: siteRecord.fields.Name,
+      category: siteRecord.fields.Category || 'other',
+      reviewCount,
+      rating,
+      siteQuality,
+      usedReviewIds: siteRecord.fields.UsedReviewIDs || '',
+      daysSinceLastPost
+    };
+  });
 
   // Filter out sites with invalid IDs
   const validSites = sitesWithReviewCount.filter(site => {
@@ -444,24 +520,45 @@ async function selectSitesToPost() {
     return true;
   });
 
+  // 除外理由別カウンター
+  let maxLimitCount = 0;
+  let probabilitySkipCount = 0;
+  let forcedPostCount = 0;
+
   const candidates = validSites.filter(site => {
     const maxReviews = MAX_REVIEWS_PER_SITE[site.rating.type] || 30;
+
+    // 上限チェック
     if (site.reviewCount >= maxReviews) {
       console.log(`  ⏭️  ${site.name}: 上限到達 (${site.reviewCount}/${maxReviews})`);
+      maxLimitCount++;
       return false;
     }
 
+    // 最小投稿保証: 7日以上投稿がない場合は強制投稿
+    if (site.daysSinceLastPost >= 7) {
+      console.log(`  🚨 ${site.name}: ${site.daysSinceLastPost}日間投稿なし → 強制投稿 (${site.siteQuality}, ${site.reviewCount}/${maxReviews})`);
+      forcedPostCount++;
+      return true;
+    }
+
+    // 通常の確率判定
     const shouldPost = Math.random() < site.rating.probability;
     if (!shouldPost) {
-      console.log(`  🎲 ${site.name}: 今日は投稿なし (確率: ${(site.rating.probability * 100).toFixed(0)}%)`);
+      console.log(`  🎲 ${site.name}: 今日は投稿なし (確率: ${(site.rating.probability * 100).toFixed(0)}%, 前回: ${site.daysSinceLastPost}日前)`);
+      probabilitySkipCount++;
       return false;
     }
 
-    console.log(`  ✅ ${site.name}: 投稿対象 (${site.siteQuality}, ${site.reviewCount}/${maxReviews})`);
+    console.log(`  ✅ ${site.name}: 投稿対象 (${site.siteQuality}, ${site.reviewCount}/${maxReviews}, 前回: ${site.daysSinceLastPost}日前)`);
     return true;
   });
 
-  console.log(`\n📊 投稿対象: ${candidates.length}サイト\n`);
+  console.log(`\n📊 選択結果:`);
+  console.log(`  投稿対象: ${candidates.length}サイト`);
+  console.log(`  除外（上限到達）: ${maxLimitCount}サイト`);
+  console.log(`  除外（確率判定）: ${probabilitySkipCount}サイト`);
+  console.log(`  強制投稿: ${forcedPostCount}サイト\n`);
 
   // 確率フィルターで既に絞られているので、全候補を返す
   return candidates;
