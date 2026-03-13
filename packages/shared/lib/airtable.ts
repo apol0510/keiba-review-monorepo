@@ -321,7 +321,7 @@ export async function getReviewsBySite(siteId: string): Promise<Review[]> {
     username: record.fields.UserName as string,
     rating: record.fields.Rating as number,
     title: record.fields.Title as string,
-    content: record.fields.Content as string,
+    content: (record.fields.Content || record.fields.Comment) as string, // Content優先、Comment互換
     status: record.fields.IsApproved ? 'approved' : 'pending',
     createdAt: record.fields.CreatedAt as string,
     created_at: record.fields.CreatedAt as string, // snake_caseエイリアス
@@ -343,7 +343,7 @@ export async function getApprovedReviewsBySite(siteId: string): Promise<Review[]
     // すべての承認済みレビューを取得してから、JavaScriptでフィルタリング
     // AirtableのSEARCH()が期待通りに動作しないため
     const allRecords = await base('Reviews').select({
-      filterByFormula: '{IsApproved} = TRUE()',
+      filterByFormula: 'OR({IsApproved} = TRUE(), {Status} = "承認済み")', // IsApproved優先、Status互換
       sort: [{ field: 'CreatedAt', direction: 'desc' }]
     }).all();
 
@@ -361,7 +361,7 @@ export async function getApprovedReviewsBySite(siteId: string): Promise<Review[]
       username: record.fields.UserName as string,
       rating: record.fields.Rating as number,
       title: record.fields.Title as string,
-      content: record.fields.Content as string,
+      content: (record.fields.Content || record.fields.Comment) as string, // Content優先、Comment互換
       status: 'approved' as ReviewStatus,
       createdAt: record.fields.CreatedAt as string,
       created_at: record.fields.CreatedAt as string, // snake_caseエイリアス
@@ -382,7 +382,7 @@ export const getReviewsBySiteId = getApprovedReviewsBySite;
 // 全ての承認待ち口コミ取得
 export async function getPendingReviews(): Promise<Review[]> {
   const records = await base('Reviews').select({
-    filterByFormula: '{IsApproved} = FALSE()',
+    filterByFormula: 'AND({IsApproved} = FALSE(), OR({Status} = "", {Status} = BLANK()))', // IsApproved=FALSEかつStatus空白
     sort: [{ field: 'CreatedAt', direction: 'desc' }]
   }).all();
 
@@ -393,7 +393,7 @@ export async function getPendingReviews(): Promise<Review[]> {
     username: record.fields.UserName as string,
     rating: record.fields.Rating as number,
     title: record.fields.Title as string,
-    content: record.fields.Content as string,
+    content: (record.fields.Content || record.fields.Comment) as string, // Content優先、Comment互換
     status: 'pending',
     createdAt: record.fields.CreatedAt as string,
     created_at: record.fields.CreatedAt as string, // snake_caseエイリアス
@@ -460,7 +460,7 @@ export async function getStats() {
   const approvedSites = sites.filter(s => s.isApproved);
 
   const allReviews = await base('Reviews').select({
-    filterByFormula: '{IsApproved} = TRUE()'
+    filterByFormula: 'OR({IsApproved} = TRUE(), {Status} = "承認済み")' // IsApproved優先、Status互換
   }).all();
 
   return {
@@ -500,7 +500,7 @@ export async function getSitesWithStats(): Promise<SiteWithStats[]> {
 
     // 全ての承認済みレビューを一度に取得（効率化）
     const allReviews = await base('Reviews').select({
-      filterByFormula: '{IsApproved} = TRUE()'
+      filterByFormula: 'OR({IsApproved} = TRUE(), {Status} = "承認済み")' // IsApproved優先、Status互換
     }).all();
 
     // サイトIDごとにレビューをグループ化
@@ -545,7 +545,7 @@ export async function getSitesWithStats(): Promise<SiteWithStats[]> {
 // 最新の口コミ取得
 export async function getLatestReviews(limit: number = 10): Promise<ReviewWithSite[]> {
   const records = await base('Reviews').select({
-    filterByFormula: '{IsApproved} = TRUE()',
+    filterByFormula: 'OR({IsApproved} = TRUE(), {Status} = "承認済み")', // IsApproved優先、Status互換
     sort: [{ field: 'CreatedAt', direction: 'desc' }],
     maxRecords: limit
   }).all();
@@ -574,7 +574,7 @@ export async function getLatestReviews(limit: number = 10): Promise<ReviewWithSi
         username: record.fields.UserName as string,
         rating: record.fields.Rating as number,
         title: record.fields.Title as string,
-        content: record.fields.Content as string,
+        content: (record.fields.Content || record.fields.Comment) as string, // Content優先、Comment互換
         status: 'approved' as ReviewStatus,
         createdAt: record.fields.CreatedAt as string,
         created_at: record.fields.CreatedAt as string, // snake_caseエイリアス
