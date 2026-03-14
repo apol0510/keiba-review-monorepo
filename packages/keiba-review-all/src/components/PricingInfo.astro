@@ -55,13 +55,24 @@ function formatDate(dateString: string | null): string {
     <!-- 料金体系 -->
     <div class={`p-4 rounded-md border ${pricingColors[pricingType]}`}>
       <div class="flex items-center justify-between">
-        <span class="font-bold text-lg">{pricingLabels[pricingType]}</span>
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+          </svg>
+          <span class="font-bold text-lg">{pricingLabels[pricingType]}</span>
+        </div>
         {pricingType === 'free' && (
           <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
           </svg>
         )}
       </div>
+      {pricingType === 'unknown' && (
+        <p class="text-sm text-gray-600 mt-2">
+          公式サイトで詳細をご確認ください
+        </p>
+      )}
     </div>
 
     <!-- バッジ -->
@@ -117,8 +128,20 @@ function formatDate(dateString: string | null): string {
 
   <!-- 報告フォーム（モーダル） -->
   <div id="report-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg max-w-md w-full p-6">
-      <h3 class="text-lg font-bold text-gray-900 mb-4">情報の報告</h3>
+    <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+          情報の報告
+        </h3>
+        <button type="button" id="close-modal-btn" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
       <p class="text-sm text-gray-600 mb-4">
         古い情報や間違っている箇所をお知らせください。運営チームが確認いたします。
       </p>
@@ -160,9 +183,15 @@ function formatDate(dateString: string | null): string {
     const reportBtn = document.getElementById('report-outdated-btn');
     const modal = document.getElementById('report-modal');
     const cancelBtn = document.getElementById('cancel-report-btn');
+    const closeBtn = document.getElementById('close-modal-btn');
     const reportForm = document.getElementById('report-form') as HTMLFormElement;
 
     if (!reportBtn || !modal || !cancelBtn || !reportForm) return;
+
+    const closeModal = () => {
+      modal.classList.add('hidden');
+      reportForm.reset();
+    };
 
     // モーダルを開く
     reportBtn.addEventListener('click', () => {
@@ -170,16 +199,13 @@ function formatDate(dateString: string | null): string {
     });
 
     // モーダルを閉じる
-    cancelBtn.addEventListener('click', () => {
-      modal.classList.add('hidden');
-      reportForm.reset();
-    });
+    cancelBtn.addEventListener('click', closeModal);
+    closeBtn?.addEventListener('click', closeModal);
 
     // 背景クリックで閉じる
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
-        modal.classList.add('hidden');
-        reportForm.reset();
+        closeModal();
       }
     });
 
@@ -219,8 +245,7 @@ function formatDate(dateString: string | null): string {
         }
 
         alert('報告ありがとうございました。運営チームが確認いたします。');
-        modal.classList.add('hidden');
-        reportForm.reset();
+        closeModal();
       } catch (error) {
         alert('エラーが発生しました。もう一度お試しください。');
       } finally {
