@@ -2,6 +2,14 @@
  * Airtableスキーマバリデーター
  *
  * 必須フィールドとSelect Options の存在チェック
+ *
+ * v2 変更点:
+ * - Airtable Metadata API を使用してフィールド定義を直接取得
+ * - record.fields のキー有無に依存せず、テーブル定義として存在するかを検証
+ * - Description や IsApproved のような疎なフィールドでも誤検知しない
+ *
+ * 注: このスクリプトは GitHub Actions で実行されることを想定
+ *     環境変数は workflow の env: で設定される
  */
 
 const Airtable = require('airtable');
@@ -18,6 +26,9 @@ const base = new Airtable({ apiKey }).base(baseId);
 
 /**
  * 必須フィールド定義
+ *
+ * 注: Description や IsApproved は空のレコードが多いが、
+ *     Metadata API でテーブル定義を確認するため誤検知しない
  */
 const REQUIRED_FIELDS = {
   Sites: [
@@ -26,7 +37,8 @@ const REQUIRED_FIELDS = {
     'Slug',
     'Category',
     'SiteQuality',
-    'Description',
+    // 'Description',   // オプショナル（30%のレコードに値、一部のベースには存在しない）
+    'IsApproved',       // Airtable実体に存在（56%のレコードに値、コードで頻繁に使用）
     'CreatedAt',
     'DisplayPriority'
   ],
@@ -54,27 +66,52 @@ const REQUIRED_SELECT_OPTIONS = {
 };
 
 /**
- * フィールドの存在チェック
+ * Airtable Metadata API でテーブルのフィールド定義を取得
+ *
+ * @param {string} tableName - テーブル名
+ * @returns {Promise<Set<string>>} - フィールド名の Set
+ */
+async function getTableFieldsFromMetadata(tableName) {
+  const metadataUrl = `https://api.airtable.com/v0/meta/bases/${baseId}/tables`;
+
+  const response = await fetch(metadataUrl, {
+    headers: {
+      'Authorization': `Bearer ${apiKey}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Metadata API Error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const table = data.tables.find(t => t.name === tableName);
+
+  if (!table) {
+    throw new Error(`テーブル "${tableName}" が見つかりません`);
+  }
+
+  // フィールド名の Set を返す
+  return new Set(table.fields.map(f => f.name));
+}
+
+/**
+ * フィールドの存在チェック（Metadata API 使用）
+ *
+ * record.fields のキー有無ではなく、テーブル定義として存在するかを検証
+ * これにより、Description や IsApproved のような疎なフィールドでも誤検知しない
  */
 async function validateFields(tableName, requiredFields) {
   const errors = [];
 
   try {
-    // サンプルレコードを1件取得してフィールドを確認
-    const records = await base(tableName).select({
-      maxRecords: 1
-    }).all();
+    // Metadata API でフィールド定義を取得
+    const tableFields = await getTableFieldsFromMetadata(tableName);
 
-    if (records.length === 0) {
-      console.log(`  ⚠️  ${tableName}: レコードが0件（フィールド検証スキップ）`);
-      return errors;
-    }
-
-    const record = records[0];
-    const fields = Object.keys(record.fields);
+    console.log(`  📋 ${tableName}: ${tableFields.size} フィールドが定義されています`);
 
     for (const requiredField of requiredFields) {
-      if (!fields.includes(requiredField)) {
+      if (!tableFields.has(requiredField)) {
         errors.push(`  ❌ ${tableName}: フィールド "${requiredField}" が見つかりません`);
       }
     }
@@ -83,7 +120,7 @@ async function validateFields(tableName, requiredFields) {
       console.log(`  ✅ ${tableName}: 全ての必須フィールドが存在します`);
     }
   } catch (error) {
-    errors.push(`  ❌ ${tableName}: テーブルが見つかりません (${error.message})`);
+    errors.push(`  ❌ ${tableName}: Metadata API エラー (${error.message})`);
   }
 
   return errors;
@@ -91,6 +128,9 @@ async function validateFields(tableName, requiredFields) {
 
 /**
  * Select Optionsのチェック（警告のみ）
+ *
+ * データに選択肢が使用されているかをチェック
+ * フィールド定義の存在確認は validateFields で実施済み
  */
 async function validateSelectOptions(tableName, fieldOptions) {
   const warnings = [];
@@ -128,6 +168,7 @@ async function validateSelectOptions(tableName, fieldOptions) {
  */
 (async () => {
   console.log('🔍 Airtableスキーマバリデーション開始\n');
+  console.log('検証方式: Metadata API（フィールド定義を直接取得）\n');
 
   const errors = [];
   const warnings = [];
