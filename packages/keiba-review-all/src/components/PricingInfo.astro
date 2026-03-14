@@ -52,19 +52,6 @@ function formatDate(dateString: string | null): string {
   )}
 
   <div class="space-y-3">
-    <!-- 料金体系（テキストのみ） -->
-    {pricingType !== 'unknown' && (
-      <div class="flex items-center justify-between py-2">
-        <span class="text-sm font-medium text-gray-700">料金体系</span>
-        <span class={`text-sm font-semibold ${
-          pricingType === 'free' ? 'text-green-700' :
-          pricingType === 'partially_paid' ? 'text-blue-700' :
-          pricingType === 'fully_paid' ? 'text-orange-700' : 'text-gray-600'
-        }`}>
-          {pricingLabels[pricingType]}
-        </span>
-      </div>
-    )}
 
     <!-- バッジ -->
     <div class="flex flex-wrap gap-2">
