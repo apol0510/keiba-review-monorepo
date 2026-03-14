@@ -37,7 +37,8 @@ const REQUIRED_FIELDS = {
     'Slug',
     'Category',
     'SiteQuality',
-    // 'Description',   // オプショナル（30%のレコードに値、一部のベースには存在しない）
+    // 'Description',   // オプショナル: テーブル定義には存在するが全レコードに値があるわけではない
+                        // コード内で || '' フォールバック処理済み、UI表示も条件付き
     'IsApproved',       // Airtable実体に存在（56%のレコードに値、コードで頻繁に使用）
     'CreatedAt',
     'DisplayPriority'

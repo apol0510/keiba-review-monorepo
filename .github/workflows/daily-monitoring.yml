@@ -28,13 +28,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check Airtable Base Info (DEBUG)
-        env:
-          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-        working-directory: packages/keiba-review-all
-        run: node scripts/dev/check-base-id.cjs
-
       - name: Run schema validator
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
