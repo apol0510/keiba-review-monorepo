@@ -27,6 +27,9 @@ const base = new Airtable({ apiKey }).base(baseId);
 /**
  * 必須フィールド定義
  *
+ * ここで定義するのは「Airtableテーブル定義として存在すべきフィールド（カラム）」
+ * データの値が空でもエラーにならない（Metadata APIでカラム定義の存在のみを検証）
+ *
  * 注: Description や IsApproved は空のレコードが多いが、
  *     Metadata API でテーブル定義を確認するため誤検知しない
  */
@@ -37,9 +40,8 @@ const REQUIRED_FIELDS = {
     'Slug',
     'Category',
     'SiteQuality',
-    // 'Description',   // オプショナル: テーブル定義には存在するが全レコードに値があるわけではない
-                        // コード内で || '' フォールバック処理済み、UI表示も条件付き
-    'IsApproved',       // Airtable実体に存在（56%のレコードに値、コードで頻繁に使用）
+    'Description',      // テーブル定義として必要（値は任意、コード内でフォールバック処理済み）
+    'IsApproved',       // テーブル定義として必要（値は任意、デフォルトfalse）
     'CreatedAt',
     'DisplayPriority'
   ],
