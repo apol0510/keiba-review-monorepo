@@ -165,7 +165,8 @@ function loadAllReviews() {
     3: loadReviewsFromFile(path.join(reviewsDir, '⭐3（ニュートラル）.txt')),
     '3-positive': loadReviewsFromFile(path.join(reviewsDir, '⭐3（ややポジティブ）.txt')), // excellent/premium用
     4: loadReviewsFromFile(path.join(reviewsDir, '⭐4（少しポジティブ寄り）.txt')),
-    5: loadReviewsFromFile(path.join(reviewsDir, '⭐5（premium専用・高評価）.txt'))
+    5: loadReviewsFromFile(path.join(reviewsDir, '⭐5（premium専用・高評価）.txt')),
+    '5-keiba-intelligence': loadReviewsFromFile(path.join(reviewsDir, '⭐5（keiba-intelligence専用）.txt'))
   };
 
   console.log('📚 口コミテンプレート読み込み完了:');
@@ -175,6 +176,7 @@ function loadAllReviews() {
   console.log(`  ⭐3（ややポジティブ）: ${allReviews['3-positive'].length}件`);
   console.log(`  ⭐4: ${allReviews[4].length}件`);
   console.log(`  ⭐5: ${allReviews[5].length}件`);
+  console.log(`  ⭐5（keiba-intelligence専用）: ${allReviews['5-keiba-intelligence'].length}件`);
   console.log('');
 
   return allReviews;
@@ -606,6 +608,11 @@ async function postReview(site, allReviews) {
   let reviewKey = stars;
   if ((type === 'excellent' || type === 'premium') && stars === 3) {
     reviewKey = '3-positive';
+  }
+
+  // keiba-intelligence-jpで⭐5の場合は専用テンプレートを使用
+  if (site.slug === 'keiba-intelligence-jp' && stars === 5) {
+    reviewKey = '5-keiba-intelligence';
   }
 
   // 口コミをランダム選択（使用済みを除外）
