@@ -469,6 +469,50 @@ if (isCategory) {
         </div>
       </div>
 
+      <!-- こんな方におすすめ（keiba-intelligence-jp専用） -->
+      {siteData.site.slug === 'keiba-intelligence-jp' && (
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8 border border-slate-200">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">
+            こんな方におすすめ
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-xl">💰</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 mb-1">買い切り重視</h3>
+                <p class="text-sm text-gray-600">
+                  月額課金ではなく、一度の支払いで永久に使いたい方
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-xl">🏇</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 mb-1">南関＋中央</h3>
+                <p class="text-sm text-gray-600">
+                  南関4場も中央10場も、どちらも見たい方
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-xl">📈</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 mb-1">回収率重視</h3>
+                <p class="text-sm text-gray-600">
+                  的中率だけでなく、回収率の高さを求める方
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Content -->
         <div class="lg:col-span-2">
@@ -598,6 +642,51 @@ if (isCategory) {
           </div>
         </div>
       </div>
+
+      <!-- CTA Section（keiba-intelligence / nankan専用） -->
+      {siteData.site.slug === 'keiba-intelligence-jp' && (
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 md:p-8 my-12 border-2 border-amber-200">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            💰 買い切りプランで永久アクセス
+          </h2>
+          <p class="text-base md:text-lg text-gray-700 mb-6 leading-relaxed">
+            keiba-intelligenceは、買い切りプラン（¥88,000）なら永久に利用可能。南関4場＋中央10場の全レース予想が見放題です。年払いプラン（¥66,000/年）も月払いより大幅にお得。
+          </p>
+          <a
+            href={siteData.site.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+          >
+            詳しく見る
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </a>
+        </div>
+      )}
+
+      {siteData.site.category === 'nankan' && siteData.site.slug !== 'keiba-intelligence-jp' && (
+        <div class="bg-gradient-to-r from-blue-50 to-sky-50 rounded-2xl p-6 md:p-8 my-12 border-2 border-blue-200">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            📊 南関競馬のデータで予想精度アップ
+          </h2>
+          <p class="text-base md:text-lg text-gray-700 mb-6 leading-relaxed">
+            南関アナリティクスで、大井・川崎・船橋・浦和のコース別データ、騎手成績、馬場状態分析を確認できます。予想サイトと組み合わせることで、より確度の高い予想が可能に。
+          </p>
+          <a
+            href="https://nankan-analytics.keiba.link"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+          >
+            データを見る
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </a>
+        </div>
+      )}
 
       <!-- Related Sites Section -->
       {siteData.relatedSites && siteData.relatedSites.length > 0 && (
