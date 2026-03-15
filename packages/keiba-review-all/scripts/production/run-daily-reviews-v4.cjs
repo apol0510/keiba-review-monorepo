@@ -58,6 +58,15 @@ const POSTING_FREQUENCY = {
 };
 
 /**
+ * 優先投稿サイト（Slug指定）
+ *
+ * これらのサイトは確率判定をスキップし、上限に達するまで毎日投稿される
+ */
+const PRIORITY_SITES = [
+  'keiba-intelligence-jp'  // 競馬インテリジェンス - ランキング1位を目指すため優先投稿
+];
+
+/**
  * カテゴリ別の禁止ワード
  */
 const categoryForbiddenWords = {
@@ -479,7 +488,7 @@ async function selectSitesToPost() {
 
   const allSites = await base('Sites').select({
     filterByFormula: '{IsApproved} = TRUE()',
-    fields: ['Name', 'Category', 'Reviews', 'SiteQuality', 'UsedReviewIDs']
+    fields: ['Name', 'Slug', 'Category', 'Reviews', 'SiteQuality', 'UsedReviewIDs']
   }).all();
 
   const now = new Date();
@@ -502,6 +511,7 @@ async function selectSitesToPost() {
     return {
       id: siteRecord.id,
       name: siteRecord.fields.Name,
+      slug: siteRecord.fields.Slug || '',
       category: siteRecord.fields.Category || 'other',
       reviewCount,
       rating,
@@ -524,6 +534,7 @@ async function selectSitesToPost() {
   let maxLimitCount = 0;
   let probabilitySkipCount = 0;
   let forcedPostCount = 0;
+  let priorityPostCount = 0;
 
   const candidates = validSites.filter(site => {
     const maxReviews = MAX_REVIEWS_PER_SITE[site.rating.type] || 30;
@@ -533,6 +544,13 @@ async function selectSitesToPost() {
       console.log(`  ⏭️  ${site.name}: 上限到達 (${site.reviewCount}/${maxReviews})`);
       maxLimitCount++;
       return false;
+    }
+
+    // 優先投稿サイトチェック（確率判定をスキップ）
+    if (PRIORITY_SITES.includes(site.slug)) {
+      console.log(`  🎯 ${site.name}: 優先投稿対象 (${site.siteQuality}, ${site.reviewCount}/${maxReviews}, 前回: ${site.daysSinceLastPost}日前)`);
+      priorityPostCount++;
+      return true;
     }
 
     // 最小投稿保証: 7日以上投稿がない場合は強制投稿
@@ -558,6 +576,7 @@ async function selectSitesToPost() {
   console.log(`  投稿対象: ${candidates.length}サイト`);
   console.log(`  除外（上限到達）: ${maxLimitCount}サイト`);
   console.log(`  除外（確率判定）: ${probabilitySkipCount}サイト`);
+  console.log(`  優先投稿: ${priorityPostCount}サイト`);
   console.log(`  強制投稿: ${forcedPostCount}サイト\n`);
 
   // 確率フィルターで既に絞られているので、全候補を返す
