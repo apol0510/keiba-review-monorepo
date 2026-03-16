@@ -539,92 +539,68 @@ if (isCategory) {
       <!-- 検証結果セクション（keiba-intelligence-jp専用） -->
       {siteData.site.slug === 'keiba-intelligence-jp' && (
         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 p-6 md:p-8 mb-8">
-          <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span class="text-2xl">📊</span>
-            AI予想の検証結果
+          <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <span class="text-2xl">💡</span>
+            AI予想を実際に使ったイメージ
           </h2>
 
-          <p class="text-base md:text-lg text-gray-700 mb-6 leading-relaxed">
-            当サイトでは、keiba-intelligence の予想を実際のレース結果をもとに検証しています。月別の的中率・回収率・レース数・配当などの検証データはすべて公開されています。
-          </p>
-
-          <p class="text-base md:text-lg text-gray-700 mb-6 leading-relaxed font-semibold">
-            直近の検証では
-          </p>
-
-          <!-- 検証データ（南関競馬） -->
-          <div class="bg-white rounded-lg p-4 md:p-6 mb-4 border border-blue-100">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">南関競馬</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span class="text-3xl">🎯</span>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-600 mb-1">的中率</p>
-                  <p class="text-3xl md:text-4xl font-bold text-green-600">約72%</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span class="text-3xl">💰</span>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-600 mb-1">回収率</p>
-                  <p class="text-3xl md:text-4xl font-bold text-amber-600">約255%</p>
-                </div>
-              </div>
-            </div>
+          <div class="space-y-4 mb-6 text-base md:text-lg text-gray-700 leading-relaxed">
+            <p>
+              keiba-intelligence は、申込み後すぐに予想を閲覧できます。
+            </p>
+            <p>
+              実際には、公開された買い目を確認し、レース前に馬券を購入して結果を追っていく流れになります。
+            </p>
+            <p class="font-semibold text-gray-800">
+              「本当に当たるのか」<br>
+              「しっかり回収できるのか」
+            </p>
+            <p>
+              という緊張感の中で予想を見られるのが特徴です。
+            </p>
+            <p>
+              実績ページでは、南関・JRAそれぞれの月別成績も公開されており、的中率や回収率をあとから確認できます。
+            </p>
           </div>
 
-          <!-- 検証データ（JRA） -->
-          <div class="bg-white rounded-lg p-4 md:p-6 mb-6 border border-blue-100">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">JRA</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span class="text-3xl">🎯</span>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-600 mb-1">的中率</p>
-                  <p class="text-3xl md:text-4xl font-bold text-green-600">約70%</p>
-                </div>
+          <!-- 補足データ -->
+          <div class="bg-white/70 rounded-lg p-4 md:p-5 mb-6 border border-blue-100">
+            <p class="text-sm text-gray-600 mb-3 text-center">参考：直近の実績データ</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+              <div>
+                <p class="text-xs text-gray-500 mb-1">南関競馬</p>
+                <p class="text-sm text-gray-700">的中率 <span class="font-bold text-green-600">約72%</span> / 回収率 <span class="font-bold text-amber-600">約255%</span></p>
               </div>
-              <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span class="text-3xl">💰</span>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-600 mb-1">回収率</p>
-                  <p class="text-3xl md:text-4xl font-bold text-amber-600">約347%</p>
-                </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">JRA</p>
+                <p class="text-sm text-gray-700">的中率 <span class="font-bold text-green-600">約70%</span> / 回収率 <span class="font-bold text-amber-600">約347%</span></p>
               </div>
             </div>
           </div>
 
           <p class="text-sm text-gray-500 text-center mb-6">
-            ※月別の検証データはすべて公開されています。
+            ※月別の実績データはすべて公開されています。
           </p>
 
-          <!-- 検証データへのリンク -->
+          <!-- 実績データへのリンク -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <a
               href="https://keiba-intelligence.jp/archive"
               target="_blank"
               rel="noopener noreferrer"
-              class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+              class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 !text-white px-6 py-3 rounded-lg font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
             >
-              <span class="text-xl">📊</span>
-              南関の月別実績を見る
+              <span class="text-xl opacity-90">📊</span>
+              <span class="!text-white">南関の月別実績を見る</span>
             </a>
             <a
               href="https://keiba-intelligence.jp/archive-jra"
               target="_blank"
               rel="noopener noreferrer"
-              class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+              class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 !text-white px-6 py-3 rounded-lg font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
             >
-              <span class="text-xl">📊</span>
-              JRAの月別実績を見る
+              <span class="text-xl opacity-90">📊</span>
+              <span class="!text-white">JRAの月別実績を見る</span>
             </a>
           </div>
         </div>
