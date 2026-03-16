@@ -513,6 +513,29 @@ if (isCategory) {
         </div>
       )}
 
+      <!-- CTA Section（こんな方におすすめ直後 - keiba-intelligence-jp専用） -->
+      {siteData.site.slug === 'keiba-intelligence-jp' && (
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 md:p-8 mb-8 border-2 border-amber-200">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            💰 買い切りプランで永久アクセス
+          </h2>
+          <p class="text-base md:text-lg text-gray-700 mb-6 leading-relaxed">
+            keiba-intelligenceは、買い切りプラン（¥88,000）なら永久に利用可能。南関4場＋中央10場の全レース予想が見放題です。年払いプラン（¥66,000/年）も月払いより大幅にお得。
+          </p>
+          <a
+            href={siteData.site.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+          >
+            公式サイトを見る
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </a>
+        </div>
+      )}
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Content -->
         <div class="lg:col-span-2">
@@ -658,7 +681,7 @@ if (isCategory) {
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
           >
-            詳しく見る
+            公式サイトを見る
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
             </svg>
