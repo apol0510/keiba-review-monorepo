@@ -30,7 +30,7 @@ export function getScreenshotUrl(slug: string, externalUrl?: string): string {
 /**
  * 利用可能なローカルスクリーンショット一覧
  * public/screenshots/ に配置された画像のslug
- * Puppeteerで自動取得した92サイト + 手動追加1サイト = 93サイト
+ * Puppeteerで自動取得した92サイト + 手動追加2サイト = 94サイト
  */
 export const AVAILABLE_SCREENSHOTS = [
   'ai-shisu-com', 'aikba-net', 'allwin7-com', 'anaumatou-jp', 'apolon-keibanahibi-com',
@@ -41,7 +41,7 @@ export const AVAILABLE_SCREENSHOTS = [
   'harem-keiba-com', 'hibokorekeiba-com', 'hikky-keiba-com', 'horse-racing-ai-navi-com',
   'humantransport-org', 'hybridyosou-blog-fc2-com', 'jiro8-sakura-ne-jp', 'johnhancockcenterchicago-com',
   'jra', 'jra-k-ba-net', 'k-million-jp', 'k-refrain-com', 'kateru-uma-com', 'kawasaki-keiba',
-  'kayochinkeiba-com', 'keiba-ai-jp', 'keiba-expo-jp', 'keiba-kouryaku-net', 'keiba-nar',
+  'kayochinkeiba-com', 'keiba-ai-jp', 'keiba-expo-jp', 'keiba-intelligence-jp', 'keiba-kouryaku-net', 'keiba-nar',
   'keiba-night-com', 'keiba-nine-com', 'keiba-no1-com', 'keiba-programs-v-jp', 'keiba36-com',
   'keiba7-net', 'keibablood-com', 'keibagrant-jp', 'keibalab', 'keibariron-com', 'lounge-dmm-com',
   'm-jockey-co-jp', 'masts-jp', 'muryou-keiba-ai-jp', 'nankan-analytics', 'nankankeiba-xyz', 'nar-k-ba-net',
