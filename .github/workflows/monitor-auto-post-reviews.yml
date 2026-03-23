@@ -1,0 +1,64 @@
+name: Monitor Auto Post Reviews
+
+# Auto Post Reviews Daily の完了を監視し、
+# success 以外（failure / cancelled / timed_out）を failure に昇格させる。
+# これにより GitHub 標準メール通知が確実に発火する。
+#
+# なぜ別 workflow が必要か:
+#   timeout や手動キャンセル時、元 job のステップは強制終了され
+#   末尾の exit 1 が実行されない。workflow_run は元 workflow の
+#   完了後に独立プロセスとして起動するため、確実に実行される。
+
+on:
+  workflow_run:
+    workflows: ["Auto Post Reviews Daily"]
+    types: [completed]
+
+jobs:
+  check-result:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Evaluate workflow result
+        env:
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          TRIGGER: ${{ github.event.workflow_run.event }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+        run: |
+          SHA_SHORT="${SHA:0:7}"
+          DATETIME="$(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S JST')"
+
+          echo "## Monitor: ${WORKFLOW_NAME}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 項目 | 内容 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Conclusion | \`${CONCLUSION}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Run ID | ${RUN_ID} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${BRANCH}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${SHA_SHORT}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trigger | ${TRIGGER} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 検知日時 | ${DATETIME} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ログ | [View Run](${RUN_URL}) |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$CONCLUSION" = "success" ]; then
+            echo "✅ ${WORKFLOW_NAME} succeeded (run ${RUN_ID})"
+            exit 0
+          fi
+
+          # success 以外 → failure に昇格
+          echo "::error::🚨 ${WORKFLOW_NAME} ended with '${CONCLUSION}'"
+          echo ""
+          echo "  Conclusion: ${CONCLUSION}"
+          echo "  Branch:     ${BRANCH}"
+          echo "  Commit:     ${SHA_SHORT}"
+          echo "  Trigger:    ${TRIGGER}"
+          echo "  Run:        ${RUN_URL}"
+          echo "  Detected:   ${DATETIME}"
+          echo ""
+          echo "This monitor workflow will now exit 1 to trigger GitHub email notification."
+          exit 1
