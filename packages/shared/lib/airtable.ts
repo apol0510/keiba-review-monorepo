@@ -592,17 +592,75 @@ export async function getLatestReviews(limit: number = 10): Promise<ReviewWithSi
  *
  * この関数を最初に呼ぶことで、以降のAPI呼び出しはすべてキャッシュヒットし、
  * Airtableのレート制限を回避できます。
+ *
+ * v2 (2026-03-23): 口コミデータとサイト個別データもプリフェッチ対象に追加。
+ * これにより各ページ生成時のAPIコール（getSiteBySlug, getReviewsBySiteId）が
+ * すべてキャッシュヒットし、1ページあたり5-6秒 → 0秒になる。
  */
 export async function prefetchAllData(): Promise<void> {
   console.log('🔄 プリフェッチ開始: 全データをキャッシュに保存します...');
 
   try {
-    // 並列実行を避けるため順次実行
-    await getApprovedSites();
+    // 1. 承認済みサイトを取得（slug別キャッシュも同時に構築）
+    const sites = await getApprovedSites();
     console.log('  ✅ 承認済みサイト取得完了');
 
+    // 2. 各サイトを slug 別にキャッシュ（getSiteBySlug のキャッシュを事前構築）
+    for (const site of sites) {
+      const cacheKey = `site_${site.slug}`;
+      if (!getCached(cacheKey)) {
+        setCache(cacheKey, site);
+      }
+    }
+    console.log(`  ✅ サイト個別キャッシュ構築完了（${sites.length}件）`);
+
+    // 3. サイト統計を取得
     await getSitesWithStats();
     console.log('  ✅ サイト統計取得完了');
+
+    // 4. 全口コミを一括取得し、サイト別にキャッシュへ分配
+    const allReviews = await fetchWithRetry(async () => {
+      const allRecords = await base('Reviews').select({
+        filterByFormula: 'OR({IsApproved} = TRUE(), {Status} = "承認済み")',
+        sort: [{ field: 'CreatedAt', direction: 'desc' }]
+      }).all();
+
+      return allRecords.map(record => ({
+        raw: record,
+        siteId: Array.isArray(record.fields.Site) ? (record.fields.Site as string[])[0] : record.fields.Site as string,
+      }));
+    });
+
+    // サイトIDごとにグループ化
+    const reviewsBySiteId = new Map<string, Review[]>();
+    for (const { raw, siteId } of allReviews) {
+      if (!siteId) continue;
+      if (!reviewsBySiteId.has(siteId)) {
+        reviewsBySiteId.set(siteId, []);
+      }
+      reviewsBySiteId.get(siteId)!.push({
+        id: raw.id,
+        siteId,
+        siteName: raw.fields['Site Name'] as string,
+        username: raw.fields.UserName as string,
+        rating: raw.fields.Rating as number,
+        title: raw.fields.Title as string,
+        content: (raw.fields.Content || raw.fields.Comment) as string,
+        status: 'approved' as ReviewStatus,
+        createdAt: raw.fields.CreatedAt as string,
+        created_at: raw.fields.CreatedAt as string,
+        helpfulCount: (raw.fields.HelpfulCount as number) || 0,
+        helpful_count: (raw.fields.HelpfulCount as number) || 0
+      });
+    }
+
+    // 各サイトの口コミをキャッシュに保存（getApprovedReviewsBySite のキャッシュを事前構築）
+    for (const site of sites) {
+      const cacheKey = `reviews_${site.id}`;
+      const reviews = reviewsBySiteId.get(site.id) || [];
+      setCache(cacheKey, reviews);
+    }
+    console.log(`  ✅ 口コミ一括キャッシュ完了（${allReviews.length}件 → ${sites.length}サイト分）`);
 
     console.log('✅ プリフェッチ完了');
   } catch (error) {
