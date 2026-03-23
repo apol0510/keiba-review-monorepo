@@ -547,6 +547,65 @@ pnpm lint
 - 一括デプロイ
 - 統一されたモニタリング
 
+## ■ 重要: workflow監視構造（2026-03）
+
+auto-post-reviews は単体では失敗検知が不完全なため、
+monitor workflow を併用している。
+
+### 構造
+
+```
+auto-post-reviews.yml
+  ↓ (workflow_run トリガー)
+monitor-auto-post-reviews.yml
+```
+
+### 目的
+
+- timeout / cancelled を確実に検知
+- GitHubメール通知を確実に発火させる
+
+### 動作
+
+- success → 何もしない
+- failure → monitorがfailure → メール通知
+- cancelled → monitorがfailureに昇格 → メール通知
+
+### 注意
+
+- **monitor workflow は削除禁止**
+- 「job内のexit 1だけ」で解決しようとしない
+- 監視は workflow_run 側が本体
+
+---
+
+## ■ JSONキャッシュ仕様
+
+- build時に `dist/_data/` にJSON出力（sites.json, reviews.json, sites_with_stats.json）
+- runtimeはAPIではなくJSON優先
+- APIはフォールバックのみ
+
+### 整合性チェック
+
+以下は0件の場合ビルド失敗（`prefetchAllData()` 内で throw）:
+
+- sites
+- reviews
+- stats
+
+### バージョン管理
+
+JSONは envelope 形式: `{ version, generatedAt, data }`
+バージョン不一致時はJSONを無視してAPIフォールバック。
+
+---
+
+## ■ 原則
+
+- 「壊れても気づく」ではなく **「壊れたら必ず止まる」**
+
+---
+
 ## 🎯 戦略
 
 ### 競合対抗戦略
