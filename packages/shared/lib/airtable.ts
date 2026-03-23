@@ -1,4 +1,71 @@
 import Airtable from 'airtable';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// ===== ビルドキャッシュ（JSONファイル永続化）=====
+// ビルド時に取得したデータをJSONとして出力し、SSR/runtime でもAPIゼロで動作させる。
+// 書き出し先は BUILD_CACHE_DIR 環境変数、または呼び出し元の dist/_data/。
+
+let _buildCacheDir: string | null = null;
+
+function getBuildCacheDir(): string | null {
+  if (typeof window !== 'undefined') return null; // ブラウザでは無効
+  if (_buildCacheDir !== null) return _buildCacheDir || null;
+
+  const envDir = (typeof process !== 'undefined' && process.env?.BUILD_CACHE_DIR) || '';
+  if (envDir) {
+    _buildCacheDir = envDir;
+    return envDir;
+  }
+
+  // 自動検出: cwd から dist/_data/ を探索
+  try {
+    const cwd = process.cwd();
+    const candidate = path.join(cwd, 'dist', '_data');
+    // dist/ が存在するかだけ確認（_data/ は書き出し時に作成）
+    if (fs.existsSync(path.join(cwd, 'dist'))) {
+      _buildCacheDir = candidate;
+      return candidate;
+    }
+  } catch { /* ignore */ }
+
+  _buildCacheDir = '';
+  return null;
+}
+
+function writeBuildCacheFile(filename: string, data: any): void {
+  const dir = getBuildCacheDir();
+  if (!dir) return;
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(path.join(dir, filename), JSON.stringify(data), 'utf-8');
+  } catch (error) {
+    console.warn(`  ⚠️ ビルドキャッシュ書き込み失敗 (${filename}):`, error);
+  }
+}
+
+function readBuildCacheFile<T>(filename: string): T | null {
+  if (typeof window !== 'undefined') return null;
+  try {
+    // 1. BUILD_CACHE_DIR から探索
+    const envDir = getBuildCacheDir();
+    if (envDir) {
+      const filePath = path.join(envDir, filename);
+      if (fs.existsSync(filePath)) {
+        return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as T;
+      }
+    }
+    // 2. cwd/dist/_data/ から探索（SSR runtime 用フォールバック）
+    const cwd = process.cwd();
+    const fallbackPath = path.join(cwd, 'dist', '_data', filename);
+    if (fs.existsSync(fallbackPath)) {
+      return JSON.parse(fs.readFileSync(fallbackPath, 'utf-8')) as T;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
 
 // Airtable設定（遅延評価でクライアントサイドエラーを回避）
 function getAirtableCredentials() {
@@ -160,14 +227,23 @@ export async function getAllSites(): Promise<Site[]> {
 }
 
 // 承認済みサイト取得
+// 優先順位: メモリキャッシュ → JSONビルドキャッシュ → Airtable API
 export async function getApprovedSites(): Promise<Site[]> {
-  // キャッシュチェック
+  // 1. メモリキャッシュ
   const cacheKey = 'approved_sites';
   const cached = getCached<Site[]>(cacheKey);
   if (cached) {
     return cached;
   }
 
+  // 2. JSONビルドキャッシュ
+  const jsonSites = readBuildCacheFile<Site[]>('sites.json');
+  if (jsonSites) {
+    setCache(cacheKey, jsonSites);
+    return jsonSites;
+  }
+
+  // 3. APIフォールバック
   const sites = await fetchWithRetry(async () => {
     const records = await base('Sites').select({
       filterByFormula: '{IsApproved} = TRUE()',
@@ -221,14 +297,26 @@ export async function getSitesByCategory(category: Category): Promise<Site[]> {
 }
 
 // Slug指定でサイト取得
+// 優先順位: メモリキャッシュ → JSONビルドキャッシュ → Airtable API
 export async function getSiteBySlug(slug: string): Promise<Site | null> {
-  // キャッシュチェック
+  // 1. メモリキャッシュ
   const cacheKey = `site_${slug}`;
   const cached = getCached<Site>(cacheKey);
   if (cached) {
     return cached;
   }
 
+  // 2. JSONビルドキャッシュ（sites.json から slug で検索）
+  const jsonSites = readBuildCacheFile<Site[]>('sites.json');
+  if (jsonSites) {
+    const found = jsonSites.find(s => s.slug === slug) || null;
+    if (found) {
+      setCache(cacheKey, found);
+      return found;
+    }
+  }
+
+  // 3. APIフォールバック
   const site = await fetchWithRetry(async () => {
     const records = await base('Sites').select({
       filterByFormula: `{Slug} = '${slug}'`,
@@ -259,7 +347,6 @@ export async function getSiteBySlug(slug: string): Promise<Site | null> {
   });
 
   if (site) {
-    // キャッシュに保存
     setCache(cacheKey, site);
   }
 
@@ -331,14 +418,24 @@ export async function getReviewsBySite(siteId: string): Promise<Review[]> {
 }
 
 // 承認済み口コミ取得（サイト別）
+// 優先順位: メモリキャッシュ → JSONビルドキャッシュ → Airtable API
 export async function getApprovedReviewsBySite(siteId: string): Promise<Review[]> {
-  // キャッシュチェック
+  // 1. メモリキャッシュ
   const cacheKey = `reviews_${siteId}`;
   const cached = getCached<Review[]>(cacheKey);
   if (cached) {
     return cached;
   }
 
+  // 2. JSONビルドキャッシュ（reviews.json から siteId で検索）
+  const jsonReviews = readBuildCacheFile<Record<string, Review[]>>('reviews.json');
+  if (jsonReviews && jsonReviews[siteId]) {
+    const reviews = jsonReviews[siteId];
+    setCache(cacheKey, reviews);
+    return reviews;
+  }
+
+  // 3. APIフォールバック
   const reviews = await fetchWithRetry(async () => {
     // すべての承認済みレビューを取得してから、JavaScriptでフィルタリング
     // AirtableのSEARCH()が期待通りに動作しないため
@@ -488,13 +585,21 @@ export interface SiteWithStats extends Site {
 }
 
 export async function getSitesWithStats(): Promise<SiteWithStats[]> {
-  // キャッシュチェック
+  // 1. メモリキャッシュ
   const cacheKey = 'sites_with_stats';
   const cached = getCached<SiteWithStats[]>(cacheKey);
   if (cached) {
     return cached;
   }
 
+  // 2. JSONビルドキャッシュ（sites_with_stats.json）
+  const jsonData = readBuildCacheFile<SiteWithStats[]>('sites_with_stats.json');
+  if (jsonData) {
+    setCache(cacheKey, jsonData);
+    return jsonData;
+  }
+
+  // 3. APIフォールバック
   const sitesWithStats = await fetchWithRetry(async () => {
     const sites = await getApprovedSites();
 
@@ -615,7 +720,7 @@ export async function prefetchAllData(): Promise<void> {
     console.log(`  ✅ サイト個別キャッシュ構築完了（${sites.length}件）`);
 
     // 3. サイト統計を取得
-    await getSitesWithStats();
+    const sitesWithStats = await getSitesWithStats();
     console.log('  ✅ サイト統計取得完了');
 
     // 4. 全口コミを一括取得し、サイト別にキャッシュへ分配
@@ -661,6 +766,20 @@ export async function prefetchAllData(): Promise<void> {
       setCache(cacheKey, reviews);
     }
     console.log(`  ✅ 口コミ一括キャッシュ完了（${allReviews.length}件 → ${sites.length}サイト分）`);
+
+    // 5. JSONビルドキャッシュに書き出し（SSR runtime でもAPIゼロで動作するため）
+    writeBuildCacheFile('sites.json', sites);
+    writeBuildCacheFile('sites_with_stats.json', sitesWithStats);
+    const reviewsObj: Record<string, Review[]> = {};
+    for (const [siteId, reviews] of reviewsBySiteId) {
+      reviewsObj[siteId] = reviews;
+    }
+    writeBuildCacheFile('reviews.json', reviewsObj);
+
+    const cacheDir = getBuildCacheDir();
+    if (cacheDir) {
+      console.log(`  ✅ JSONビルドキャッシュ書き出し完了 → ${cacheDir}`);
+    }
 
     console.log('✅ プリフェッチ完了');
   } catch (error) {
