@@ -14,6 +14,19 @@ on:
     workflows: ["Auto Post Reviews Daily"]
     types: [completed]
 
+  # テスト用: 手動実行で任意の conclusion をシミュレート
+  workflow_dispatch:
+    inputs:
+      test_conclusion:
+        description: 'Simulated conclusion (failure/cancelled/success)'
+        required: true
+        default: 'failure'
+        type: choice
+        options:
+          - failure
+          - cancelled
+          - success
+
 jobs:
   check-result:
     runs-on: ubuntu-latest
@@ -22,13 +35,14 @@ jobs:
     steps:
       - name: Evaluate workflow result
         env:
-          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-          RUN_URL: ${{ github.event.workflow_run.html_url }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-          BRANCH: ${{ github.event.workflow_run.head_branch }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
-          TRIGGER: ${{ github.event.workflow_run.event }}
-          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          # workflow_run トリガー時は実際の値、workflow_dispatch 時はテスト値を使用
+          CONCLUSION: ${{ github.event.workflow_run.conclusion || inputs.test_conclusion }}
+          RUN_URL: ${{ github.event.workflow_run.html_url || github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_ID: ${{ github.event.workflow_run.id || github.run_id }}
+          BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          TRIGGER: ${{ github.event_name }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name || 'Auto Post Reviews Daily (test)' }}
         run: |
           SHA_SHORT="${SHA:0:7}"
           DATETIME="$(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S JST')"
