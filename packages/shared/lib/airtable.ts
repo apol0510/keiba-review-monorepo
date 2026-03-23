@@ -6,10 +6,19 @@ import * as path from 'path';
 // ビルド時に取得したデータをJSONとして出力し、SSR/runtime でもAPIゼロで動作させる。
 // 書き出し先は BUILD_CACHE_DIR 環境変数、または呼び出し元の dist/_data/。
 
+// キャッシュファイルのバージョン。フォーマット変更時にインクリメントする。
+const BUILD_CACHE_VERSION = '2';
+
+interface BuildCacheEnvelope<T> {
+  version: string;
+  generatedAt: string;
+  data: T;
+}
+
 let _buildCacheDir: string | null = null;
 
 function getBuildCacheDir(): string | null {
-  if (typeof window !== 'undefined') return null; // ブラウザでは無効
+  if (typeof window !== 'undefined') return null;
   if (_buildCacheDir !== null) return _buildCacheDir || null;
 
   const envDir = (typeof process !== 'undefined' && process.env?.BUILD_CACHE_DIR) || '';
@@ -22,7 +31,6 @@ function getBuildCacheDir(): string | null {
   try {
     const cwd = process.cwd();
     const candidate = path.join(cwd, 'dist', '_data');
-    // dist/ が存在するかだけ確認（_data/ は書き出し時に作成）
     if (fs.existsSync(path.join(cwd, 'dist'))) {
       _buildCacheDir = candidate;
       return candidate;
@@ -36,35 +44,68 @@ function getBuildCacheDir(): string | null {
 function writeBuildCacheFile(filename: string, data: any): void {
   const dir = getBuildCacheDir();
   if (!dir) return;
+
+  const envelope: BuildCacheEnvelope<any> = {
+    version: BUILD_CACHE_VERSION,
+    generatedAt: new Date().toISOString(),
+    data,
+  };
+
   try {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(path.join(dir, filename), JSON.stringify(data), 'utf-8');
+    const json = JSON.stringify(envelope);
+    fs.writeFileSync(path.join(dir, filename), json, 'utf-8');
   } catch (error) {
-    console.warn(`  ⚠️ ビルドキャッシュ書き込み失敗 (${filename}):`, error);
+    // 書き込み失敗はビルド失敗にする（サイレント障害防止）
+    throw new Error(`ビルドキャッシュ書き込み失敗 (${filename}): ${error}`);
   }
 }
 
 function readBuildCacheFile<T>(filename: string): T | null {
   if (typeof window !== 'undefined') return null;
+
+  const tryRead = (filePath: string): T | null => {
+    if (!fs.existsSync(filePath)) return null;
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    const parsed = JSON.parse(raw);
+
+    // envelope 形式かどうか判定
+    if (parsed && typeof parsed === 'object' && 'version' in parsed && 'data' in parsed) {
+      const envelope = parsed as BuildCacheEnvelope<T>;
+      if (envelope.version !== BUILD_CACHE_VERSION) {
+        console.warn(`  ⚠️ キャッシュバージョン不一致 (${filename}): expected=${BUILD_CACHE_VERSION}, got=${envelope.version} → スキップ`);
+        return null;
+      }
+      return envelope.data;
+    }
+
+    // レガシー（envelope なし）→ そのまま返す（後方互換）
+    return parsed as T;
+  };
+
   try {
-    // 1. BUILD_CACHE_DIR から探索
+    // 1. BUILD_CACHE_DIR
     const envDir = getBuildCacheDir();
     if (envDir) {
-      const filePath = path.join(envDir, filename);
-      if (fs.existsSync(filePath)) {
-        return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as T;
-      }
+      const result = tryRead(path.join(envDir, filename));
+      if (result !== null) return result;
     }
-    // 2. cwd/dist/_data/ から探索（SSR runtime 用フォールバック）
+    // 2. cwd/dist/_data/（SSR runtime フォールバック）
     const cwd = process.cwd();
-    const fallbackPath = path.join(cwd, 'dist', '_data', filename);
-    if (fs.existsSync(fallbackPath)) {
-      return JSON.parse(fs.readFileSync(fallbackPath, 'utf-8')) as T;
-    }
-  } catch { /* ignore */ }
+    const result = tryRead(path.join(cwd, 'dist', '_data', filename));
+    if (result !== null) return result;
+  } catch (error) {
+    console.warn(`  ⚠️ キャッシュ読み込みエラー (${filename}):`, error);
+  }
   return null;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
 }
 
 // Airtable設定（遅延評価でクライアントサイドエラーを回避）
@@ -767,18 +808,44 @@ export async function prefetchAllData(): Promise<void> {
     }
     console.log(`  ✅ 口コミ一括キャッシュ完了（${allReviews.length}件 → ${sites.length}サイト分）`);
 
-    // 5. JSONビルドキャッシュに書き出し（SSR runtime でもAPIゼロで動作するため）
-    writeBuildCacheFile('sites.json', sites);
-    writeBuildCacheFile('sites_with_stats.json', sitesWithStats);
+    // 5. データ整合性チェック（破損検知 → ビルド失敗にする）
+    const totalReviewCount = allReviews.length;
+    if (sites.length === 0) {
+      throw new Error('データ整合性エラー: 承認済みサイトが0件です。Airtable APIの障害またはフィルタ条件の誤りの可能性があります。');
+    }
+    if (totalReviewCount === 0) {
+      throw new Error('データ整合性エラー: 承認済み口コミが0件です。Airtable APIの障害またはフィルタ条件の誤りの可能性があります。');
+    }
+    if (sitesWithStats.length === 0) {
+      throw new Error('データ整合性エラー: サイト統計が0件です。');
+    }
+    console.log('  ✅ データ整合性チェック通過');
+
+    // 6. JSONビルドキャッシュに書き出し（SSR runtime でもAPIゼロで動作するため）
     const reviewsObj: Record<string, Review[]> = {};
     for (const [siteId, reviews] of reviewsBySiteId) {
       reviewsObj[siteId] = reviews;
     }
+
+    writeBuildCacheFile('sites.json', sites);
+    writeBuildCacheFile('sites_with_stats.json', sitesWithStats);
     writeBuildCacheFile('reviews.json', reviewsObj);
 
+    // 7. ビルドログ（サイズ・件数を明示出力）
     const cacheDir = getBuildCacheDir();
     if (cacheDir) {
-      console.log(`  ✅ JSONビルドキャッシュ書き出し完了 → ${cacheDir}`);
+      const sizeSites = fs.statSync(path.join(cacheDir, 'sites.json')).size;
+      const sizeStats = fs.statSync(path.join(cacheDir, 'sites_with_stats.json')).size;
+      const sizeReviews = fs.statSync(path.join(cacheDir, 'reviews.json')).size;
+
+      console.log('  ✅ JSONビルドキャッシュ書き出し完了');
+      console.log('  ┌─────────────────────────────────');
+      console.log('  │ [BUILD CACHE]');
+      console.log(`  │   sites:   ${sites.length} (${formatBytes(sizeSites)})`);
+      console.log(`  │   stats:   ${sitesWithStats.length} (${formatBytes(sizeStats)})`);
+      console.log(`  │   reviews: ${totalReviewCount} (${formatBytes(sizeReviews)})`);
+      console.log(`  │   dir:     ${cacheDir}`);
+      console.log('  └─────────────────────────────────');
     }
 
     console.log('✅ プリフェッチ完了');
