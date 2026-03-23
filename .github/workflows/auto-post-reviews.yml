@@ -8,6 +8,10 @@ on:
   # 手動実行も可能
   workflow_dispatch:
 
+concurrency:
+  group: auto-post-reviews
+  cancel-in-progress: false # 進行中のジョブはキャンセルしない（口コミ投稿の途中中断を防ぐ）
+
 jobs:
   post-reviews:
     runs-on: ubuntu-latest
@@ -83,12 +87,6 @@ jobs:
             echo "❌ **実行結果: 失敗** - ログを確認してください" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Send notification on failure
-        if: failure()
-        run: |
-          echo "❌ 口コミ自動投稿に失敗しました"
-          echo "GitHub Actionsのログを確認してください"
-
       # ===== 🚀 Netlifyデプロイ (2026-01-21追加) =====
       # 口コミ投稿後、サイトをリビルド&デプロイして反映する
       - name: Build site (keiba-review-all)
@@ -147,3 +145,138 @@ jobs:
           echo "✅ **nankan.keiba-review.jp** に最新の口コミが反映されました" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🔗 サイトURL: https://nankan.keiba-review.jp" >> $GITHUB_STEP_SUMMARY
+
+      # ===== 🚨 エラー通知 (failure / cancelled / timeout) =====
+      # if: always() で常に実行し、success 以外の場合のみ通知を送信する。
+      # cancelled() は timeout による強制終了も含む。
+      - name: Notify on failure or cancellation
+        if: always() && job.status != 'success'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS="${{ job.status }}"
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          COMMIT="${{ github.sha }}"
+          COMMIT_SHORT="${COMMIT:0:7}"
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          DATETIME="$(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S JST')"
+          WORKFLOW="${{ github.workflow }}"
+          TRIGGER="${{ github.event_name }}"
+
+          # timeout の場合は cancelled として報告される。メッセージで区別する。
+          if [ "$STATUS" = "cancelled" ]; then
+            REASON="cancelled (timeout-minutes: 45 超過の可能性)"
+          else
+            REASON="$STATUS"
+          fi
+
+          # ===== コンソールログ出力（常に実行）=====
+          echo "::error::🚨 Workflow failed: ${WORKFLOW}"
+          echo "  Status: ${STATUS}"
+          echo "  Reason: ${REASON}"
+          echo "  Branch: ${BRANCH}"
+          echo "  Commit: ${COMMIT_SHORT}"
+          echo "  Run: ${RUN_URL}"
+
+          # ===== GitHub Step Summary =====
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚨 エラー通知" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 項目 | 内容 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ステータス | \`${STATUS}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 理由 | ${REASON} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 日時 | ${DATETIME} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ブランチ | ${BRANCH} |" >> $GITHUB_STEP_SUMMARY
+          echo "| コミット | \`${COMMIT_SHORT}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| トリガー | ${TRIGGER} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ログ | [GitHub Actions](${RUN_URL}) |" >> $GITHUB_STEP_SUMMARY
+
+          # ===== Discord Webhook =====
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            DISCORD_PAYLOAD=$(cat <<EOFPAYLOAD
+          {
+            "content": null,
+            "embeds": [{
+              "title": "🚨 [ERROR] ${WORKFLOW}",
+              "color": 15158332,
+              "fields": [
+                {"name": "Status", "value": "\`${STATUS}\`", "inline": true},
+                {"name": "Reason", "value": "${REASON}", "inline": true},
+                {"name": "Branch", "value": "\`${BRANCH}\`", "inline": true},
+                {"name": "Commit", "value": "\`${COMMIT_SHORT}\`", "inline": true},
+                {"name": "Trigger", "value": "${TRIGGER}", "inline": true},
+                {"name": "Time", "value": "${DATETIME}", "inline": true},
+                {"name": "Run URL", "value": "[View Logs](${RUN_URL})"}
+              ],
+              "footer": {"text": "${REPO}"}
+            }]
+          }
+          EOFPAYLOAD
+          )
+            HTTP_CODE=$(curl -s -o /tmp/discord_response.txt -w "%{http_code}" \
+              -H "Content-Type: application/json" \
+              -d "$DISCORD_PAYLOAD" \
+              "$DISCORD_WEBHOOK_URL")
+            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+              echo "✅ Discord通知送信成功 (HTTP ${HTTP_CODE})"
+            else
+              echo "⚠️ Discord通知送信失敗 (HTTP ${HTTP_CODE})"
+              cat /tmp/discord_response.txt 2>/dev/null || true
+            fi
+          else
+            echo "⚠️ DISCORD_WEBHOOK_URL が未設定のため、Discord通知をスキップ"
+          fi
+
+          # ===== Slack Webhook =====
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            SLACK_PAYLOAD=$(cat <<EOFPAYLOAD
+          {
+            "text": "🚨 *[ERROR] ${WORKFLOW}*",
+            "blocks": [
+              {
+                "type": "header",
+                "text": {"type": "plain_text", "text": "🚨 ${WORKFLOW} failed"}
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {"type": "mrkdwn", "text": "*Status:*\n\`${STATUS}\`"},
+                  {"type": "mrkdwn", "text": "*Reason:*\n${REASON}"},
+                  {"type": "mrkdwn", "text": "*Branch:*\n\`${BRANCH}\`"},
+                  {"type": "mrkdwn", "text": "*Commit:*\n\`${COMMIT_SHORT}\`"},
+                  {"type": "mrkdwn", "text": "*Trigger:*\n${TRIGGER}"},
+                  {"type": "mrkdwn", "text": "*Time:*\n${DATETIME}"}
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "View Logs"},
+                    "url": "${RUN_URL}"
+                  }
+                ]
+              }
+            ]
+          }
+          EOFPAYLOAD
+          )
+            HTTP_CODE=$(curl -s -o /tmp/slack_response.txt -w "%{http_code}" \
+              -H "Content-Type: application/json" \
+              -d "$SLACK_PAYLOAD" \
+              "$SLACK_WEBHOOK_URL")
+            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+              echo "✅ Slack通知送信成功 (HTTP ${HTTP_CODE})"
+            else
+              echo "⚠️ Slack通知送信失敗 (HTTP ${HTTP_CODE})"
+              cat /tmp/slack_response.txt 2>/dev/null || true
+            fi
+          else
+            echo "⚠️ SLACK_WEBHOOK_URL が未設定のため、Slack通知をスキップ"
+          fi

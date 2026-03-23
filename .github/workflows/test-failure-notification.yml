@@ -1,0 +1,116 @@
+name: Test Failure Notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      failure_type:
+        description: 'Type of failure to simulate'
+        required: true
+        default: 'failure'
+        type: choice
+        options:
+          - failure
+          - timeout
+
+jobs:
+  test-notification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Simulate failure
+        if: inputs.failure_type == 'failure'
+        run: |
+          echo "Simulating a build failure..."
+          exit 1
+
+      - name: Simulate timeout
+        if: inputs.failure_type == 'timeout'
+        run: |
+          echo "Simulating timeout (waiting 3 minutes with 2-minute limit)..."
+          sleep 180
+
+      # ===== 通知ステップ（auto-post-reviews.yml と同一ロジック）=====
+      - name: Notify on failure or cancellation
+        if: always() && job.status != 'success'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS="${{ job.status }}"
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          COMMIT="${{ github.sha }}"
+          COMMIT_SHORT="${COMMIT:0:7}"
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          DATETIME="$(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S JST')"
+          WORKFLOW="${{ github.workflow }}"
+          TRIGGER="${{ github.event_name }}"
+
+          if [ "$STATUS" = "cancelled" ]; then
+            REASON="cancelled (timeout超過の可能性)"
+          else
+            REASON="$STATUS"
+          fi
+
+          echo "::error::🚨 [TEST] Workflow failed: ${WORKFLOW}"
+          echo "  Status: ${STATUS}"
+          echo "  Reason: ${REASON}"
+          echo "  Run: ${RUN_URL}"
+
+          echo "## 🚨 テスト通知" >> $GITHUB_STEP_SUMMARY
+          echo "| 項目 | 内容 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ステータス | \`${STATUS}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 理由 | ${REASON} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 日時 | ${DATETIME} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ログ | [GitHub Actions](${RUN_URL}) |" >> $GITHUB_STEP_SUMMARY
+
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            DISCORD_PAYLOAD=$(cat <<EOFPAYLOAD
+          {
+            "content": null,
+            "embeds": [{
+              "title": "🧪 [TEST] ${WORKFLOW} - ${STATUS}",
+              "color": 15158332,
+              "description": "This is a test notification. Ignore if expected.",
+              "fields": [
+                {"name": "Status", "value": "\`${STATUS}\`", "inline": true},
+                {"name": "Reason", "value": "${REASON}", "inline": true},
+                {"name": "Branch", "value": "\`${BRANCH}\`", "inline": true},
+                {"name": "Commit", "value": "\`${COMMIT_SHORT}\`", "inline": true},
+                {"name": "Run URL", "value": "[View Logs](${RUN_URL})"}
+              ],
+              "footer": {"text": "${REPO} (test)"}
+            }]
+          }
+          EOFPAYLOAD
+          )
+            HTTP_CODE=$(curl -s -o /tmp/discord_response.txt -w "%{http_code}" \
+              -H "Content-Type: application/json" \
+              -d "$DISCORD_PAYLOAD" \
+              "$DISCORD_WEBHOOK_URL")
+            echo "Discord response: HTTP ${HTTP_CODE}"
+            cat /tmp/discord_response.txt 2>/dev/null || true
+          else
+            echo "⚠️ DISCORD_WEBHOOK_URL 未設定 - Discord通知スキップ"
+          fi
+
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            SLACK_PAYLOAD=$(cat <<EOFPAYLOAD
+          {
+            "text": "🧪 [TEST] ${WORKFLOW} - ${STATUS}\nReason: ${REASON}\nRun: ${RUN_URL}"
+          }
+          EOFPAYLOAD
+          )
+            HTTP_CODE=$(curl -s -o /tmp/slack_response.txt -w "%{http_code}" \
+              -H "Content-Type: application/json" \
+              -d "$SLACK_PAYLOAD" \
+              "$SLACK_WEBHOOK_URL")
+            echo "Slack response: HTTP ${HTTP_CODE}"
+          else
+            echo "⚠️ SLACK_WEBHOOK_URL 未設定 - Slack通知スキップ"
+          fi
