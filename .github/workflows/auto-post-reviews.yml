@@ -280,3 +280,13 @@ jobs:
           else
             echo "⚠️ SLACK_WEBHOOK_URL が未設定のため、Slack通知をスキップ"
           fi
+
+      # ===== cancelled → failure 昇格（GitHub メール通知を確実に発火させる）=====
+      # cancelled（timeout含む）は GitHub のメール通知が飛ばないことがある。
+      # exit 1 で強制的に failure にすることで、GitHub 標準メール通知を確実にトリガーする。
+      # このステップは通知ステップの後に置く（通知処理を妨げない）。
+      - name: Force failure on non-success
+        if: always() && job.status != 'success'
+        run: |
+          echo "::error::Workflow ended with status '${{ job.status }}' — forcing failure for GitHub email notification"
+          exit 1
