@@ -1,0 +1,128 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const breadcrumbItems = [
+  { label: 'コラム' }
+];
+
+// seo_keywords.json から記事メタデータを取得
+const keywordsPath = path.resolve('/Users/apolon/Projects/ai-business-engine/data/seo_keywords.json');
+let articleMeta: Record<string, { title: string; description: string }> = {};
+if (fs.existsSync(keywordsPath)) {
+  const keywords = JSON.parse(fs.readFileSync(keywordsPath, 'utf-8'));
+  for (const kw of keywords) {
+    if (kw.slug && kw.title) {
+      articleMeta[kw.slug] = { title: kw.title, description: kw.description || '' };
+    }
+  }
+}
+
+// blog/*.astro ファイルから記事一覧を生成
+const allPages = import.meta.glob('./*.astro', { eager: false });
+const articles = Object.keys(allPages)
+  .filter(p => p !== './index.astro')
+  .map(p => {
+    const slug = p.replace('./', '').replace('.astro', '');
+    const meta = articleMeta[slug];
+    return {
+      slug,
+      href: `/blog/${slug}/`,
+      title: meta?.title || slug.replace(/-/g, ' '),
+      description: meta?.description || '',
+    };
+  })
+  .reverse();
+---
+
+<BaseLayout
+  title="競馬予想コラム｜口コミ・比較・的中率データで選ぶ"
+  description="競馬予想サイトの口コミ比較、的中率検証、回収率データなど、サイト選びに役立つ情報を実データ付きで解説。"
+>
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <Breadcrumb items={breadcrumbItems} />
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      競馬予想コラム
+    </h1>
+    <p class="text-gray-600 mb-8">
+      口コミ・的中率・回収率の実データに基づく検証記事。予想サイト選びで失敗しないための情報をまとめています。
+    </p>
+
+    {articles.length === 0 ? (
+      <div class="text-center py-12 text-gray-500">
+        <p>まだ記事がありません。</p>
+      </div>
+    ) : (
+      <div class="space-y-6">
+        {articles.map((article) => (
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all p-6">
+            <a href={article.href}>
+              <h2 class="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors mb-3 leading-tight">
+                {article.title}
+              </h2>
+            </a>
+            {article.description && (
+              <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                {article.description}
+              </p>
+            )}
+            <div class="flex flex-wrap items-center gap-3">
+              <a
+                href={article.href}
+                class="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors"
+              >
+                記事を読む
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+              <a
+                href="https://keiba-intelligence.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold rounded-lg transition-all"
+              >
+                無料で予想を見る
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    <!-- 下部CTA -->
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 md:p-8 mt-12 border-2 border-amber-200 text-center">
+      <h2 class="text-2xl font-bold text-gray-900 mb-3">
+        まずは無料で予想をチェック
+      </h2>
+      <p class="text-gray-700 mb-5">
+        AIが分析した競馬予想を無料で確認。南関競馬も中央競馬も全レース対応。
+      </p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a
+          href="https://keiba-intelligence.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
+        >
+          今すぐ無料で予想を見る
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+        </a>
+        <a
+          href="/keiba-yosou/"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 font-bold rounded-xl transition-colors"
+        >
+          全サイト一覧を見る
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

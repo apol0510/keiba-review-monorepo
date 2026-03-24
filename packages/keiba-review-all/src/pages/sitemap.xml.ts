@@ -1,11 +1,22 @@
 import type { APIRoute } from 'astro';
 import { getSitesWithStats } from '@keiba-review/shared/lib';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const SITE_URL = import.meta.env.SITE_URL || 'https://frabjous-taiyaki-460401.netlify.app';
 
 export const GET: APIRoute = async () => {
   // 承認済みサイトを取得
   const sites = await getSitesWithStats();
+
+  // blog記事を取得
+  const blogDir = path.resolve('./src/pages/blog');
+  let blogSlugs: string[] = [];
+  if (fs.existsSync(blogDir)) {
+    blogSlugs = fs.readdirSync(blogDir)
+      .filter(f => f.endsWith('.astro') && f !== 'index.astro')
+      .map(f => f.replace('.astro', ''));
+  }
 
   // 静的ページ
   const staticPages = [
@@ -18,6 +29,7 @@ export const GET: APIRoute = async () => {
     { url: '/ranking/chuo/', priority: '0.8', changefreq: 'daily' },
     { url: '/ranking/nankan/', priority: '0.8', changefreq: 'daily' },
     { url: '/ranking/chihou/', priority: '0.8', changefreq: 'daily' },
+    { url: '/blog/', priority: '0.8', changefreq: 'weekly' },
     { url: '/faq/', priority: '0.7', changefreq: 'monthly' },
     { url: '/about/', priority: '0.5', changefreq: 'monthly' },
     { url: '/terms/', priority: '0.3', changefreq: 'yearly' },
@@ -64,6 +76,15 @@ ${sites
     <priority>0.7</priority>
   </url>`;
     }
+  )
+  .join('\n')}
+${blogSlugs
+  .map(
+    (slug) => `  <url>
+    <loc>${SITE_URL}/blog/${slug}/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`
   )
   .join('\n')}
 </urlset>`;

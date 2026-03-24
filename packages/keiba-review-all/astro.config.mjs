@@ -2,13 +2,14 @@
 import { defineConfig } from 'astro/config';
 
 import react from '@astrojs/react';
+import netlify from '@astrojs/netlify';
 import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://keiba-review.jp',
   integrations: [react()],
-  output: 'static', // 完全静的生成（Airtableから事前生成）
+  adapter: netlify(), // prerender=false のページをSSRで配信
   vite: {
     plugins: [tailwindcss()],
     build: {

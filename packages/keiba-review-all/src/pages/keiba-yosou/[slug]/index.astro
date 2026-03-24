@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import StarRating from '../../../components/StarRating.astro';
 import CategoryBadge from '../../../components/CategoryBadge.astro';
@@ -9,35 +11,8 @@ import Breadcrumb from '../../../components/Breadcrumb.astro';
 import ReviewForm from '../../../components/ReviewForm';
 import PricingInfo from '../../../components/PricingInfo.astro';
 import OptimizedImage from '../../../components/OptimizedImage.astro';
-import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats, categoryLabels, getApprovedSites, prefetchAllData } from '@keiba-review/shared/lib';
+import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats, categoryLabels } from '@keiba-review/shared/lib';
 import { getScreenshotUrl, getFallbackImage } from '../../../lib/screenshot-helper';
-
-// 静的パス生成（ビルド時に全ページを事前生成）
-export async function getStaticPaths() {
-  console.log('🔨 ビルド時: 全ページを事前生成します...');
-
-  // 【重要】最初に全データをプリフェッチしてキャッシュに保存
-  // これにより、以降のAPI呼び出しはすべてキャッシュヒットし、レート制限を回避
-  await prefetchAllData();
-
-  const categories = ['nankan', 'chuo', 'chihou'];
-  const sites = await getApprovedSites(); // キャッシュヒット
-
-  console.log(`📄 生成ページ数: ${categories.length}カテゴリ + ${sites.length}サイト = ${categories.length + sites.length}ページ`);
-
-  const paths = [
-    // カテゴリページ
-    ...categories.map(category => ({
-      params: { slug: category }
-    })),
-    // サイト詳細ページ（全サイトを事前生成）
-    ...sites.map(site => ({
-      params: { slug: site.slug }
-    }))
-  ];
-
-  return paths;
-}
 
 const { slug } = Astro.params;
 
@@ -293,6 +268,9 @@ if (isCategory) {
     relatedSites,
   };
 }
+
+// SSRレスポンスにCDNキャッシュヘッダーを設定
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600');
 ---
 
 {isCategory && categoryData ? (
@@ -455,7 +433,7 @@ if (isCategory) {
               rel="noopener noreferrer nofollow"
               class="btn-primary inline-flex items-center gap-2"
             >
-              サイトを見る
+              無料で予想をチェックする
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
@@ -484,7 +462,7 @@ if (isCategory) {
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
           >
-            公式サイトを見る
+            今すぐ無料で予想を見る
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
             </svg>
@@ -740,7 +718,7 @@ if (isCategory) {
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
           >
-            公式サイトを見る
+            今すぐ無料で予想を見る
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
             </svg>
