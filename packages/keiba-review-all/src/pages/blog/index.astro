@@ -1,24 +1,134 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
-import fs from 'node:fs';
-import path from 'node:path';
 
 const breadcrumbItems = [
   { label: 'コラム' }
 ];
 
-// seo_keywords.json から記事メタデータを取得
-const keywordsPath = path.resolve('/Users/apolon/Projects/ai-business-engine/data/seo_keywords.json');
-let articleMeta: Record<string, { title: string; description: string }> = {};
-if (fs.existsSync(keywordsPath)) {
-  const keywords = JSON.parse(fs.readFileSync(keywordsPath, 'utf-8'));
-  for (const kw of keywords) {
-    if (kw.slug && kw.title) {
-      articleMeta[kw.slug] = { title: kw.title, description: kw.description || '' };
-    }
-  }
-}
+// 記事メタデータ（ビルド環境でも動作するよう直接定義）
+const articleMeta: Record<string, { title: string; description: string }> = {
+  'keiba-yosou-ataru': {
+    title: '【的中率70%超】本当に当たる競馬予想サイト3選｜2026年最新検証',
+    description: '実際の的中データで検証。回収率120%以上を記録したサイトだけを厳選。無料お試しありのサービスから始められます。',
+  },
+  'nankan-yosou-hyouban': {
+    title: '【127件の口コミで判明】南関競馬の予想サイト評判ランキング',
+    description: '大井・川崎・船橋・浦和の4場に対応した予想サイトの口コミを徹底調査。実際の利用者が高評価をつけたサービスとは。',
+  },
+  'keiba-ai-kuchikomi': {
+    title: '【2026年版】競馬AI予想の口コミ比較｜的中率データ付き',
+    description: '主要AI競馬予想サービス5社の口コミと的中率を横比較。データに基づいた選び方がわかります。',
+  },
+  'muryou-keiba-yosou': {
+    title: '【完全無料】当たる競馬予想サイトおすすめ5選｜0円で始める方法',
+    description: '課金なしで使える競馬予想サービスだけを厳選。無料でも回収率100%を超えたサービスを実名公開。',
+  },
+  'keiba-yosou-ranking-2026': {
+    title: '【2026年3月更新】競馬予想サイトランキングTOP10｜口コミ順',
+    description: '月間口コミ投稿数と評価スコアで自動ランキング。毎月更新で最新の人気サイトがわかります。',
+  },
+  'nankan-ai-tekichuu': {
+    title: '【検証済み】南関競馬AI予想の的中率は？3ヶ月分のデータを公開',
+    description: '南関4場のAI予想を3ヶ月間トラッキング。単勝・馬連・3連複の的中率と回収率を完全公開します。',
+  },
+  'keiba-kaishuuritsu-takai': {
+    title: '【回収率150%超】儲かる競馬予想サイトの見分け方と実績公開',
+    description: '回収率だけでなく的中率と投資効率を総合評価。長期で利益が出ているサービスの共通点を解説。',
+  },
+  'chihou-keiba-yosou-muryou': {
+    title: '【無料で当たる】地方競馬予想サイト厳選4選｜データ検証済み',
+    description: '地方競馬に特化した無料予想サービスを実際に検証。的中率と使いやすさでランキング化しました。',
+  },
+  'keiba-ai-muryou-osusume': {
+    title: '【無料で使える】AI競馬予想おすすめ4選｜精度比較あり',
+    description: '無料プランがあるAI競馬予想サービスを精度データ付きで比較。初心者でもすぐ始められます。',
+  },
+  'keiba-yosou-kuchikomi-hontou': {
+    title: '【嘘を見抜く】競馬予想サイトの口コミは本当？信頼できる判別法',
+    description: 'ステマや自作自演を見抜く5つのチェックポイント。本物の口コミだけでサイトを選ぶ方法を解説。',
+  },
+  'ooi-keiba-yosou-ataru': {
+    title: '【大井競馬専門】当たる予想サイトBEST3｜ナイター攻略データ付き',
+    description: '大井競馬場に強い予想サイトを的中実績で厳選。ナイター特有の傾向データも合わせて解説します。',
+  },
+  'keiba-kaishuuritsu-ranking': {
+    title: '【回収率順】競馬予想サイトランキング2026｜投資効率で選ぶ',
+    description: '的中率ではなく回収率で順位付け。実際に利益が出たサービスだけをデータ付きでランキング化。',
+  },
+  'nankan-data-bunseki': {
+    title: '【データで勝つ】南関競馬のデータ分析サイト5選｜無料ツールあり',
+    description: '南関4場のオッズ・タイム・血統データを分析できるサイトを紹介。無料で使えるツールも含みます。',
+  },
+  'keiba-ai-tekichuu-kenshou': {
+    title: '【独自検証】競馬AIの的中率は本当に高い？6ヶ月分の結果を公開',
+    description: '競馬AI予想を半年間記録した独自検証データ。勝てるAIと勝てないAIの違いが明らかに。',
+  },
+  'kawasaki-keiba-yosou': {
+    title: '【川崎競馬攻略】おすすめ予想サイト3選＋コース別データ分析',
+    description: '川崎競馬場の特徴を活かした予想ができるサイトを厳選。1400m・2100mのコース別傾向も解説。',
+  },
+  'keiba-yosou-yuuryou': {
+    title: '【月5000円以下】コスパ最強の有料競馬予想サイトおすすめ5選',
+    description: '有料でも元が取れるサービスだけを厳選。料金と回収率のバランスが良いサイトをランキング化。',
+  },
+  'keiba-sanrenpuku-yosou': {
+    title: '【三連複で稼ぐ】的中率が高い競馬予想サイト4選｜買い目公開型',
+    description: '三連複に特化した予想を提供するサイトを比較。的中率と平均配当のバランスで選びます。',
+  },
+  'funabashi-keiba-yosou': {
+    title: '【船橋競馬】無料で使える予想サイトまとめ｜コース適性データ付き',
+    description: '船橋競馬場に対応した無料予想サービスを紹介。1000m〜2200mの距離別データも掲載。',
+  },
+  'keiba-yosou-shoshinsha': {
+    title: '【初心者向け】競馬予想サイトの始め方ガイド｜おすすめ3選付き',
+    description: '初めての競馬予想サイト選びを完全サポート。登録方法から使い方まで図解で解説します。',
+  },
+  'ai-keiba-kaishuuritsu': {
+    title: '【AI vs 人間】競馬予想の回収率を比較｜どちらが儲かる？',
+    description: 'AI予想と人間の予想家、どちらが高い回収率を出しているか。3ヶ月分のデータで検証。',
+  },
+  'urawa-keiba-yosou': {
+    title: '【浦和競馬攻略】当たる予想サイトBEST3＋騎手データ分析',
+    description: '浦和競馬場に強い予想サービスを厳選。リーディング騎手の距離別成績データも公開。',
+  },
+  'keiba-yosou-sagi-miwakekata': {
+    title: '【要注意】競馬予想サイト詐欺の見分け方7つ｜被害に遭わない選び方',
+    description: '悪質な競馬予想サイトの特徴を具体例付きで解説。安全なサイトだけを選ぶチェックリスト付き。',
+  },
+  'chuo-keiba-ai-hikaku': {
+    title: '【JRA対応】中央競馬AI予想サービス比較5選｜重賞的中率データ',
+    description: '中央競馬の重賞レースに強いAI予想サービスを比較。G1的中実績でランキング化しました。',
+  },
+  'keiba-data-yosou-yarikata': {
+    title: '【完全ガイド】競馬データ予想のやり方｜初心者が見るべき5つの指標',
+    description: 'タイム・血統・騎手・コース適性・オッズの5指標をどう読むか。データ予想の基本を解説。',
+  },
+  'keiba-umaren-yosou-hikaku': {
+    title: '【馬連狙い】的中率の高い競馬予想サイト比較｜堅実派向け',
+    description: '馬連予想に強いサービスを的中率・平均配当で比較。堅実に稼ぎたい人向けの選び方を解説。',
+  },
+  'keiba-yosou-app-muryou': {
+    title: '【2026年版】無料で使える競馬予想アプリおすすめ6選｜機能比較表',
+    description: 'スマホで使える無料競馬予想アプリを機能・的中率・使いやすさで徹底比較。通勤中でも予想チェック。',
+  },
+  'nankan-anaume-yosou': {
+    title: '【穴狙い】南関競馬の穴馬予想法3選｜高配当を狙うデータ戦略',
+    description: '南関競馬で穴馬を見つけるためのデータ分析法を3パターン紹介。過去の万馬券パターンも分析。',
+  },
+  'keiba-jidou-yosou-tool': {
+    title: '【自動化で楽】競馬自動予想ツール比較｜AIが買い目を出してくれるサービス',
+    description: '自分で分析しなくてもAIが自動で予想してくれるツールを比較。手間なく競馬を楽しめます。',
+  },
+  'keiba-yosou-ataranai-riyuu': {
+    title: '【原因は3つ】競馬予想が当たらない理由と改善法｜データで解説',
+    description: '予想が当たらない人に共通する3つの原因をデータで解説。改善すれば回収率が変わります。',
+  },
+  'keiba-tanshou-yosou-kotsu': {
+    title: '【単勝で勝つ】競馬予想のコツ5選｜回収率120%の買い方を解説',
+    description: '単勝に絞った予想法で回収率を上げる5つのコツ。実際のレースデータで効果を検証済み。',
+  },
+};
 
 // blog/*.astro ファイルから記事一覧を生成
 const allPages = import.meta.glob('./*.astro', { eager: false });
@@ -69,10 +179,10 @@ const articles = Object.keys(allPages)
                 {article.description}
               </p>
             )}
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3 not-prose">
               <a
                 href={article.href}
-                class="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors"
+                class="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
               >
                 記事を読む
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +193,7 @@ const articles = Object.keys(allPages)
                 href="https://keiba-intelligence.jp"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold rounded-lg transition-all"
+                class="inline-flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold rounded-lg transition-all shadow-sm"
               >
                 無料で予想を見る
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +207,7 @@ const articles = Object.keys(allPages)
     )}
 
     <!-- 下部CTA -->
-    <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 md:p-8 mt-12 border-2 border-amber-200 text-center">
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 md:p-8 mt-12 border-2 border-amber-200 text-center not-prose">
       <h2 class="text-2xl font-bold text-gray-900 mb-3">
         まずは無料で予想をチェック
       </h2>
