@@ -26,6 +26,11 @@ export const EXTERNAL_LINKS = {
   YOSOU_KEIBA_MATOME: 'https://yosou.keiba-matome.jp',
 
   /**
+   * 競馬AI予想（keiba-intelligence）
+   */
+  KEIBA_INTELLIGENCE: 'https://keiba-intelligence.jp',
+
+  /**
    * 競馬予想サイト口コミ評価
    */
   KEIBA_REVIEW: 'https://keiba-review.jp',
@@ -52,4 +57,5 @@ export const DEPRECATED_URLS = [
   'nankan-analytics.com',
   'keiba-review.netlify.app',
   'nankan-keiba-review.netlify.app',
+  'keiba-intelligence.com',
 ] as const;
