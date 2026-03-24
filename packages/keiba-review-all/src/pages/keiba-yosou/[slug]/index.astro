@@ -1,6 +1,4 @@
 ---
-export const prerender = false;
-
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import StarRating from '../../../components/StarRating.astro';
 import CategoryBadge from '../../../components/CategoryBadge.astro';
@@ -11,8 +9,35 @@ import Breadcrumb from '../../../components/Breadcrumb.astro';
 import ReviewForm from '../../../components/ReviewForm';
 import PricingInfo from '../../../components/PricingInfo.astro';
 import OptimizedImage from '../../../components/OptimizedImage.astro';
-import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats, categoryLabels } from '@keiba-review/shared/lib';
+import { getSiteBySlug, getReviewsBySiteId, getSitesWithStats, categoryLabels, getApprovedSites, prefetchAllData } from '@keiba-review/shared/lib';
 import { getScreenshotUrl, getFallbackImage } from '../../../lib/screenshot-helper';
+
+// 静的パス生成（ビルド時に全ページを事前生成）
+export async function getStaticPaths() {
+  console.log('🔨 ビルド時: 全ページを事前生成します...');
+
+  // 【重要】最初に全データをプリフェッチしてキャッシュに保存
+  // これにより、以降のAPI呼び出しはすべてキャッシュヒットし、レート制限を回避
+  await prefetchAllData();
+
+  const categories = ['nankan', 'chuo', 'chihou'];
+  const sites = await getApprovedSites(); // キャッシュヒット
+
+  console.log(`📄 生成ページ数: ${categories.length}カテゴリ + ${sites.length}サイト = ${categories.length + sites.length}ページ`);
+
+  const paths = [
+    // カテゴリページ
+    ...categories.map(category => ({
+      params: { slug: category }
+    })),
+    // サイト詳細ページ（全サイトを事前生成）
+    ...sites.map(site => ({
+      params: { slug: site.slug }
+    }))
+  ];
+
+  return paths;
+}
 
 const { slug } = Astro.params;
 
@@ -268,9 +293,6 @@ if (isCategory) {
     relatedSites,
   };
 }
-
-// SSRレスポンスにCDNキャッシュヘッダーを設定
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600');
 ---
 
 {isCategory && categoryData ? (
